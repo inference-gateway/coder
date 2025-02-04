@@ -15,3 +15,8 @@ tasks:
     desc: Run the project as a server
     cmds:
       - docker run --rm -it -p 8080:8080 --env-file .env ghcr.io/inference-gateway/inference-gateway:v0.1.12
+
+  test:
+    desc: Run the tests
+    cmds:
+      - cargo test
