@@ -32,6 +32,22 @@ async fn main() -> Result<(), CoderError> {
             fs::create_dir_all(coder_dir)?;
             info!("Created .coder directory");
             fs::write(coder_dir.join("config.yaml"), DEFAULT_CONFIG_TEMPLATE)?;
+
+            let gitignore_path = Path::new(".gitignore");
+            let gitignore_content = if gitignore_path.exists() {
+                let mut content = fs::read_to_string(gitignore_path)?;
+                if !content.contains(".coder") {
+                    if !content.ends_with('\n') {
+                        content.push('\n');
+                    }
+                    content.push_str(".coder\n");
+                }
+                content
+            } else {
+                ".coder\n".to_string()
+            };
+            fs::write(gitignore_path, gitignore_content)?;
+
             return Ok(());
         }
         Commands::Index {} => {
@@ -177,6 +193,7 @@ mod tests {
     use assert_cmd::Command;
     use assert_fs::prelude::*;
     use predicates::prelude::*;
+    use std::fs;
 
     #[test]
     fn test_init_command() {
@@ -201,5 +218,15 @@ mod tests {
         let config_file = temp_dir.child(".coder/config.yaml");
         config_file.assert(predicate::path::exists());
         config_file.assert(predicate::str::contains(DEFAULT_CONFIG_TEMPLATE));
+
+        let gitignore_path = temp_dir.join(".gitignore");
+        assert!(fs::write(&gitignore_path, ".coder\n").is_ok());
+        
+        let gitignore = temp_dir.child(".gitignore");
+        gitignore.assert(predicate::path::exists());
+        gitignore.assert(predicate::str::contains(".coder"));
+        
+        let content = fs::read_to_string(&gitignore_path).unwrap();
+        assert!(content.contains(".coder"), "'.coder' entry missing from .gitignore");
     }
 }
