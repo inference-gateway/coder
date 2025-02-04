@@ -1,8 +1,8 @@
-use inference_gateway_sdk::{Message, Provider};
+use inference_gateway_sdk::{Provider, Message};
 use serde::{Serialize, Deserialize};
 use std::time::SystemTime;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Conversation {
     id: String,
     github_issue_id: Option<String>,
@@ -11,7 +11,7 @@ pub struct Conversation {
     metadata: ConversationMetadata,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct ConversationMetadata {
     repository: String,
     model: String,
@@ -51,5 +51,13 @@ impl Conversation {
             .filter(|line| line.starts_with("REQUEST:"))
             .map(|line| line.trim_start_matches("REQUEST:").trim().to_string())
             .collect()
+    }
+}
+
+impl TryInto<Vec<Message>> for Conversation {
+    type Error = crate::errors::CoderError;
+
+    fn try_into(self) -> Result<Vec<Message>, Self::Error> {
+        Ok(self.messages)
     }
 }

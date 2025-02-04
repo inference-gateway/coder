@@ -9,6 +9,9 @@ pub enum CoderError {
     #[error("Inference Gateway error: {0}")]
     InferenceGateway(#[from] GatewayError),
 
+    #[error("Failed to deserialize JSON: {0}")]
+    Json(#[from] serde_json::Error),
+
     #[error("YAML error occurred: {0}")]
     Yaml(#[from] serde_yaml::Error),
 
