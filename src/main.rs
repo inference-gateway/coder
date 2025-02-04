@@ -27,7 +27,7 @@ async fn main() -> Result<(), CoderError> {
     let cli = Cli::parse();
     match cli.command {
         Commands::Init {} => {
-            println!("Initializing AI Coder agent...");
+            info!("Initializing AI Coder agent...");
             let coder_dir = Path::new(".coder");
             fs::create_dir_all(coder_dir)?;
             info!("Created .coder directory");
@@ -35,7 +35,7 @@ async fn main() -> Result<(), CoderError> {
             return Ok(());
         }
         Commands::Index {} => {
-            println!("Indexing files...");
+            info!("Indexing files...");
             let coder_dir = Path::new(".coder");
             fs::create_dir_all(coder_dir)?;
 
@@ -52,10 +52,10 @@ async fn main() -> Result<(), CoderError> {
             );
 
             fs::write(coder_dir.join("index.yaml"), index_content)?;
-            println!("Created index at .coder/index.yaml");
+            info!("Created index at .coder/index.yaml");
         }
         Commands::Start {} => {
-            println!("Reading the configurations...");
+            info!("Reading the configurations...");
             let coder_dir = Path::new(".coder");
             let config_path = coder_dir.join("config.yaml");
             let config_content = fs::read_to_string(config_path)?;
@@ -64,12 +64,12 @@ async fn main() -> Result<(), CoderError> {
             let git_owner = config["github"]["owner"].as_str().unwrap_or("");
             let git_repo = config["github"]["repo"].as_str().unwrap_or("");
 
-            println!(
+            info!(
                 "Connecting to GitHub repository: {}/{}",
                 git_owner, git_repo
             );
 
-            println!("Creating an in memory database.");
+            info!("Creating an in memory database.");
             let mut convo = conversation::Conversation::new(
                 Some("".to_string()),
                 "deepseek-r1-distill-llama-70b".to_string(),
@@ -100,18 +100,18 @@ async fn main() -> Result<(), CoderError> {
                 content: prompt,
             });
 
-            println!("Intializing the inference gateway client.");
+            info!("Intializing the inference gateway client.");
             let client = InferenceGatewayClient::new("http://localhost:8080");
 
-            println!("Starting AI Coder agent...");
-            println!("Press Ctrl+C to stop the agent.");
+            info!("Starting AI Coder agent...");
+            info!("Press Ctrl+C to stop the agent.");
             loop {
                 let resp = client
                     .generate_content(Provider::Groq, model, convo.clone().try_into()?)
                     .await?;
                 let assistant_message = utils::strip_thinking(&resp.response.content);
                 if assistant_message.is_none() {
-                    println!("Assistant message is empty. Exiting...");
+                    info!("Assistant message is empty. Exiting...");
                     break;
                 }
                 let unwrapped_message = assistant_message.unwrap().to_string();
