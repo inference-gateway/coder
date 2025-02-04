@@ -14,5 +14,4 @@ pub enum CoderError {
 
     #[error("YAML error occurred: {0}")]
     Yaml(#[from] serde_yaml::Error),
-
 }

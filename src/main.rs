@@ -1,22 +1,18 @@
+use crate::cli::{Cli, Commands};
+use crate::errors::CoderError;
 use clap::Parser;
 use config::DEFAULT_CONFIG_TEMPLATE;
-use serde_yaml::Value;
-use crate::cli::{Cli, Commands};
 use inference_gateway_sdk::{
-    InferenceGatewayAPI,
-    InferenceGatewayClient,
-    MessageRole,
-    Provider,
-    Message
+    InferenceGatewayAPI, InferenceGatewayClient, Message, MessageRole, Provider,
 };
-use log::info;
+use log::{info, warn};
+use serde_yaml::Value;
 use std::{env, fs, path::Path, thread::sleep, time::Duration};
-use crate::errors::CoderError;
 
 mod cli;
-mod errors;
-mod conversation;
 mod config;
+mod conversation;
+mod errors;
 mod index;
 mod prompt;
 mod utils;
@@ -37,15 +33,15 @@ async fn main() -> Result<(), CoderError> {
             info!("Created .coder directory");
             fs::write(coder_dir.join("config.yaml"), DEFAULT_CONFIG_TEMPLATE)?;
             return Ok(());
-        },
+        }
         Commands::Index {} => {
             println!("Indexing files...");
             let coder_dir = Path::new(".coder");
             fs::create_dir_all(coder_dir)?;
-            
+
             let tree = index::build_tree()?;
             let content = index::build_content()?;
-            
+
             let index_content = format!(
                 "---\n# AI Coder Index Configuration\n\ntree: |\n{}\n{}",
                 tree.lines()
@@ -54,10 +50,10 @@ async fn main() -> Result<(), CoderError> {
                     .join("\n"),
                 content
             );
-        
+
             fs::write(coder_dir.join("index.yaml"), index_content)?;
             println!("Created index at .coder/index.yaml");
-      },
+        }
         Commands::Start {} => {
             println!("Reading the configurations...");
             let coder_dir = Path::new(".coder");
@@ -68,13 +64,17 @@ async fn main() -> Result<(), CoderError> {
             let git_owner = config["github"]["owner"].as_str().unwrap_or("");
             let git_repo = config["github"]["repo"].as_str().unwrap_or("");
 
-            println!("Connecting to GitHub repository: {}/{}", git_owner, git_repo);
+            println!(
+                "Connecting to GitHub repository: {}/{}",
+                git_owner, git_repo
+            );
 
-
-            
             println!("Creating an in memory database.");
-            let mut convo = conversation::Conversation::new(Some("".to_string()), "deepseek-r1-distill-llama-70b".to_string(), Provider::Groq);
-            
+            let mut convo = conversation::Conversation::new(
+                Some("".to_string()),
+                "deepseek-r1-distill-llama-70b".to_string(),
+                Provider::Groq,
+            );
 
             // Read the tree structure from index.yaml
             let index_path = Path::new(".coder").join("index.yaml");
@@ -85,7 +85,8 @@ async fn main() -> Result<(), CoderError> {
 
             // TODO: Replace with actual GitHub issue fetching
             let issue_title = "Fix error handling in cli.rs";
-            let issue_body = "The error handling in cli.rs needs improvement. We should add proper error types.";
+            let issue_body =
+                "The error handling in cli.rs needs improvement. We should add proper error types.";
 
             let prompt = prompt::Prompt::create_initial_prompt(tree, issue_title, issue_body);
             let system_message = prompt::Prompt::get_system_message();
@@ -105,7 +106,9 @@ async fn main() -> Result<(), CoderError> {
             println!("Starting AI Coder agent...");
             println!("Press Ctrl+C to stop the agent.");
             loop {
-                let resp = client.generate_content(Provider::Groq, model, convo.clone().try_into()?).await?;
+                let resp = client
+                    .generate_content(Provider::Groq, model, convo.clone().try_into()?)
+                    .await?;
                 let assistant_message = utils::strip_thinking(&resp.response.content);
                 if assistant_message.is_none() {
                     println!("Assistant message is empty. Exiting...");
@@ -114,9 +117,11 @@ async fn main() -> Result<(), CoderError> {
                 let unwrapped_message = assistant_message.unwrap().to_string();
                 let assistant_message = unwrapped_message.trim();
 
-                let files_requests = conversation::Conversation::parse_response_for_requested_files(assistant_message);
+                let files_requests = conversation::Conversation::parse_response_for_requested_files(
+                    assistant_message,
+                );
                 if files_requests.is_empty() {
-                    println!("No files requested. Exiting...");
+                    warn!("No files requested. Exiting...");
                     // TODO - think about retry logic
                     break;
                 }
@@ -127,17 +132,20 @@ async fn main() -> Result<(), CoderError> {
                 });
 
                 let contents = index::extract_file_contents(&index_content);
-                let review_prompt = prompt::Prompt::create_review_prompt(&files_requests, &contents);
+                let review_prompt =
+                    prompt::Prompt::create_review_prompt(&files_requests, &contents);
 
                 convo.add_message(Message {
                     role: MessageRole::User,
                     content: review_prompt.trim().to_string(),
                 });
 
-                let resp = client.generate_content(Provider::Groq, model, convo.clone().try_into()?).await?;
+                let resp = client
+                    .generate_content(Provider::Groq, model, convo.clone().try_into()?)
+                    .await?;
                 let assistant_message = utils::strip_thinking(&resp.response.content);
                 if assistant_message.is_none() {
-                    println!("Assistant message is empty. Exiting...");
+                    warn!("Assistant message is empty. Exiting...");
                     break;
                 }
 
@@ -146,9 +154,7 @@ async fn main() -> Result<(), CoderError> {
                     content: assistant_message.unwrap().trim().to_string(),
                 });
 
-
-                println!("{:?}", convo);
-
+                info!("{:?}", convo);
 
                 // - Pull issues from GitHub
                 // - Generate fixes using inference-gateway-sdk

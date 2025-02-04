@@ -1,5 +1,5 @@
-use inference_gateway_sdk::{Provider, Message};
-use serde::{Serialize, Deserialize};
+use inference_gateway_sdk::{Message, Provider};
+use serde::{Deserialize, Serialize};
 use std::{fmt, time::SystemTime};
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -47,7 +47,8 @@ impl Conversation {
     }
 
     pub fn parse_response_for_requested_files(response: &str) -> Vec<String> {
-        response.lines()
+        response
+            .lines()
             .filter(|line| line.starts_with("REQUEST:"))
             .map(|line| line.trim_start_matches("REQUEST:").trim().to_string())
             .collect()
@@ -66,7 +67,11 @@ impl fmt::Debug for Conversation {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "Conversation {{")?;
         writeln!(f, "  id: {:?}", self.id)?;
-        writeln!(f, "  issue: {:?}", self.github_issue_id.as_deref().unwrap_or("None"))?;
+        writeln!(
+            f,
+            "  issue: {:?}",
+            self.github_issue_id.as_deref().unwrap_or("None")
+        )?;
         writeln!(f, "  created: {:?}", self.created_at)?;
         writeln!(f, "  messages: [")?;
         for msg in &self.messages {
