@@ -106,14 +106,24 @@ async fn main() -> Result<(), CoderError> {
             println!("Press Ctrl+C to stop the agent.");
             loop {
                 let resp = client.generate_content(Provider::Groq, model, convo.clone().try_into()?).await?;
-
-                let files_requests = conversation::Conversation::parse_response(&resp.response.content);
-
                 let assistant_message = utils::strip_thinking(&resp.response.content);
+                if assistant_message.is_none() {
+                    println!("Assistant message is empty. Exiting...");
+                    break;
+                }
+                let unwrapped_message = assistant_message.unwrap().to_string();
+                let assistant_message = unwrapped_message.trim();
+
+                let files_requests = conversation::Conversation::parse_response_for_requested_files(assistant_message);
+                if files_requests.is_empty() {
+                    println!("No files requested. Exiting...");
+                    // TODO - think about retry logic
+                    break;
+                }
 
                 convo.add_message(Message {
                     role: MessageRole::Assistant,
-                    content: assistant_message,
+                    content: assistant_message.trim().to_string(),
                 });
 
                 let contents = index::extract_file_contents(&index_content);
@@ -121,14 +131,19 @@ async fn main() -> Result<(), CoderError> {
 
                 convo.add_message(Message {
                     role: MessageRole::User,
-                    content: review_prompt,
+                    content: review_prompt.trim().to_string(),
                 });
 
                 let resp = client.generate_content(Provider::Groq, model, convo.clone().try_into()?).await?;
+                let assistant_message = utils::strip_thinking(&resp.response.content);
+                if assistant_message.is_none() {
+                    println!("Assistant message is empty. Exiting...");
+                    break;
+                }
 
                 convo.add_message(Message {
                     role: MessageRole::Assistant,
-                    content: resp.response.content,
+                    content: assistant_message.unwrap().trim().to_string(),
                 });
 
 

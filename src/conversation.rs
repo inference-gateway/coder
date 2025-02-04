@@ -46,7 +46,7 @@ impl Conversation {
         self.metadata.files_reviewed.push(file);
     }
 
-    pub fn parse_response(response: &str) -> Vec<String> {
+    pub fn parse_response_for_requested_files(response: &str) -> Vec<String> {
         response.lines()
             .filter(|line| line.starts_with("REQUEST:"))
             .map(|line| line.trim_start_matches("REQUEST:").trim().to_string())
@@ -72,7 +72,7 @@ impl fmt::Debug for Conversation {
         for msg in &self.messages {
             writeln!(f, "    {{")?;
             writeln!(f, "      role: {:?}", msg.role)?;
-            writeln!(f, "      content: \"{:?}\"", msg.content.replace('\n', "\\n"))?;
+            writeln!(f, "      content: \"{}\"", msg.content.replace("\\n", "\n"))?;
             writeln!(f, "    }},")?;
         }
         writeln!(f, "  ]")?;
