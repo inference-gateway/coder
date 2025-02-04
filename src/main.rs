@@ -109,9 +109,11 @@ async fn main() -> Result<(), CoderError> {
 
                 let files_requests = conversation::Conversation::parse_response(&resp.response.content);
 
+                let assistant_message = utils::strip_thinking(&resp.response.content);
+
                 convo.add_message(Message {
                     role: MessageRole::Assistant,
-                    content: resp.response.content,
+                    content: assistant_message,
                 });
 
                 let contents = index::extract_file_contents(&index_content);
