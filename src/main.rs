@@ -6,6 +6,7 @@ use inference_gateway_sdk::{
     InferenceGatewayAPI, InferenceGatewayClient, Message, MessageRole, Provider,
 };
 use log::{info, warn};
+use octocrab::Octocrab;
 use serde_yaml::Value;
 use std::{env, fs, path::Path, thread::sleep, time::Duration};
 
@@ -69,6 +70,61 @@ async fn main() -> Result<(), CoderError> {
 
             fs::write(coder_dir.join("index.yaml"), index_content)?;
             info!("Created index at .coder/index.yaml");
+        }
+        Commands::Fix {
+            issue,
+            further_instruction,
+        } => {
+            info!("Fixing issue #{}...", issue);
+            info!("Further instructions: {:?}", further_instruction);
+
+            let coder_dir = Path::new(".coder");
+            let config_path = coder_dir.join("config.yaml");
+            let config_content = fs::read_to_string(config_path)?;
+            let config: Value = serde_yaml::from_str(&config_content)?;
+
+            let git_owner = config["github"]["owner"]
+                .as_str()
+                .ok_or(CoderError::ConfigError(
+                    "GitHub owner not found".to_string(),
+                ))?;
+            let git_repo = config["github"]["repo"]
+                .as_str()
+                .ok_or(CoderError::ConfigError("GitHub repo not found".to_string()))?;
+
+            info!("Fetching issue #{} from {}/{}", issue, git_owner, git_repo);
+
+            let github_token = std::env::var("GITHUB_TOKEN")
+                .map_err(|_| CoderError::ConfigError("GITHUB_TOKEN not set".to_string()))?;
+
+            let octocrab = Octocrab::builder()
+                .personal_token(github_token)
+                .build()
+                .map_err(|e| CoderError::GitHubError(e))?;
+
+            let issue_details = octocrab
+                .issues(git_owner, git_repo)
+                .get(issue as u64)
+                .await
+                .map_err(|e| CoderError::GitHubError(e))?;
+
+            info!("Found issue: {}", issue_details.title);
+            info!("Description: {:?}", issue_details.body);
+
+            // TODO - Parse the ticket content and loop in the LLM
+            let timeout = Duration::from_secs(300);
+            info!("Starting AI Coder agent...");
+            info!("Press Ctrl+C to stop the agent.");
+            loop {
+                if timeout.as_secs() == 0 {
+                    warn!("Timeout reached. Exiting...");
+                    break;
+                }
+
+                // - Generate fixes using inference-gateway-sdk
+                // - Create pull requests
+                sleep(Duration::from_secs(5));
+            }
         }
         Commands::Refactor {} => {
             info!("Reading the configurations...");
@@ -189,9 +245,9 @@ async fn main() -> Result<(), CoderError> {
 #[cfg(test)]
 mod tests {
     use crate::config::DEFAULT_CONFIG_TEMPLATE;
-    use log::LevelFilter;
     use assert_cmd::Command;
     use assert_fs::prelude::*;
+    use log::LevelFilter;
     use predicates::prelude::*;
     use std::fs;
 
@@ -203,12 +259,9 @@ mod tests {
             .try_init();
 
         let temp_dir = assert_fs::TempDir::new().unwrap();
-        
+
         let mut cmd = Command::cargo_bin("coder").unwrap();
-        let assert = cmd
-            .current_dir(&temp_dir)
-            .arg("init")
-            .assert();
+        let assert = cmd.current_dir(&temp_dir).arg("init").assert();
 
         assert
             .success()
@@ -221,12 +274,15 @@ mod tests {
 
         let gitignore_path = temp_dir.join(".gitignore");
         assert!(fs::write(&gitignore_path, ".coder\n").is_ok());
-        
+
         let gitignore = temp_dir.child(".gitignore");
         gitignore.assert(predicate::path::exists());
         gitignore.assert(predicate::str::contains(".coder"));
-        
+
         let content = fs::read_to_string(&gitignore_path).unwrap();
-        assert!(content.contains(".coder"), "'.coder' entry missing from .gitignore");
+        assert!(
+            content.contains(".coder"),
+            "'.coder' entry missing from .gitignore"
+        );
     }
 }

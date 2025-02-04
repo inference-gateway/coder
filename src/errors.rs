@@ -3,6 +3,12 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum CoderError {
+    #[error("Failed to parse integer: {0}")]
+    ConfigError(String),
+
+    #[error("Failed to parse integer: {0}")]
+    GitHubError(#[from] octocrab::Error),
+
     #[error("IO error occurred: {0}")]
     Io(#[from] std::io::Error),
 
