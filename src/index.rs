@@ -11,7 +11,6 @@ pub fn build_tree() -> io::Result<String> {
 
     for result in walker {
         if let Ok(entry) = result {
-            // Skip the root directory itself
             if entry.path() == Path::new(".") {
                 continue;
             }
