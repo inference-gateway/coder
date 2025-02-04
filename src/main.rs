@@ -172,7 +172,7 @@ async fn main() -> Result<(), CoderError> {
 
 #[cfg(test)]
 mod tests {
-    use crate::DEFAULT_CONFIG_TEMPLATE;
+    use crate::config::DEFAULT_CONFIG_TEMPLATE;
     use log::LevelFilter;
     use assert_cmd::Command;
     use assert_fs::prelude::*;
