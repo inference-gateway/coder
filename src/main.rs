@@ -169,3 +169,37 @@ async fn main() -> Result<(), CoderError> {
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::DEFAULT_CONFIG_TEMPLATE;
+    use log::LevelFilter;
+    use assert_cmd::Command;
+    use assert_fs::prelude::*;
+    use predicates::prelude::*;
+
+    #[test]
+    fn test_init_command() {
+        let _ = env_logger::builder()
+            .filter_level(LevelFilter::Info)
+            .is_test(true)
+            .try_init();
+
+        let temp_dir = assert_fs::TempDir::new().unwrap();
+        
+        let mut cmd = Command::cargo_bin("coder").unwrap();
+        let assert = cmd
+            .current_dir(&temp_dir)
+            .arg("init")
+            .assert();
+
+        assert
+            .success()
+            .stderr(predicate::str::contains("Initializing AI Coder agent"))
+            .stderr(predicate::str::contains("Created .coder directory"));
+
+        let config_file = temp_dir.child(".coder/config.yaml");
+        config_file.assert(predicate::path::exists());
+        config_file.assert(predicate::str::contains(DEFAULT_CONFIG_TEMPLATE));
+    }
+}
