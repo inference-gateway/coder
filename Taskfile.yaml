@@ -20,3 +20,8 @@ tasks:
     desc: Run the tests
     cmds:
       - cargo test
+
+  install:
+    desc: Install the project
+    cmds:
+      - cargo install --path .
