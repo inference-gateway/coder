@@ -12,7 +12,7 @@
       "cargo": {
         "args": ["build"]
       },
-      "args": ["init"],
+      "args": ["start"],
       "cwd": "${workspaceFolder}"
     }
   ]

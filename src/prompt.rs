@@ -38,7 +38,7 @@ impl Prompt {
             }
         }
         
-        prompt.push_str("\nPlease review these files and suggest specific changes needed to fix the issue. Be precise and include the full corrected code if needed.\n");
+        prompt.push_str("\nPlease review these files and suggest specific changes needed to fix the issue. Be precise and include the full corrected code if needed. If there are no files content simply answer that file contents is not provided.\n");
         
         prompt
     }

@@ -117,9 +117,6 @@ async fn main() -> Result<(), CoderError> {
                 let contents = index::extract_file_contents(&index_content);
                 let review_prompt = prompt::Prompt::create_review_prompt(&files_requests, &contents);
 
-
-                println!("{}", review_prompt);
-
                 convo.add_message(Message {
                     role: MessageRole::User,
                     content: review_prompt,
@@ -133,7 +130,7 @@ async fn main() -> Result<(), CoderError> {
                 });
 
 
-                println!("{:#?}", convo);
+                println!("{:?}", convo);
 
 
                 // - Pull issues from GitHub

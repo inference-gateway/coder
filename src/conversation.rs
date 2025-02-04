@@ -1,8 +1,8 @@
 use inference_gateway_sdk::{Provider, Message};
 use serde::{Serialize, Deserialize};
-use std::time::SystemTime;
+use std::{fmt, time::SystemTime};
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Conversation {
     id: String,
     github_issue_id: Option<String>,
@@ -59,5 +59,29 @@ impl TryInto<Vec<Message>> for Conversation {
 
     fn try_into(self) -> Result<Vec<Message>, Self::Error> {
         Ok(self.messages)
+    }
+}
+
+impl fmt::Debug for Conversation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "Conversation {{")?;
+        writeln!(f, "  id: {:?}", self.id)?;
+        writeln!(f, "  issue: {:?}", self.github_issue_id.as_deref().unwrap_or("None"))?;
+        writeln!(f, "  created: {:?}", self.created_at)?;
+        writeln!(f, "  messages: [")?;
+        for msg in &self.messages {
+            writeln!(f, "    {{")?;
+            writeln!(f, "      role: {:?}", msg.role)?;
+            writeln!(f, "      content: \"{:?}\"", msg.content.replace('\n', "\\n"))?;
+            writeln!(f, "    }},")?;
+        }
+        writeln!(f, "  ]")?;
+        writeln!(f, "  metadata: {{")?;
+        writeln!(f, "    repository: {:?}", self.metadata.repository)?;
+        writeln!(f, "    model: {:?}", self.metadata.model)?;
+        writeln!(f, "    provider: {:?}", self.metadata.provider)?;
+        writeln!(f, "    files_reviewed: {:?}", self.metadata.files_reviewed)?;
+        writeln!(f, "  }}")?;
+        write!(f, "}}")
     }
 }
