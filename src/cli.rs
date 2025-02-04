@@ -20,10 +20,11 @@ pub enum Commands {
     /// Indexes the files in the collection.
     Index {},
 
-    /// Start the AI Coder agent.
+    /// Refactor look on potential improvement to the project
+    /// and interact with the user for further actions.
     ///
     /// Pulls the issues from Github or Gitlab.
     /// Runs the AI coder agent to generate a potential fix.
     /// Creates a pull request with the potential fix.
-    Start {},
+    Refactor {},
 }

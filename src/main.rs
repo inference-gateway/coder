@@ -70,7 +70,7 @@ async fn main() -> Result<(), CoderError> {
             fs::write(coder_dir.join("index.yaml"), index_content)?;
             info!("Created index at .coder/index.yaml");
         }
-        Commands::Start {} => {
+        Commands::Refactor {} => {
             info!("Reading the configurations...");
             let coder_dir = Path::new(".coder");
             let config_path = coder_dir.join("config.yaml");
