@@ -26,13 +26,11 @@ cargo install coder
 
 ### Usage
 
-````bash
-
 1. Initialize the project:
 
 ```bash
 coder init
-````
+```
 
 2. Index the project:
 
