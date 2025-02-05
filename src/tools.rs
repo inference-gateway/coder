@@ -1,17 +1,16 @@
-
 use crate::errors::CoderError;
 /// Read file content from .coder/index.yaml
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `path` - Path to file
-/// 
+///
 /// # Returns
-/// 
+///
 /// * `String` - File content
-/// 
+///
 /// # Example
-/// 
+///
 /// ```
 /// let content = read_file("src/main.rs");
 /// ```
@@ -19,11 +18,11 @@ pub fn get_file_content(path: &str) -> Result<String, CoderError> {
     let index_path = std::path::Path::new(".coder").join("index.yaml");
     let index_content = std::fs::read_to_string(index_path)?;
     let index: serde_yaml::Value = serde_yaml::from_str(&index_content)?;
-    
+
     let content = index["content"][path]
         .as_str()
         .ok_or_else(|| CoderError::ConfigError(format!("File {} not found in index", path)))?;
-        
+
     Ok(content.to_string())
 }
 
@@ -49,7 +48,7 @@ mod tests {
         "#;
         let dir = setup_test_dir(yaml_content);
         std::env::set_current_dir(&dir).unwrap();
-        
+
         let result = get_file_content("src/main.rs");
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), "fn main() {}");
@@ -63,7 +62,7 @@ mod tests {
         "#;
         let dir = setup_test_dir(yaml_content);
         std::env::set_current_dir(&dir).unwrap();
-        
+
         let result = get_file_content("src/nonexistent.rs");
         assert!(result.is_err());
         assert!(matches!(result.unwrap_err(), CoderError::ConfigError(_)));
@@ -74,7 +73,7 @@ mod tests {
         let yaml_content = "invalid: yaml: content: ][";
         let dir = setup_test_dir(yaml_content);
         std::env::set_current_dir(&dir).unwrap();
-        
+
         let result = get_file_content("src/main.rs");
         assert!(result.is_err());
     }
@@ -83,7 +82,7 @@ mod tests {
     fn test_get_file_content_missing_index() {
         let dir = tempdir().unwrap();
         std::env::set_current_dir(&dir).unwrap();
-        
+
         let result = get_file_content("src/main.rs");
         assert!(result.is_err());
     }

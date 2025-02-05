@@ -56,7 +56,8 @@ impl Prompt {
     }
 
     pub fn create_improved_bug_report_suggestion(issue_body: &str, issue_title: &str) -> String {
-        format!(r#"Don't immediately attempt to fix it. First try to understand the issue by asking the following questions:
+        format!(
+            r#"Don't immediately attempt to fix it. First try to understand the issue by asking the following questions:
 
 1. What is the issue about?
 2. What is the expected behavior?
@@ -98,7 +99,9 @@ Finally, if revised an improved version of the issue, ask the user to confirm th
 
 Would you like to update the GitHub issue with this improved description? (y/N)
 
-"#, issue_title, issue_body)
+"#,
+            issue_title, issue_body
+        )
     }
 }
 

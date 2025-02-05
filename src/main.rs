@@ -1,7 +1,7 @@
 use crate::cli::{Cli, Commands};
 use crate::errors::CoderError;
 use clap::{CommandFactory, Parser};
-use clap_complete::{generate, Shell};
+use clap_complete::generate;
 use config::DEFAULT_CONFIG_TEMPLATE;
 use inference_gateway_sdk::{
     InferenceGatewayAPI, InferenceGatewayClient, Message, MessageRole, Provider,
@@ -9,7 +9,6 @@ use inference_gateway_sdk::{
 use log::{info, warn};
 use octocrab::Octocrab;
 use serde_yaml::Value;
-use std::any::Any;
 use std::{env, fs, path::Path, thread::sleep, time::Duration};
 
 mod cli;
@@ -18,8 +17,8 @@ mod conversation;
 mod errors;
 mod index;
 mod prompt;
-mod utils;
 mod tools;
+mod utils;
 
 #[tokio::main]
 async fn main() -> Result<(), CoderError> {
@@ -115,8 +114,8 @@ async fn main() -> Result<(), CoderError> {
                 .await
                 .map_err(|e| CoderError::GitHubError(e))?;
 
-
-            let is_bug = issue_details.labels
+            let is_bug = issue_details
+                .labels
                 .iter()
                 .any(|label| label.name.to_lowercase() == "bug");
 
