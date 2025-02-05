@@ -1,7 +1,6 @@
-use std::{collections::HashMap, fs, io, path::Path};
-
 use ignore::WalkBuilder;
 use serde_yaml::Value;
+use std::{collections::HashMap, fs, io, path::Path};
 
 pub fn build_tree() -> io::Result<String> {
     let mut tree = String::from(".\n");
@@ -49,21 +48,17 @@ pub fn build_content() -> io::Result<String> {
 
     for result in walker {
         if let Ok(entry) = result {
-            // Skip the root directory and non-files
             if entry.path() == Path::new(".") || !entry.path().is_file() {
                 continue;
             }
 
             let path = entry.path();
 
-            // Read file content
             if let Ok(file_content) = fs::read_to_string(path) {
                 let key = path.to_string_lossy().trim_start_matches("./").to_string();
 
-                // Write file entry
                 content.push_str(&format!("  {}: |\n", key));
 
-                // Add indented content
                 for line in file_content.lines() {
                     content.push_str(&format!("    {}\n", line));
                 }
@@ -79,18 +74,15 @@ pub fn extract_file_contents(index_content: &str) -> HashMap<String, String> {
 
     if let Ok(yaml) = serde_yaml::from_str::<Value>(index_content) {
         if let Some(content) = yaml.get("content") {
-            // Process each directory
             if let Some(dirs) = content.as_mapping() {
                 for (dir, files) in dirs {
                     let dir_name = dir.as_str().unwrap_or("");
 
-                    // Process files in directory
                     if let Some(files_map) = files.as_mapping() {
                         for (file, content) in files_map {
                             let file_name = file.as_str().unwrap_or("");
                             let file_content = content.as_str().unwrap_or("").to_string();
 
-                            // Create full path (dir/file)
                             let full_path = if dir_name.is_empty() {
                                 file_name.to_string()
                             } else {
