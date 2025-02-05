@@ -154,24 +154,20 @@ CONTEXT:
 
 INSTRUCTIONS:
 1. First analyze the issue description and determine the root cause
-2. Request relevant files using get_file_content
+2. Request relevant files using get_file_content using the following format:
+REQUEST: <file path>
 3. Propose specific fixes in the following format:
-    ```
-    FILE: <filepath>
-    ```original
-    <original code block>
-    ```
-    ```fix
-    <fixed code block>
-    ```
-    EXPLANATION: <why this fixes the issue>
+FILE: <filepath>
+```rust
+<fixed code block>
+```
 4. Each fix must be based on actual file contents
 5. Focus on minimal, targeted changes that address the specific bug
 
 Respond only with:
 1. Your analysis
-2. File content requests - request for specific file content using `REQUEST: <file path>`
-3. Specific fixes with explanations - write it in the following format `FILE: <filepath>`, `FIX: <fixed file content>`
+2. File content requests
+3. Specific fixes with explanations
 4. don't delete comments
 "#,
                 index::build_tree()?,
@@ -283,29 +279,29 @@ Respond only with:
 
                 info!("Fixes: {:?}", fixes);
 
-                for fix in fixes {
-                    for (file_path, content) in fix {
-                        match tools::write_file_content(&file_path, &content) {
-                            Ok(_) => {
-                                info!("Wrote content to {}", file_path);
-                                convo.add_message(Message {
-                                    role: MessageRole::User,
-                                    content: format!("Wrote content to {}", file_path),
-                                });
-                            }
-                            Err(e) => {
-                                warn!("Failed to write content to {}: {}", file_path, e);
-                                convo.add_message(Message {
-                                    role: MessageRole::User,
-                                    content: format!(
-                                        "Could not write content to {}: {}",
-                                        file_path, e
-                                    ),
-                                });
-                            }
-                        }
-                    }
-                }
+                // for fix in fixes {
+                //     for (file_path, content) in fix {
+                //         match tools::write_file_content(&file_path, &content) {
+                //             Ok(_) => {
+                //                 info!("Wrote content to {}", file_path);
+                //                 convo.add_message(Message {
+                //                     role: MessageRole::User,
+                //                     content: format!("Wrote content to {}", file_path),
+                //                 });
+                //             }
+                //             Err(e) => {
+                //                 warn!("Failed to write content to {}: {}", file_path, e);
+                //                 convo.add_message(Message {
+                //                     role: MessageRole::User,
+                //                     content: format!(
+                //                         "Could not write content to {}: {}",
+                //                         file_path, e
+                //                     ),
+                //                 });
+                //             }
+                //         }
+                //     }
+                // }
 
                 info!("Assistant message: {:?}", convo);
 
