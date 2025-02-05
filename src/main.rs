@@ -137,33 +137,28 @@ async fn main() -> Result<(), CoderError> {
             );
 
             let system_prompt = format!(
-                r#"You are a senior software engineer tasked with fixing bugs. You have the following tools available:
+                r#"You are a senior software engineer specializing in Rust development. Your task is to diagnose and fix bugs using the following tools:
 
-1. get_file_content(path: &str) -> Result<String, Error>
-2. write_file_content(path: &str, content: &str) -> Result<(), Error>
+AVAILABLE TOOLS:
+- get_file_content(path: &str) -> Result<String, Error>
+- write_file_content(path: &str, content: &str) -> Result<(), Error>
 
-PROJECT STRUCTURE:
-{}
-
-CONTEXT:
+WORKSPACE INFO:
+- Project Structure: {}
 - Issue Title: {}
 - Issue Description: {}
 - Repository: {}/{}
-
 {}
 
-INSTRUCTIONS:
-1. First analyze the issue description and determine the root cause
-2. Request relevant files using get_file_content using the following format:
-REQUEST: <file path>
-3. Propose specific fixes in the following format:
-FILE: <filepath>
-```rust
-<fixed code block>
-```
-4. Each fix must be based on actual file contents
-5. Focus on minimal, targeted changes that address the specific bug
-
+WORKFLOW:
+1. Analyze the issue description to identify the root cause
+2. Request file contents using the format:
+   REQUEST: <file_path>
+3. After reviewing the files, propose fixes using the format:
+   FILE: <file_path>
+   ```rust
+    <fixed content>
+    ```
 "#,
                 index::build_tree()?,
                 issue_details.title,
@@ -272,33 +267,32 @@ FILE: <filepath>
                     assistant_message_unwarpped.as_str(),
                 );
 
-                info!("Fixes: {:?}", fixes);
-
-                // for fix in fixes {
-                //     for (file_path, content) in fix {
-                //         match tools::write_file_content(&file_path, &content) {
-                //             Ok(_) => {
-                //                 info!("Wrote content to {}", file_path);
-                //                 convo.add_message(Message {
-                //                     role: MessageRole::User,
-                //                     content: format!("Wrote content to {}", file_path),
-                //                 });
-                //             }
-                //             Err(e) => {
-                //                 warn!("Failed to write content to {}: {}", file_path, e);
-                //                 convo.add_message(Message {
-                //                     role: MessageRole::User,
-                //                     content: format!(
-                //                         "Could not write content to {}: {}",
-                //                         file_path, e
-                //                     ),
-                //                 });
-                //             }
-                //         }
-                //     }
-                // }
+                for fix in fixes.clone() {
+                    for (file_path, content) in fix {
+                        match tools::write_file_content(&file_path, &content) {
+                            Ok(_) => {
+                                info!("Wrote content to {}", file_path);
+                                convo.add_message(Message {
+                                    role: MessageRole::User,
+                                    content: format!("Wrote content to {}", file_path),
+                                });
+                            }
+                            Err(e) => {
+                                warn!("Failed to write content to {}: {}", file_path, e);
+                                convo.add_message(Message {
+                                    role: MessageRole::User,
+                                    content: format!(
+                                        "Could not write content to {}: {}",
+                                        file_path, e
+                                    ),
+                                });
+                            }
+                        }
+                    }
+                }
 
                 info!("Assistant message: {:?}", convo);
+                info!("Fixes: {:?}", fixes);
 
                 // - Create pull requests
                 sleep(Duration::from_secs(5));
