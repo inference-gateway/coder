@@ -1,43 +1,53 @@
+use inference_gateway_sdk::GatewayError;
 use thiserror::Error;
+use std::fmt;
 
 #[derive(Error, Debug)]
 pub enum CoderError {
+    // Configuration-related errors
     #[error("Configuration error: {0}")]
     ConfigError(String),
 
-    #[error("Index-related error: {0}")]
+    // Index-related errors
+    #[error("Index error: {0}")]
     IndexError(String),
 
-    #[error("Git error: {0}")]
-    GitError(String),
-
+    // GitHub API errors
     #[error("GitHub API error: {0}")]
     GitHubError(#[from] octocrab::Error),
 
+    // Input/Output errors
     #[error("IO error: {0}")]
     IOError(#[from] std::io::Error),
 
+    // Inference Gateway errors
     #[error("Inference Gateway error: {0}")]
-    InferenceGatewayError(#[from] inference_gateway_sdk::GatewayError),
+    InferenceGateway(#[from] GatewayError),
 
+    // JSON parsing errors
     #[error("JSON parsing error: {0}")]
-    JsonError(#[from] serde_json::Error),
+    Json(#[from] serde_json::Error),
 
+    // YAML parsing errors
     #[error("YAML parsing error: {0}")]
     YamlError(#[from] serde_yaml::Error),
 
-    #[error("File not found: {0}")]
-    FileNotFoundError(String),
+    // Add new error variants for better coverage
+    #[error("Failed to parse configuration: {0}")]
+    ConfigParseError(String),
 
-    #[error("Permission denied: {0}")]
-    PermissionDeniedError(String),
+    #[error("Invalid input parameters: {0}")]
+    CLIError(String),
 
-    #[error("Invalid input: {0}")]
-    InvalidInput(String),
+    #[error("Prompt validation failed: {0}")]
+    PromptValidation(String),
 
-    #[error("Parsing error: {0}")]
-    ParseError(String, #[source] Box<dyn std::error::Error + Send + Sync>),
+    #[error("Unknown error: {0}")]
+    Unknown(String),
+}
 
-    #[error("Unexpected error: {0}")]
-    Unexpected(String),
+impl CoderError {
+    pub fn new_unknown_error(&str) -> Self {
+        Self::Unknown(format!("{0}".into()))
+    }
 }

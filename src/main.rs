@@ -333,8 +333,7 @@ WORKFLOW:
                     info!("Created PR: {}", pr.html_url.unwrap());
                 }
 
-                // - Create pull requests
-                sleep(Duration::from_secs(5));
+                break;
             }
         }
         Commands::Refactor {} => {
