@@ -276,6 +276,35 @@ Respond only with:
                     content: assistant_message.unwrap().trim().to_string(),
                 });
 
+                let fixes =
+                    conversation::Conversation::parse_response_for_fixes(&resp.response.content);
+
+                info!("Fixes: {:?}", fixes);
+
+                for fix in fixes {
+                    for (file_path, content) in fix {
+                        match tools::write_file_content(&file_path, &content) {
+                            Ok(_) => {
+                                info!("Wrote content to {}", file_path);
+                                convo.add_message(Message {
+                                    role: MessageRole::User,
+                                    content: format!("Wrote content to {}", file_path),
+                                });
+                            }
+                            Err(e) => {
+                                warn!("Failed to write content to {}: {}", file_path, e);
+                                convo.add_message(Message {
+                                    role: MessageRole::User,
+                                    content: format!(
+                                        "Could not write content to {}: {}",
+                                        file_path, e
+                                    ),
+                                });
+                            }
+                        }
+                    }
+                }
+
                 info!("Assistant message: {:?}", convo);
 
                 // - Create pull requests

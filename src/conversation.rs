@@ -68,7 +68,7 @@ impl Conversation {
     ///
     /// This function returns a vector of hashmaps where each hashmap contains
     /// the file path and the content of the file that was fixed.
-    pub fn parse_response_for_file_fixes(response: &str) -> Vec<HashMap<String, String>> {
+    pub fn parse_response_for_fixes(response: &str) -> Vec<HashMap<String, String>> {
         let mut fixes = Vec::new();
         let mut current_file = None;
         let mut current_content = String::new();
@@ -76,26 +76,21 @@ impl Conversation {
 
         while let Some(line) = lines.next() {
             if line.starts_with("FILE:") {
-                // If we already have a file being processed, save it
                 if let Some(file) = current_file.take() {
                     let mut fix = HashMap::new();
                     fix.insert(file, current_content.trim().to_string());
                     fixes.push(fix);
                     current_content.clear();
                 }
-                // Start tracking new file
                 current_file = Some(line.trim_start_matches("FILE:").trim().to_string());
             } else if line.starts_with("```") {
-                // Skip the opening/closing code block markers
                 continue;
             } else if let Some(_) = current_file {
-                // Accumulate content for current file
                 current_content.push_str(line);
                 current_content.push('\n');
             }
         }
 
-        // Don't forget to save the last file if exists
         if let Some(file) = current_file {
             let mut fix = HashMap::new();
             fix.insert(file, current_content.trim().to_string());
@@ -158,7 +153,7 @@ fn main() {
 
 ```
 "#;
-        let fixes = Conversation::parse_response_for_file_fixes(response);
+        let fixes = Conversation::parse_response_for_fixes(response);
 
         assert_eq!(fixes.len(), 2);
         assert!(fixes[0].contains_key("src/errors.rs"));
