@@ -7,6 +7,9 @@ pub enum CoderError {
     ConfigError(String),
 
     #[error("Failed to parse integer: {0}")]
+    IndexError(String),
+
+    #[error("Failed to parse integer: {0}")]
     GitHubError(#[from] octocrab::Error),
 
     #[error("IO error occurred: {0}")]
