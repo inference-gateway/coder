@@ -164,11 +164,6 @@ FILE: <filepath>
 4. Each fix must be based on actual file contents
 5. Focus on minimal, targeted changes that address the specific bug
 
-Respond only with:
-1. Your analysis
-2. File content requests
-3. Specific fixes with explanations
-4. don't delete comments
 "#,
                 index::build_tree()?,
                 issue_details.title,

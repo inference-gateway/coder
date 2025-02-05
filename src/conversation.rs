@@ -72,9 +72,9 @@ impl Conversation {
         let mut fixes = Vec::new();
         let mut current_file = None;
         let mut current_content = String::new();
-        let mut lines = response.lines();
+        let mut in_code_block = false;
 
-        while let Some(line) = lines.next() {
+        for line in response.lines() {
             if line.starts_with("FILE:") {
                 if let Some(file) = current_file.take() {
                     let mut fix = HashMap::new();
@@ -83,9 +83,13 @@ impl Conversation {
                     current_content.clear();
                 }
                 current_file = Some(line.trim_start_matches("FILE:").trim().to_string());
-            } else if line.starts_with("```") {
+            } else if line.starts_with("```rust") {
+                in_code_block = true;
                 continue;
-            } else if let Some(_) = current_file {
+            } else if line.starts_with("```") {
+                in_code_block = false;
+                continue;
+            } else if in_code_block && current_file.is_some() {
                 current_content.push_str(line);
                 current_content.push('\n');
             }
@@ -150,8 +154,9 @@ FILE: src/main.rs
 fn main() {
     println!("Hello");
 }
-
 ```
+
+Would you like me to apply these changes?
 "#;
         let fixes = Conversation::parse_response_for_fixes(response);
 
