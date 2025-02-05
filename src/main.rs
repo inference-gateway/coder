@@ -9,6 +9,7 @@ use inference_gateway_sdk::{
 use log::{info, warn};
 use octocrab::Octocrab;
 use serde_yaml::Value;
+use std::process::Command;
 use std::{env, fs, path::Path, thread::sleep, time::Duration};
 
 mod cli;
@@ -291,8 +292,46 @@ WORKFLOW:
                     }
                 }
 
-                info!("Assistant message: {:?}", convo);
-                info!("Fixes: {:?}", fixes);
+                // Create branch and PR if there are fixes
+                if !fixes.is_empty() {
+                    // Create a new branch
+                    let branch_name = format!("fix/issue-{}", issue);
+                    Command::new("git")
+                        .args(["checkout", "-b", &branch_name])
+                        .output()
+                        .map_err(|e| CoderError::GitError(e.to_string()))?;
+
+                    // Commit changes
+                    Command::new("git")
+                        .args(["add", "."])
+                        .output()
+                        .map_err(|e| CoderError::GitError(e.to_string()))?;
+
+                    Command::new("git")
+                        .args(["commit", "-m", &format!("fix: address issue #{}", issue)])
+                        .output()
+                        .map_err(|e| CoderError::GitError(e.to_string()))?;
+
+                    // Push branch
+                    Command::new("git")
+                        .args(["push", "origin", &branch_name])
+                        .output()
+                        .map_err(|e| CoderError::GitError(e.to_string()))?;
+
+                    // Create PR using octocrab
+                    let pr = octocrab
+                        .pulls(git_owner, git_repo)
+                        .create(format!("Fix issue #{}", issue), branch_name, "main")
+                        .body(format!(
+                            "This PR addresses issue #{}. Please review the changes.",
+                            issue
+                        ))
+                        .send()
+                        .await
+                        .map_err(|e| CoderError::GitHubError(e))?;
+
+                    info!("Created PR: {}", pr.html_url.unwrap());
+                }
 
                 // - Create pull requests
                 sleep(Duration::from_secs(5));

@@ -8,6 +8,9 @@ pub enum CoderError {
     #[error("Index-related error: {0}")]
     IndexError(String),
 
+    #[error("Git error: {0}")]
+    GitError(String),
+
     #[error("GitHub API error: {0}")]
     GitHubError(#[from] octocrab::Error),
 
