@@ -332,7 +332,7 @@ WORKFLOW:
                 "The error handling in cli.rs needs improvement. We should add proper error types.";
 
             let prompt = prompt::Prompt::create_initial_prompt(tree, issue_title, issue_body);
-            let system_message = prompt::Prompt::get_system_message();
+            let system_message = "".to_string();
             let model = "deepseek-r1-distill-llama-70b";
             convo.add_message(Message {
                 role: MessageRole::System,

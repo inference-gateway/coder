@@ -1,4 +1,3 @@
-use inference_gateway_sdk::GatewayError;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -6,30 +5,36 @@ pub enum CoderError {
     #[error("Configuration error: {0}")]
     ConfigError(String),
 
-    #[error("Index error: {0}")]
+    #[error("Index-related error: {0}")]
     IndexError(String),
 
     #[error("GitHub API error: {0}")]
     GitHubError(#[from] octocrab::Error),
 
-    #[error("IO error occurred: {0}")]
+    #[error("IO error: {0}")]
     IOError(#[from] std::io::Error),
 
     #[error("Inference Gateway error: {0}")]
-    InferenceGateway(#[from] GatewayError),
+    InferenceGatewayError(#[from] inference_gateway_sdk::GatewayError),
 
-    #[error("Failed to deserialize JSON: {0}")]
-    Json(#[from] serde_json::Error),
+    #[error("JSON parsing error: {0}")]
+    JsonError(#[from] serde_json::Error),
 
-    #[error("YAML error occurred: {0}")]
+    #[error("YAML parsing error: {0}")]
     YamlError(#[from] serde_yaml::Error),
 
-    #[error("String error: {0}")]
-    StringError(String),
+    #[error("File not found: {0}")]
+    FileNotFoundError(String),
 
-    #[error("Invalid URL: {0}")]
-    InvalidUrl(String),
+    #[error("Permission denied: {0}")]
+    PermissionDeniedError(String),
 
-    #[error("Invalid state: {0}")]
-    InvalidState(String),
+    #[error("Invalid input: {0}")]
+    InvalidInput(String),
+
+    #[error("Parsing error: {0}")]
+    ParseError(String, #[source] Box<dyn std::error::Error + Send + Sync>),
+
+    #[error("Unexpected error: {0}")]
+    Unexpected(String),
 }

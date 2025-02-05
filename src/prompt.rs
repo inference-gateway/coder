@@ -50,59 +50,6 @@ impl Prompt {
 
         prompt
     }
-
-    pub fn get_system_message() -> String {
-        format!("You are a software engineer tasked with reviewing and fixing a GitHub issue.")
-    }
-
-    pub fn create_improved_bug_report_suggestion(issue_body: &str, issue_title: &str) -> String {
-        format!(
-            r#"Don't immediately attempt to fix it. First try to understand the issue by asking the following questions:
-
-1. What is the issue about?
-2. What is the expected behavior?
-3. What are the steps to reproduce the issue?
-
-If all the above questions are answered, then you can proceed to fix the issue. If you want to proceed with the fix, answer with the following format:
-
-Issue is decribed correctly, proceeding with the fix.
-
-If not, please improve this GitHub issue while keeping its core meaning:
-
-The Github Issue:
----
-
-**Title**: {}
-**Description**: {:?}
-
-Ask follow-up questions if you need to clarify more details.
-For example you can ask: "What is the issue about?" or "What is the expected behavior?"
-
-In the following format: Question - <your question here>
-
-The revised issue description should be in the following format:
----
-**Title:** <improved title>
-**Description:** <improved description>
-
-## Summary
-<summary of the issue>
-
-## Expected Behavior
-<expected behavior>
-
-## Steps to Reproduce
-<steps to reproduce>
----
-
-Finally, if revised an improved version of the issue, ask the user to confirm the changes by answering with the following format:
-
-Would you like to update the GitHub issue with this improved description? (y/N)
-
-"#,
-            issue_title, issue_body
-        )
-    }
 }
 
 #[cfg(test)]
