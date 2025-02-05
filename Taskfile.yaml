@@ -11,6 +11,11 @@ tasks:
     cmds:
       - cargo run -- {{.CLI_ARGS}}
 
+  analyse:
+    desc: Analyse the project
+    cmds:
+      - cargo clippy
+
   gateway:
     desc: Run the project as a server
     cmds:
