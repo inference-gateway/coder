@@ -3,13 +3,13 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum CoderError {
-    #[error("Failed to parse integer: {0}")]
+    #[error("Configuration error: {0}")]
     ConfigError(String),
 
-    #[error("Failed to parse integer: {0}")]
+    #[error("Index error: {0}")]
     IndexError(String),
 
-    #[error("Failed to parse integer: {0}")]
+    #[error("GitHub API error: {0}")]
     GitHubError(#[from] octocrab::Error),
 
     #[error("IO error occurred: {0}")]
@@ -23,4 +23,13 @@ pub enum CoderError {
 
     #[error("YAML error occurred: {0}")]
     YamlError(#[from] serde_yaml::Error),
+
+    #[error("String error: {0}")]
+    StringError(String),
+
+    #[error("Invalid URL: {0}")]
+    InvalidUrl(String),
+
+    #[error("Invalid state: {0}")]
+    InvalidState(String),
 }

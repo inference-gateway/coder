@@ -171,7 +171,8 @@ INSTRUCTIONS:
 Respond only with:
 1. Your analysis
 2. File content requests - request for specific file content using `REQUEST: <file path>`
-3. Specific fixes with explanations
+3. Specific fixes with explanations - write it in the following format `FILE: <filepath>`, `FIX: <fixed file content>`
+4. don't delete comments
 "#,
                 index::build_tree()?,
                 issue_details.title,
@@ -213,9 +214,15 @@ Respond only with:
                     )
                     .await?;
 
+                let assistant_message = utils::strip_thinking(&resp.response.content);
+                if assistant_message.is_none() {
+                    warn!("Assistant message is empty. Exiting...");
+                    break;
+                }
+
                 convo.add_message(Message {
                     role: MessageRole::Assistant,
-                    content: resp.response.content.clone(),
+                    content: assistant_message.unwrap().trim().to_string(),
                 });
 
                 let file_requests = conversation::Conversation::parse_response_for_requested_files(
@@ -258,33 +265,19 @@ Respond only with:
                     )
                     .await?;
 
+                let assistant_message = utils::strip_thinking(&resp.response.content);
+                if assistant_message.is_none() {
+                    warn!("Assistant message is empty. Exiting...");
+                    break;
+                }
+
                 convo.add_message(Message {
                     role: MessageRole::Assistant,
-                    content: resp.response.content.clone(),
+                    content: assistant_message.unwrap().trim().to_string(),
                 });
 
                 info!("Assistant message: {:?}", convo);
 
-                // Parse file requests
-                // **File Content Requests:**
-                // 1. `src/errors.rs` - To check the current definition of `CoderError`
-                // 2. `src/utils.rs` - To identify error cases that need to be covered
-                //
-
-                // let resp = client.generate_content(
-                //     Provider::Groq,
-                //     "deepseek-r1-distill-llama-70b",
-                //     convo.clone().try_into()?,
-                // );
-
-                // let assistant_message = utils::strip_thinking(&resp.await?.response.content);
-
-                // if assistant_message.is_none() {
-                //     warn!("Assistant message is empty. Exiting...");
-                //     break;
-                // }
-
-                // - Generate fixes using inference-gateway-sdk
                 // - Create pull requests
                 sleep(Duration::from_secs(5));
             }
