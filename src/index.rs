@@ -58,11 +58,7 @@ pub fn build_content() -> io::Result<String> {
 
             // Read file content
             if let Ok(file_content) = fs::read_to_string(path) {
-                // Convert path to key format (replace '/' with '_')
-                let key = path
-                    .to_string_lossy()
-                    .trim_start_matches("./")
-                    .replace('/', "_");
+                let key = path.to_string_lossy().trim_start_matches("./").to_string();
 
                 // Write file entry
                 content.push_str(&format!("  {}: |\n", key));
