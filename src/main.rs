@@ -270,14 +270,16 @@ Respond only with:
                     warn!("Assistant message is empty. Exiting...");
                     break;
                 }
+                let assistant_message_unwarpped = assistant_message.unwrap().trim().to_string();
 
                 convo.add_message(Message {
                     role: MessageRole::Assistant,
-                    content: assistant_message.unwrap().trim().to_string(),
+                    content: assistant_message_unwarpped.clone(),
                 });
 
-                let fixes =
-                    conversation::Conversation::parse_response_for_fixes(&resp.response.content);
+                let fixes = conversation::Conversation::parse_response_for_fixes(
+                    assistant_message_unwarpped.as_str(),
+                );
 
                 info!("Fixes: {:?}", fixes);
 
