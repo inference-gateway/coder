@@ -1,6 +1,6 @@
 use inference_gateway_sdk::{Message, Provider};
 use serde::{Deserialize, Serialize};
-use std::{fmt, time::SystemTime};
+use std::{collections::HashMap, fmt, time::SystemTime};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Conversation {
@@ -51,6 +51,59 @@ impl Conversation {
             .map(|line| line.trim_start_matches("REQUEST:").trim().to_string())
             .collect()
     }
+
+    /// Parse the response for any file fixes that were requested.
+    /// This is a simple implementation that assumes the response is a string
+    /// in the following format:
+    /// ```plaintext
+    /// ```rust
+    /// FILE: src/errors.rs
+    /// ```
+    /// ```rust
+    /// use inference_gateway_sdk::GatewayError;
+    /// use thiserror::Error;
+    ///
+    /// ```
+    /// ```
+    ///
+    /// This function returns a vector of hashmaps where each hashmap contains
+    /// the file path and the content of the file that was fixed.
+    pub fn parse_response_for_file_fixes(response: &str) -> Vec<HashMap<String, String>> {
+        let mut fixes = Vec::new();
+        let mut current_file = None;
+        let mut current_content = String::new();
+        let mut lines = response.lines();
+
+        while let Some(line) = lines.next() {
+            if line.starts_with("FILE:") {
+                // If we already have a file being processed, save it
+                if let Some(file) = current_file.take() {
+                    let mut fix = HashMap::new();
+                    fix.insert(file, current_content.trim().to_string());
+                    fixes.push(fix);
+                    current_content.clear();
+                }
+                // Start tracking new file
+                current_file = Some(line.trim_start_matches("FILE:").trim().to_string());
+            } else if line.starts_with("```") {
+                // Skip the opening/closing code block markers
+                continue;
+            } else if let Some(_) = current_file {
+                // Accumulate content for current file
+                current_content.push_str(line);
+                current_content.push('\n');
+            }
+        }
+
+        // Don't forget to save the last file if exists
+        if let Some(file) = current_file {
+            let mut fix = HashMap::new();
+            fix.insert(file, current_content.trim().to_string());
+            fixes.push(fix);
+        }
+
+        fixes
+    }
 }
 
 impl TryInto<Vec<Message>> for Conversation {
@@ -81,5 +134,43 @@ impl fmt::Debug for Conversation {
         writeln!(f, "    files_reviewed: {:?}", self.metadata.files_reviewed)?;
         writeln!(f, "  }}")?;
         write!(f, "}}")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_response_for_file_fixes() {
+        let response = r#"
+FILE: src/errors.rs
+```rust
+use inference_gateway_sdk::GatewayError;
+use thiserror::Error;
+
+```
+FILE: src/main.rs
+```rust
+fn main() {
+    println!("Hello");
+}
+
+```
+"#;
+        let fixes = Conversation::parse_response_for_file_fixes(response);
+
+        assert_eq!(fixes.len(), 2);
+        assert!(fixes[0].contains_key("src/errors.rs"));
+        assert!(fixes[1].contains_key("src/main.rs"));
+
+        assert_eq!(
+            fixes[0].get("src/errors.rs").unwrap(),
+            "use inference_gateway_sdk::GatewayError;\nuse thiserror::Error;"
+        );
+        assert_eq!(
+            fixes[1].get("src/main.rs").unwrap(),
+            "fn main() {\n    println!(\"Hello\");\n}"
+        );
     }
 }
