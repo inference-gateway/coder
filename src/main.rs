@@ -138,37 +138,42 @@ async fn main() -> Result<(), CoderError> {
 
             let system_prompt = format!(
                 r#"You are a senior software engineer tasked with fixing bugs. You have the following tools available:
-            
-                1. get_file_content(path: &str) -> Result<String, Error>
-                2. write_file_content(path: &str, content: &str) -> Result<(), Error>
-            
-                CONTEXT:
-                - Issue Title: {}
-                - Issue Description: {}
-                - Repository: {}/{}
-                {}
-            
-                INSTRUCTIONS:
-                1. First analyze the issue description and determine the root cause
-                2. Request relevant files using get_file_content
-                3. Propose specific fixes in the following format:
-                   ```
-                   FILE: <filepath>
-                   ```original
-                   <original code block>
-                   ```
-                   ```fix
-                   <fixed code block>
-                   ```
-                   EXPLANATION: <why this fixes the issue>
-                4. Each fix must be based on actual file contents
-                5. Focus on minimal, targeted changes that address the specific bug
-            
-                Respond only with:
-                1. Your analysis
-                2. File content requests
-                3. Specific fixes with explanations
-                "#,
+
+1. get_file_content(path: &str) -> Result<String, Error>
+2. write_file_content(path: &str, content: &str) -> Result<(), Error>
+
+PROJECT STRUCTURE:
+{}
+
+CONTEXT:
+- Issue Title: {}
+- Issue Description: {}
+- Repository: {}/{}
+
+{}
+
+INSTRUCTIONS:
+1. First analyze the issue description and determine the root cause
+2. Request relevant files using get_file_content
+3. Propose specific fixes in the following format:
+    ```
+    FILE: <filepath>
+    ```original
+    <original code block>
+    ```
+    ```fix
+    <fixed code block>
+    ```
+    EXPLANATION: <why this fixes the issue>
+4. Each fix must be based on actual file contents
+5. Focus on minimal, targeted changes that address the specific bug
+
+Respond only with:
+1. Your analysis
+2. File content requests
+3. Specific fixes with explanations
+"#,
+                index::build_tree()?,
                 issue_details.title,
                 issue_details.body.unwrap(),
                 git_owner,
@@ -195,18 +200,18 @@ async fn main() -> Result<(), CoderError> {
 
                 info!("Generating fix proposal...");
 
-                let resp = client.generate_content(
-                    Provider::Groq,
-                    "deepseek-r1-distill-llama-70b",
-                    convo.clone().try_into()?,
-                );
+                // let resp = client.generate_content(
+                //     Provider::Groq,
+                //     "deepseek-r1-distill-llama-70b",
+                //     convo.clone().try_into()?,
+                // );
 
-                let assistant_message = utils::strip_thinking(&resp.await?.response.content);
+                // let assistant_message = utils::strip_thinking(&resp.await?.response.content);
 
-                if assistant_message.is_none() {
-                    warn!("Assistant message is empty. Exiting...");
-                    break;
-                }
+                // if assistant_message.is_none() {
+                //     warn!("Assistant message is empty. Exiting...");
+                //     break;
+                // }
 
                 info!("Assistant message: {:?}", convo);
 
