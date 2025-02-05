@@ -170,7 +170,7 @@ INSTRUCTIONS:
 
 Respond only with:
 1. Your analysis
-2. File content requests
+2. File content requests - request for specific file content using `REQUEST: <file path>`
 3. Specific fixes with explanations
 "#,
                 index::build_tree()?,
@@ -199,6 +199,77 @@ Respond only with:
                 }
 
                 info!("Generating fix proposal...");
+
+                convo.add_message(Message {
+                    role: MessageRole::User,
+                    content: "I need help fixing this issue".to_string(),
+                });
+
+                let resp = client
+                    .generate_content(
+                        Provider::Groq,
+                        "deepseek-r1-distill-llama-70b",
+                        convo.clone().try_into()?,
+                    )
+                    .await?;
+
+                convo.add_message(Message {
+                    role: MessageRole::Assistant,
+                    content: resp.response.content.clone(),
+                });
+
+                let file_requests = conversation::Conversation::parse_response_for_requested_files(
+                    &resp.response.content,
+                );
+
+                info!("File requests: {:?}", file_requests);
+
+                for file_path in file_requests {
+                    match tools::get_file_content(&file_path) {
+                        Ok(content) => {
+                            info!("Retrieved content for {}", file_path);
+                            convo.add_reviewed_file(file_path.clone());
+                            convo.add_message(Message {
+                                role: MessageRole::User,
+                                content: format!(
+                                    "Content of {}:\n```rust\n{}\n```",
+                                    file_path, content
+                                ),
+                            });
+                        }
+                        Err(e) => {
+                            warn!("Failed to retrieve content for {}: {}", file_path, e);
+                            convo.add_message(Message {
+                                role: MessageRole::User,
+                                content: format!(
+                                    "Could not retrieve content for {}: {}",
+                                    file_path, e
+                                ),
+                            });
+                        }
+                    }
+                }
+
+                let resp = client
+                    .generate_content(
+                        Provider::Groq,
+                        "deepseek-r1-distill-llama-70b",
+                        convo.clone().try_into()?,
+                    )
+                    .await?;
+
+                convo.add_message(Message {
+                    role: MessageRole::Assistant,
+                    content: resp.response.content.clone(),
+                });
+
+                info!("Assistant message: {:?}", convo);
+
+                // Parse file requests
+                // **File Content Requests:**
+                // 1. `src/errors.rs` - To check the current definition of `CoderError`
+                // 2. `src/utils.rs` - To identify error cases that need to be covered
+                //
 
                 // let resp = client.generate_content(
                 //     Provider::Groq,
