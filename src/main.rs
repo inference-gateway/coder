@@ -127,25 +127,62 @@ async fn main() -> Result<(), CoderError> {
             info!("Found issue: {}", issue_details.title);
             // info!("Description: {:?}", issue_details.body);
 
-            let issue_title = &issue_details.title;
-            let issue_body = issue_details.body.clone();
-            if issue_body.is_none() {
-                warn!("Issue body is empty. Exiting...");
-                return Ok(());
-            }
-
             let client = InferenceGatewayClient::new(
                 &config["api"]["endpoint"].as_str().unwrap_or_default(),
             );
 
-            let mut improve_convo = conversation::Conversation::new(
+            let mut convo = conversation::Conversation::new(
                 "deepseek-r1-distill-llama-70b".to_string(),
                 Provider::Groq,
             );
 
-            improve_convo.add_message(Message {
+            let system_prompt = format!(
+                r#"You are a senior software engineer tasked with fixing bugs. You have the following tools available:
+            
+                1. get_file_content(path: &str) -> Result<String, Error>
+                2. write_file_content(path: &str, content: &str) -> Result<(), Error>
+            
+                CONTEXT:
+                - Issue Title: {}
+                - Issue Description: {}
+                - Repository: {}/{}
+                {}
+            
+                INSTRUCTIONS:
+                1. First analyze the issue description and determine the root cause
+                2. Request relevant files using get_file_content
+                3. Propose specific fixes in the following format:
+                   ```
+                   FILE: <filepath>
+                   ```original
+                   <original code block>
+                   ```
+                   ```fix
+                   <fixed code block>
+                   ```
+                   EXPLANATION: <why this fixes the issue>
+                4. Each fix must be based on actual file contents
+                5. Focus on minimal, targeted changes that address the specific bug
+            
+                Respond only with:
+                1. Your analysis
+                2. File content requests
+                3. Specific fixes with explanations
+                "#,
+                issue_details.title,
+                issue_details.body.unwrap(),
+                git_owner,
+                git_repo,
+                if let Some(instr) = &further_instruction {
+                    format!("Additional Instructions: {}", instr)
+                } else {
+                    String::new()
+                }
+            );
+
+            convo.add_message(Message {
                 role: MessageRole::System,
-                content: "You are a software engineer tasked to fix a bug ticket.".to_string(),
+                content: system_prompt,
             });
             let timeout = Duration::from_secs(300);
             info!("Starting AI Coder agent...");
@@ -156,9 +193,22 @@ async fn main() -> Result<(), CoderError> {
                     break;
                 }
 
-                let issue_body_unwrapped = issue_body.as_deref().unwrap();
+                info!("Generating fix proposal...");
 
-                info!("Issue is described correctly. Proceeding with the fix.");
+                let resp = client.generate_content(
+                    Provider::Groq,
+                    "deepseek-r1-distill-llama-70b",
+                    convo.clone().try_into()?,
+                );
+
+                let assistant_message = utils::strip_thinking(&resp.await?.response.content);
+
+                if assistant_message.is_none() {
+                    warn!("Assistant message is empty. Exiting...");
+                    break;
+                }
+
+                info!("Assistant message: {:?}", convo);
 
                 // - Generate fixes using inference-gateway-sdk
                 // - Create pull requests
