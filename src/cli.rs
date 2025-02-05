@@ -10,6 +10,13 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
+    /// Generate shell completions
+    Completions {
+        /// The shell to generate completions for
+        #[arg(value_enum)]
+        shell: clap_complete::Shell,
+    },
+
     /// Init the AI Coder agent.
     ///
     /// Uploads the relevant files(those which are not in .gitignore) as a collection to Open-WebUI via the API.

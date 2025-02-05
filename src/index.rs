@@ -45,8 +45,6 @@ pub fn build_tree() -> io::Result<String> {
 
 pub fn build_content() -> io::Result<String> {
     let mut content = String::from("content:\n");
-    let mut current_dir = String::new();
-
     let walker = WalkBuilder::new(".").hidden(true).git_ignore(true).build();
 
     for result in walker {
@@ -58,36 +56,19 @@ pub fn build_content() -> io::Result<String> {
 
             let path = entry.path();
 
-            // Get directory structure
-            if let Some(parent) = path.parent() {
-                let dir_str = parent
-                    .to_string_lossy()
-                    .trim_start_matches("./")
-                    .to_string();
-                if dir_str != "." && dir_str != current_dir {
-                    current_dir = dir_str;
-                    content.push_str(&format!("  {}:\n", current_dir));
-                }
-            }
-
             // Read file content
             if let Ok(file_content) = fs::read_to_string(path) {
-                let file_name = path.file_name().unwrap_or_default().to_string_lossy();
+                // Convert path to key format (replace '/' with '_')
+                let key = path.to_string_lossy()
+                    .trim_start_matches("./")
+                    .replace('/', "_");
 
-                // If file is in root directory
-                if path.parent().map_or(true, |p| p == Path::new(".")) {
-                    content.push_str(&format!("  {}: |\n", file_name));
-                } else {
-                    content.push_str(&format!("    {}: |\n", file_name));
-                }
+                // Write file entry
+                content.push_str(&format!("  {}: |\n", key));
 
                 // Add indented content
                 for line in file_content.lines() {
-                    if path.parent().map_or(true, |p| p == Path::new(".")) {
-                        content.push_str(&format!("    {}\n", line));
-                    } else {
-                        content.push_str(&format!("      {}\n", line));
-                    }
+                    content.push_str(&format!("    {}\n", line));
                 }
             }
         }

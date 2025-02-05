@@ -10,7 +10,7 @@ pub enum CoderError {
     GitHubError(#[from] octocrab::Error),
 
     #[error("IO error occurred: {0}")]
-    Io(#[from] std::io::Error),
+    IOError(#[from] std::io::Error),
 
     #[error("Inference Gateway error: {0}")]
     InferenceGateway(#[from] GatewayError),
@@ -19,5 +19,5 @@ pub enum CoderError {
     Json(#[from] serde_json::Error),
 
     #[error("YAML error occurred: {0}")]
-    Yaml(#[from] serde_yaml::Error),
+    YamlError(#[from] serde_yaml::Error),
 }

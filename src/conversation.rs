@@ -5,7 +5,6 @@ use std::{fmt, time::SystemTime};
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Conversation {
     id: String,
-    github_issue_id: Option<String>,
     created_at: SystemTime,
     messages: Vec<Message>,
     metadata: ConversationMetadata,
@@ -20,10 +19,9 @@ struct ConversationMetadata {
 }
 
 impl Conversation {
-    pub fn new(github_issue_id: Option<String>, model: String, provider: Provider) -> Self {
+    pub fn new(model: String, provider: Provider) -> Self {
         Self {
             id: uuid::Uuid::new_v4().to_string(),
-            github_issue_id,
             created_at: SystemTime::now(),
             messages: Vec::new(),
             metadata: ConversationMetadata {
@@ -67,11 +65,6 @@ impl fmt::Debug for Conversation {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "Conversation {{")?;
         writeln!(f, "  id: {:?}", self.id)?;
-        writeln!(
-            f,
-            "  issue: {:?}",
-            self.github_issue_id.as_deref().unwrap_or("None")
-        )?;
         writeln!(f, "  created: {:?}", self.created_at)?;
         writeln!(f, "  messages: [")?;
         for msg in &self.messages {

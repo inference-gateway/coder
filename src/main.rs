@@ -1,6 +1,7 @@
 use crate::cli::{Cli, Commands};
 use crate::errors::CoderError;
-use clap::Parser;
+use clap::{CommandFactory, Parser};
+use clap_complete::{generate, Shell};
 use config::DEFAULT_CONFIG_TEMPLATE;
 use inference_gateway_sdk::{
     InferenceGatewayAPI, InferenceGatewayClient, Message, MessageRole, Provider,
@@ -8,6 +9,7 @@ use inference_gateway_sdk::{
 use log::{info, warn};
 use octocrab::Octocrab;
 use serde_yaml::Value;
+use std::any::Any;
 use std::{env, fs, path::Path, thread::sleep, time::Duration};
 
 mod cli;
@@ -17,6 +19,7 @@ mod errors;
 mod index;
 mod prompt;
 mod utils;
+mod tools;
 
 #[tokio::main]
 async fn main() -> Result<(), CoderError> {
@@ -27,6 +30,10 @@ async fn main() -> Result<(), CoderError> {
 
     let cli = Cli::parse();
     match cli.command {
+        Commands::Completions { shell } => {
+            generate(shell, &mut Cli::command(), "coder", &mut std::io::stdout());
+            return Ok(());
+        }
         Commands::Init {} => {
             info!("Initializing AI Coder agent...");
             let coder_dir = Path::new(".coder");
@@ -108,10 +115,39 @@ async fn main() -> Result<(), CoderError> {
                 .await
                 .map_err(|e| CoderError::GitHubError(e))?;
 
-            info!("Found issue: {}", issue_details.title);
-            info!("Description: {:?}", issue_details.body);
 
-            // TODO - Parse the ticket content and loop in the LLM
+            let is_bug = issue_details.labels
+                .iter()
+                .any(|label| label.name.to_lowercase() == "bug");
+
+            if !is_bug {
+                warn!("Issue #{} is not labeled as a bug. This command is intended for bug fixes only.", issue);
+                return Ok(());
+            }
+
+            info!("Found issue: {}", issue_details.title);
+            // info!("Description: {:?}", issue_details.body);
+
+            let issue_title = &issue_details.title;
+            let issue_body = issue_details.body.clone();
+            if issue_body.is_none() {
+                warn!("Issue body is empty. Exiting...");
+                return Ok(());
+            }
+
+            let client = InferenceGatewayClient::new(
+                &config["api"]["endpoint"].as_str().unwrap_or_default(),
+            );
+
+            let mut improve_convo = conversation::Conversation::new(
+                "deepseek-r1-distill-llama-70b".to_string(),
+                Provider::Groq,
+            );
+
+            improve_convo.add_message(Message {
+                role: MessageRole::System,
+                content: "You are a software engineer tasked to fix a bug ticket.".to_string(),
+            });
             let timeout = Duration::from_secs(300);
             info!("Starting AI Coder agent...");
             info!("Press Ctrl+C to stop the agent.");
@@ -120,6 +156,10 @@ async fn main() -> Result<(), CoderError> {
                     warn!("Timeout reached. Exiting...");
                     break;
                 }
+
+                let issue_body_unwrapped = issue_body.as_deref().unwrap();
+
+                info!("Issue is described correctly. Proceeding with the fix.");
 
                 // - Generate fixes using inference-gateway-sdk
                 // - Create pull requests
@@ -143,7 +183,6 @@ async fn main() -> Result<(), CoderError> {
 
             info!("Creating an in memory database.");
             let mut convo = conversation::Conversation::new(
-                Some("".to_string()),
                 "deepseek-r1-distill-llama-70b".to_string(),
                 Provider::Groq,
             );
