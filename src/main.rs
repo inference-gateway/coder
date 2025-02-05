@@ -284,8 +284,6 @@ Respond only with:
                 //     break;
                 // }
 
-                info!("Assistant message: {:?}", convo);
-
                 // - Generate fixes using inference-gateway-sdk
                 // - Create pull requests
                 sleep(Duration::from_secs(5));

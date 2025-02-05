@@ -18,7 +18,6 @@ pub fn build_tree() -> io::Result<String> {
             let path = entry.path();
             let name = path.file_name().unwrap_or_default().to_string_lossy();
 
-            // Add the correct prefix for the tree structure
             let prefix = if depth > 0 {
                 let mut p = String::new();
                 for _ in 1..depth {
