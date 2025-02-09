@@ -118,12 +118,8 @@ WORKSPACE INFO:
 
 WORKFLOW:
 1. Pull the issue from GitHub
-2. Analyze the issue description to identify the root cause - don't jump to conclusions before reviewing the files
+2. Think about the issue through - don't jump to conclusions before reading the necessary files and reviewing them.
 3. Review the code by reading the file content using the provided tool get_file_content
-4. Fix the issue by adjusting the code using the provided tool write_file_content
-4. Submit the fix as a pull request to the repository
-5. Wait for the pull request to be reviewed and merged
-6. If there is a new comment on the pull request, analyze the comment and provide a response
 
 FURTHER INSTRUCTIONS:
 {}
