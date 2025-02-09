@@ -320,6 +320,11 @@ WORKFLOW:
                                     ),
                                     tool_call_id: Some(tool_call_response.id),
                                 });
+                                convo.add_message(Message {
+                                    role: MessageRole::User,
+                                    content: "Are there any other files need modifications? if not, let's proceed to creating a pull request".to_string(),
+                                    tool_call_id: None,
+                                });
                             }
                             tools::Tool::GithubCreatePullRequest => {
                                 info!("Creating pull request...");
