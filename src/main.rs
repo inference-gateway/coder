@@ -221,7 +221,10 @@ WORKFLOW:
                                     })?;
                                 let args: tools::GithubPullIssueArgs =
                                     serde_json::from_str(function_args)?;
-                                info!("Pulling issue #{:?} from GitHub...", args.issue);
+                                info!(
+                                    "Pulling issue #{:?} from GitHub {}/{}...",
+                                    args.issue, git_owner, git_repo
+                                );
                                 let github_issue =
                                     tools::pull_github_issue(args.issue, git_owner, git_repo)
                                         .await?;
@@ -317,121 +320,7 @@ WORKFLOW:
                 sleep(Duration::from_secs(5));
             }
         }
-        Commands::Refactor {} => {
-            info!("Reading the configurations...");
-            let coder_dir = Path::new(".coder");
-            let config_path = coder_dir.join("config.yaml");
-            let config_content = fs::read_to_string(config_path)?;
-            let config: Value = serde_yaml::from_str(&config_content)?;
-
-            let git_owner = config["github"]["owner"].as_str().unwrap_or("");
-            let git_repo = config["github"]["repo"].as_str().unwrap_or("");
-
-            info!(
-                "Connecting to GitHub repository: {}/{}",
-                git_owner, git_repo
-            );
-
-            info!("Creating an in memory database.");
-            let mut convo = conversation::Conversation::new(
-                "deepseek-r1-distill-llama-70b".to_string(),
-                Provider::Groq,
-            );
-
-            // Read the tree structure from index.yaml
-            let index_path = Path::new(".coder").join("index.yaml");
-            let index_content = fs::read_to_string(index_path)?;
-            let index: Value = serde_yaml::from_str(&index_content)?;
-            // Get the tree structure
-            let tree = index["tree"].as_str().unwrap_or("");
-
-            // TODO: Replace with actual GitHub issue fetching
-            let issue_title = "Fix error handling in cli.rs";
-            let issue_body =
-                "The error handling in cli.rs needs improvement. We should add proper error types.";
-
-            let prompt = prompt::Prompt::create_initial_prompt(tree, issue_title, issue_body);
-            let system_message = "".to_string();
-            let model = "deepseek-r1-distill-llama-70b";
-            convo.add_message(Message {
-                role: MessageRole::System,
-                content: system_message,
-                tool_call_id: None,
-            });
-            convo.add_message(Message {
-                role: MessageRole::User,
-                content: prompt,
-                tool_call_id: None,
-            });
-
-            info!("Intializing the inference gateway client.");
-            let client = InferenceGatewayClient::new("http://localhost:8080");
-
-            info!("Starting AI Coder agent...");
-            info!("Press Ctrl+C to stop the agent.");
-            loop {
-                // let resp = client
-                //     .generate_content(Provider::Groq, model, convo.clone().try_into()?, None)
-                //     .await?;
-                // let assistant_message = utils::strip_thinking(&resp.response.content);
-                // if assistant_message.is_none() {
-                //     info!("Assistant message is empty. Exiting...");
-                //     break;
-                // }
-                // let unwrapped_message = assistant_message.unwrap().to_string();
-                // let assistant_message = unwrapped_message.trim();
-
-                // let files_requests = conversation::Conversation::parse_response_for_requested_files(
-                //     assistant_message,
-                // );
-                // if files_requests.is_empty() {
-                //     warn!("No files requested. Exiting...");
-                //     // TODO - think about retry logic
-                //     break;
-                // }
-
-                // convo.add_message(Message {
-                //     role: MessageRole::Assistant,
-                //     content: assistant_message.trim().to_string(),
-                //     tool_call_id: None,
-                // });
-
-                // let contents = index::extract_file_contents(&index_content);
-                // let review_prompt =
-                //     prompt::Prompt::create_review_prompt(&files_requests, &contents);
-
-                // convo.add_message(Message {
-                //     role: MessageRole::User,
-                //     content: review_prompt.trim().to_string(),
-                //     tool_call_id: None,
-                // });
-
-                // let resp = client
-                //     .generate_content(Provider::Groq, model, convo.clone().try_into()?, None)
-                //     .await?;
-                // let assistant_message = utils::strip_thinking(&resp.response.content);
-                // if assistant_message.is_none() {
-                //     warn!("Assistant message is empty. Exiting...");
-                //     break;
-                // }
-
-                // convo.add_message(Message {
-                //     role: MessageRole::Assistant,
-                //     content: assistant_message.unwrap().trim().to_string(),
-                //     tool_call_id: None,
-                // });
-
-                // info!("{:?}", convo);
-
-                // - Pull issues from GitHub
-                // - Generate fixes using inference-gateway-sdk
-                // - Create pull requests
-
-                // sleep(Duration::from_secs(5));
-
-                sleep(Duration::from_secs(5));
-            }
-        }
+        Commands::Refactor {} => {}
     }
 
     Ok(())
