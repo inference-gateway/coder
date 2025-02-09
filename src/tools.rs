@@ -13,6 +13,11 @@ pub struct GithubPullIssueArgs {
     pub issue: u64,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GetFileContentArgs {
+    pub path: String,
+}
+
 #[derive(Debug, Clone)]
 pub enum Tool {
     GithubPullIssue,

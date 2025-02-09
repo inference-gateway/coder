@@ -254,14 +254,19 @@ WORKFLOW:
                                 });
                             }
                             tools::Tool::GetFileContent => {
-                                let path = function_arguments["path"]
-                                    .as_str()
-                                    .ok_or(CoderError::ToolError("Path not found".to_string()))?;
-                                info!("Reading content from file: {}", path);
-                                let content = tools::get_file_content(path)?;
+                                let function_args =
+                                    function_arguments.as_str().ok_or_else(|| {
+                                        CoderError::MissingArguments(
+                                            "Function arguments not provided".to_string(),
+                                        )
+                                    })?;
+                                let args: tools::GetFileContentArgs =
+                                    serde_json::from_str(function_args)?;
+                                info!("Reading content from file: {}", args.path);
+                                let content = tools::get_file_content(&args.path)?;
                                 convo.add_message(Message {
                                     role: MessageRole::Tool,
-                                    content: format!("Reading content from file: {}", path),
+                                    content: format!("Reading content from file: {}", args.path),
                                     tool_call_id: Some(tool_call_response.id.clone()),
                                 });
                                 convo.add_message(Message {
