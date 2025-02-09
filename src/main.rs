@@ -253,16 +253,18 @@ WORKFLOW:
                                 let github_issue = tools::pull_github_issue(args.issue).await?;
                                 info!("Found issue: {}", github_issue.title);
                                 info!("Description: {:?}", github_issue.body);
-                                convo.add_message(Message {
-                                    role: MessageRole::Tool,
-                                    content: format!("Found issue: {}", github_issue.title),
-                                    tool_call_id: Some(tool_call_response.id.clone()),
-                                });
+                                // convo.add_message(Message {
+                                //     role: MessageRole::Tool,
+                                //     content: format!("Found issue: {}", github_issue.title),
+                                //     tool_call_id: Some(tool_call_response.id.clone()),
+                                // });
                                 convo.add_message(Message {
                                     role: MessageRole::Tool,
                                     content: format!("Description: {:?}", github_issue.body),
                                     tool_call_id: Some(tool_call_response.id),
                                 });
+
+                                info!("Convo: {:?}", convo);
                             }
                             tools::Tool::GetFileContent => {
                                 let path = function_arguments["path"]
@@ -393,58 +395,58 @@ WORKFLOW:
             info!("Starting AI Coder agent...");
             info!("Press Ctrl+C to stop the agent.");
             loop {
-                let resp = client
-                    .generate_content(Provider::Groq, model, convo.clone().try_into()?, None)
-                    .await?;
-                let assistant_message = utils::strip_thinking(&resp.response.content);
-                if assistant_message.is_none() {
-                    info!("Assistant message is empty. Exiting...");
-                    break;
-                }
-                let unwrapped_message = assistant_message.unwrap().to_string();
-                let assistant_message = unwrapped_message.trim();
+                // let resp = client
+                //     .generate_content(Provider::Groq, model, convo.clone().try_into()?, None)
+                //     .await?;
+                // let assistant_message = utils::strip_thinking(&resp.response.content);
+                // if assistant_message.is_none() {
+                //     info!("Assistant message is empty. Exiting...");
+                //     break;
+                // }
+                // let unwrapped_message = assistant_message.unwrap().to_string();
+                // let assistant_message = unwrapped_message.trim();
 
-                let files_requests = conversation::Conversation::parse_response_for_requested_files(
-                    assistant_message,
-                );
-                if files_requests.is_empty() {
-                    warn!("No files requested. Exiting...");
-                    // TODO - think about retry logic
-                    break;
-                }
+                // let files_requests = conversation::Conversation::parse_response_for_requested_files(
+                //     assistant_message,
+                // );
+                // if files_requests.is_empty() {
+                //     warn!("No files requested. Exiting...");
+                //     // TODO - think about retry logic
+                //     break;
+                // }
 
-                convo.add_message(Message {
-                    role: MessageRole::Assistant,
-                    content: assistant_message.trim().to_string(),
-                    tool_call_id: None,
-                });
+                // convo.add_message(Message {
+                //     role: MessageRole::Assistant,
+                //     content: assistant_message.trim().to_string(),
+                //     tool_call_id: None,
+                // });
 
-                let contents = index::extract_file_contents(&index_content);
-                let review_prompt =
-                    prompt::Prompt::create_review_prompt(&files_requests, &contents);
+                // let contents = index::extract_file_contents(&index_content);
+                // let review_prompt =
+                //     prompt::Prompt::create_review_prompt(&files_requests, &contents);
 
-                convo.add_message(Message {
-                    role: MessageRole::User,
-                    content: review_prompt.trim().to_string(),
-                    tool_call_id: None,
-                });
+                // convo.add_message(Message {
+                //     role: MessageRole::User,
+                //     content: review_prompt.trim().to_string(),
+                //     tool_call_id: None,
+                // });
 
-                let resp = client
-                    .generate_content(Provider::Groq, model, convo.clone().try_into()?, None)
-                    .await?;
-                let assistant_message = utils::strip_thinking(&resp.response.content);
-                if assistant_message.is_none() {
-                    warn!("Assistant message is empty. Exiting...");
-                    break;
-                }
+                // let resp = client
+                //     .generate_content(Provider::Groq, model, convo.clone().try_into()?, None)
+                //     .await?;
+                // let assistant_message = utils::strip_thinking(&resp.response.content);
+                // if assistant_message.is_none() {
+                //     warn!("Assistant message is empty. Exiting...");
+                //     break;
+                // }
 
-                convo.add_message(Message {
-                    role: MessageRole::Assistant,
-                    content: assistant_message.unwrap().trim().to_string(),
-                    tool_call_id: None,
-                });
+                // convo.add_message(Message {
+                //     role: MessageRole::Assistant,
+                //     content: assistant_message.unwrap().trim().to_string(),
+                //     tool_call_id: None,
+                // });
 
-                info!("{:?}", convo);
+                // info!("{:?}", convo);
 
                 // - Pull issues from GitHub
                 // - Generate fixes using inference-gateway-sdk

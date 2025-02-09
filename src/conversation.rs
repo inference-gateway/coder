@@ -43,66 +43,6 @@ impl Conversation {
     pub fn add_reviewed_file(&mut self, file: String) {
         self.metadata.files_reviewed.push(file);
     }
-
-    pub fn parse_response_for_requested_files(response: &str) -> Vec<String> {
-        response
-            .lines()
-            .filter(|line| line.starts_with("REQUEST:"))
-            .map(|line| line.trim_start_matches("REQUEST:").trim().to_string())
-            .collect()
-    }
-
-    /// Parse the response for any file fixes that were requested.
-    /// This is a simple implementation that assumes the response is a string
-    /// in the following format:
-    /// ```plaintext
-    /// ```rust
-    /// FILE: src/errors.rs
-    /// ```
-    /// ```rust
-    /// use inference_gateway_sdk::GatewayError;
-    /// use thiserror::Error;
-    ///
-    /// ```
-    /// ```
-    ///
-    /// This function returns a vector of hashmaps where each hashmap contains
-    /// the file path and the content of the file that was fixed.
-    pub fn parse_response_for_fixes(response: &str) -> Vec<HashMap<String, String>> {
-        let mut fixes = Vec::new();
-        let mut current_file = None;
-        let mut current_content = String::new();
-        let mut in_code_block = false;
-
-        for line in response.lines() {
-            if line.starts_with("FILE:") {
-                if let Some(file) = current_file.take() {
-                    let mut fix = HashMap::new();
-                    fix.insert(file, current_content.trim().to_string());
-                    fixes.push(fix);
-                    current_content.clear();
-                }
-                current_file = Some(line.trim_start_matches("FILE:").trim().to_string());
-            } else if line.starts_with("```rust") {
-                in_code_block = true;
-                continue;
-            } else if line.starts_with("```") {
-                in_code_block = false;
-                continue;
-            } else if in_code_block && current_file.is_some() {
-                current_content.push_str(line);
-                current_content.push('\n');
-            }
-        }
-
-        if let Some(file) = current_file {
-            let mut fix = HashMap::new();
-            fix.insert(file, current_content.trim().to_string());
-            fixes.push(fix);
-        }
-
-        fixes
-    }
 }
 
 impl TryInto<Vec<Message>> for Conversation {
@@ -123,6 +63,7 @@ impl fmt::Debug for Conversation {
             writeln!(f, "    {{")?;
             writeln!(f, "      role: {:?}", msg.role)?;
             writeln!(f, "      content: \"{}\"", msg.content.replace("\\n", "\n"))?;
+            writeln!(f, "      tool_call_id: \"{:?}\"", msg.tool_call_id)?;
             writeln!(f, "    }},")?;
         }
         writeln!(f, "  ]")?;
@@ -138,39 +79,36 @@ impl fmt::Debug for Conversation {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::conversation::Message;
+    use crate::MessageRole;
+    use serde_json;
 
     #[test]
-    fn test_parse_response_for_file_fixes() {
-        let response = r#"
-FILE: src/errors.rs
-```rust
-use inference_gateway_sdk::GatewayError;
-use thiserror::Error;
+    fn test_message_tool_call_id_serialization() {
+        // Test with tool_call_id present
+        let message = Message {
+            role: MessageRole::Tool,
+            content: "Test content".to_string(),
+            tool_call_id: Some("call_123".to_string()),
+        };
 
-```
-FILE: src/main.rs
-```rust
-fn main() {
-    println!("Hello");
-}
-```
+        let serialized = serde_json::to_string(&message).unwrap();
+        let expected = r#"{"role":"tool","content":"Test content","tool_call_id":"call_123"}"#;
+        assert_eq!(serialized, expected);
 
-Would you like me to apply these changes?
-"#;
-        let fixes = Conversation::parse_response_for_fixes(response);
+        // Test deserialization
+        let deserialized: Message = serde_json::from_str(&serialized).unwrap();
+        assert_eq!(deserialized.tool_call_id, Some("call_123".to_string()));
 
-        assert_eq!(fixes.len(), 2);
-        assert!(fixes[0].contains_key("src/errors.rs"));
-        assert!(fixes[1].contains_key("src/main.rs"));
+        // Test without tool_call_id
+        let message_without_id = Message {
+            role: MessageRole::Tool,
+            content: "Test content".to_string(),
+            tool_call_id: None,
+        };
 
-        assert_eq!(
-            fixes[0].get("src/errors.rs").unwrap(),
-            "use inference_gateway_sdk::GatewayError;\nuse thiserror::Error;"
-        );
-        assert_eq!(
-            fixes[1].get("src/main.rs").unwrap(),
-            "fn main() {\n    println!(\"Hello\");\n}"
-        );
+        let serialized = serde_json::to_string(&message_without_id).unwrap();
+        let expected = r#"{"role":"tool","content":"Test content"}"#;
+        assert_eq!(serialized, expected);
     }
 }
