@@ -275,36 +275,6 @@ FURTHER INSTRUCTIONS:
                             }
                             tools::Tool::GithubCreatePullRequest => {
                                 info!("Creating pull request...");
-                                // let branch_name = tool_call_response.function.parameters["branch"]
-                                //     .as_str()
-                                //     .ok_or(CoderError::ToolError(
-                                //         "Branch name not found".to_string(),
-                                //     ))?;
-                                // let issue = tool_call_response.function.parameters["issue"]
-                                //     .as_u64()
-                                //     .ok_or(CoderError::ToolError(
-                                //         "Issue number not found".to_string(),
-                                //     ))?;
-                                // info!("Creating pull request for issue #{}...", issue);
-                                // let pr = tools::github_create_pull_request(
-                                //     git_owner,
-                                //     git_repo,
-                                //     format!("Fix issue #{}", issue),
-                                //     branch_name,
-                                //     "main",
-                                //     format!(
-                                //         "This PR addresses issue #{}. Please review the changes.",
-                                //         issue
-                                //     ),
-                                // )
-                                // .await?;
-                                // convo.add_message(Message {
-                                //     role: MessageRole::Tool,
-                                //     content: format!(
-                                //         "Creating pull request for issue #{}...",
-                                //         issue
-                                //     ),
-                                // });
                             }
                             _ => {}
                         }
