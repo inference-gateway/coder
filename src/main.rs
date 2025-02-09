@@ -118,7 +118,7 @@ WORKSPACE INFO:
 
 WORKFLOW:
 1. Pull the issue from GitHub
-2. Analyze the issue description to identify the root cause - don't jump into conclusions
+2. Analyze the issue description to identify the root cause - don't jump to conclusions before reviewing the files
 3. Review the code by reading the file content using the provided tool get_file_content
 4. Fix the issue by adjusting the code using the provided tool write_file_content
 4. Submit the fix as a pull request to the repository
