@@ -148,7 +148,9 @@ WORKSPACE INFO:
 WORKFLOW:
 1. Pull the issue from GitHub
 2. Analyze the issue description to identify the root cause
-3. At any time if you need to execute a tool, type the tool name followed by the required arguments, for example:
+3. At any time if you need to execute a tool, type the tool name followed by the required arguments, for example: `pull_github_issue issue=123`
+4. Review the code and provide a fix
+5. Submit the fix as a pull request to the repository
 
 "#,
                 index::build_tree()?,
