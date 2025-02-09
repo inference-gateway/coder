@@ -113,7 +113,7 @@ async fn main() -> Result<(), CoderError> {
                 r#"You are a senior software engineer specializing in Rust development. Your task is to diagnose and fix bugs based on a Github issue.
 
 WORKSPACE INFO:
-- Project Structure:
+
 {}
 
 WORKFLOW:
@@ -121,16 +121,13 @@ WORKFLOW:
 2. Think about the issue through - don't jump to conclusions before reading the necessary files and reviewing them.
 3. Review the code by reading the file content using the provided tool get_file_content
 
-FURTHER INSTRUCTIONS:
-{}
-
 "#,
                 index::build_tree()?,
-                if let Some(instr) = &further_instruction {
-                    format!("Additional Instructions: {}", instr)
-                } else {
-                    String::new()
-                }
+                // if let Some(instr) = &further_instruction {
+                //     format!("Additional Instructions: {}", instr)
+                // } else {
+                //     String::new()
+                // }
             );
 
             convo.add_message(Message {
