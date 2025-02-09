@@ -116,7 +116,6 @@ WORKSPACE INFO:
 - Project Structure:
 {}
 
-
 WORKFLOW:
 1. Pull the issue from GitHub
 2. Analyze the issue description to identify the root cause
@@ -126,10 +125,11 @@ WORKFLOW:
 6. Wait for the pull request to be reviewed and merged
 7. If there is a new comment on the pull request, analyze the comment and provide a response
 
+FURTHER INSTRUCTIONS:
+{}
+
 "#,
                 index::build_tree()?,
-                git_owner,
-                git_repo,
                 if let Some(instr) = &further_instruction {
                     format!("Additional Instructions: {}", instr)
                 } else {
