@@ -14,6 +14,9 @@ pub enum CoderError {
     #[error("GitHub API error: {0}")]
     GitHubError(#[from] octocrab::Error),
 
+    #[error("Tool error: {0}")]
+    ToolError(String),
+
     #[error("IO error: {0}")]
     IOError(#[from] std::io::Error),
 

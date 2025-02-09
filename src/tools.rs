@@ -1,4 +1,5 @@
-use std::path::Path;
+use octocrab::Octocrab;
+use std::{path::Path, process::Command};
 
 use crate::errors::CoderError;
 /// Read file content from .coder/index.yaml
@@ -35,6 +36,96 @@ pub fn get_file_content(path: &str) -> Result<String, CoderError> {
         .and_then(|v| v.as_str())
         .map(String::from)
         .ok_or_else(|| CoderError::ConfigError(format!("Content not found for path: {}", path)))
+}
+
+/// Create a pull request
+///
+/// # Arguments
+///
+/// * `title` - Title of the pull request
+/// * `body` - Body of the pull request
+/// * `head` - Head branch
+/// * `base` - Base branch
+///
+/// # Returns
+///
+/// * `Result<octocrab::models::pulls::PullRequest, CoderError>` - Result of creating the pull request
+// pub fn create_pull_request(
+//     branch_name: &str,
+//     issue: u64,
+//     title: &str,
+//     body: &str,
+//     head: &str,
+//     base: &str,
+// ) -> Result<octocrab::models::pulls::PullRequest, CoderError> {
+//     let client = octocrab::instance();
+//     let octocrab = Octocrab::builder()
+//         .personal_token(github_token)
+//         .build()
+//         .map_err(|e| CoderError::GitHubError(e))?;
+//     let github_token = std::env::var("GITHUB_TOKEN")
+//         .map_err(|_| CoderError::ConfigError("GITHUB_TOKEN not set".to_string()))?;
+
+//     Command::new("git")
+//         .args(["checkout", "-b", &branch_name])
+//         .output()
+//         .map_err(|e| CoderError::GitError(e.to_string()))?;
+
+//     // Commit changes
+//     Command::new("git")
+//         .args(["add", "."])
+//         .output()
+//         .map_err(|e| CoderError::GitError(e.to_string()))?;
+
+//     Command::new("git")
+//         .args(["commit", "-m", &format!("fix: address issue #{}", issue)])
+//         .output()
+//         .map_err(|e| CoderError::GitError(e.to_string()))?;
+
+//     // Push branch
+//     Command::new("git")
+//         .args(["push", "origin", &branch_name])
+//         .output()
+//         .map_err(|e| CoderError::GitError(e.to_string()))?;
+
+//     // Create PR using octocrab
+//     let pr = octocrab
+//         .pulls(git_owner, git_repo)
+//         .create(format!("Fix issue #{}", issue), branch_name, "main")
+//         .body(format!(
+//             "This PR addresses issue #{}. Please review the changes.",
+//             issue
+//         ))
+//         .send()
+//         .await
+//         .map_err(|e| CoderError::GitHubError(e))?;
+
+//     info!("Created PR: {}", pr.html_url.unwrap());
+//     Ok(pr)
+// }
+
+/// Pull issue from GitHub
+///
+/// # Arguments
+///
+/// * `issue_number` - Issue number
+///
+/// # Returns
+///
+/// * `Result<octocrab::models::issues::Issue, CoderError>` - Result of pulling the issue
+pub async fn pull_issue(issue_number: u64) -> Result<octocrab::models::issues::Issue, CoderError> {
+    let octocrab = Octocrab::builder()
+        .personal_token(std::env::var("GITHUB_TOKEN").unwrap())
+        .build()
+        .map_err(|e| CoderError::GitHubError(e))?;
+
+    let issue = octocrab
+        .issues("octocrab", "octocrab")
+        .get(issue_number)
+        .await
+        .map_err(|e| CoderError::GitHubError(e))?;
+
+    Ok(issue)
 }
 
 /// Write file content

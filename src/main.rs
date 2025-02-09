@@ -4,12 +4,12 @@ use clap::{CommandFactory, Parser};
 use clap_complete::generate;
 use config::DEFAULT_CONFIG_TEMPLATE;
 use inference_gateway_sdk::{
-    InferenceGatewayAPI, InferenceGatewayClient, Message, MessageRole, Provider,
+    InferenceGatewayAPI, InferenceGatewayClient, Message, MessageRole, Provider, Tool,
+    ToolFunction, ToolType,
 };
 use log::{info, warn};
-use octocrab::Octocrab;
+use serde_json::json;
 use serde_yaml::Value;
-use std::process::Command;
 use std::{env, fs, path::Path, thread::sleep, time::Duration};
 
 mod cli;
@@ -99,33 +99,33 @@ async fn main() -> Result<(), CoderError> {
                 .as_str()
                 .ok_or(CoderError::ConfigError("GitHub repo not found".to_string()))?;
 
-            info!("Fetching issue #{} from {}/{}", issue, git_owner, git_repo);
+            // info!("Fetching issue #{} from {}/{}", issue, git_owner, git_repo);
 
-            let github_token = std::env::var("GITHUB_TOKEN")
-                .map_err(|_| CoderError::ConfigError("GITHUB_TOKEN not set".to_string()))?;
+            // let github_token = std::env::var("GITHUB_TOKEN")
+            //     .map_err(|_| CoderError::ConfigError("GITHUB_TOKEN not set".to_string()))?;
 
-            let octocrab = Octocrab::builder()
-                .personal_token(github_token)
-                .build()
-                .map_err(|e| CoderError::GitHubError(e))?;
+            // let octocrab = Octocrab::builder()
+            //     .personal_token(github_token)
+            //     .build()
+            //     .map_err(|e| CoderError::GitHubError(e))?;
 
-            let issue_details = octocrab
-                .issues(git_owner, git_repo)
-                .get(issue as u64)
-                .await
-                .map_err(|e| CoderError::GitHubError(e))?;
+            // let issue_details = octocrab
+            //     .issues(git_owner, git_repo)
+            //     .get(issue as u64)
+            //     .await
+            //     .map_err(|e| CoderError::GitHubError(e))?;
 
-            let is_bug = issue_details
-                .labels
-                .iter()
-                .any(|label| label.name.to_lowercase() == "bug");
+            // let is_bug = issue_details
+            //     .labels
+            //     .iter()
+            //     .any(|label| label.name.to_lowercase() == "bug");
 
-            if !is_bug {
-                warn!("Issue #{} is not labeled as a bug. This command is intended for bug fixes only.", issue);
-                return Ok(());
-            }
+            // if !is_bug {
+            //     warn!("Issue #{} is not labeled as a bug. This command is intended for bug fixes only.", issue);
+            //     return Ok(());
+            // }
 
-            info!("Found issue: {}", issue_details.title);
+            // info!("Found issue: {}", issue_details.title);
             // info!("Description: {:?}", issue_details.body);
 
             let client = InferenceGatewayClient::new(
@@ -138,32 +138,20 @@ async fn main() -> Result<(), CoderError> {
             );
 
             let system_prompt = format!(
-                r#"You are a senior software engineer specializing in Rust development. Your task is to diagnose and fix bugs using the following tools:
-
-AVAILABLE TOOLS:
-- get_file_content(path: &str) -> Result<String, Error>
-- write_file_content(path: &str, content: &str) -> Result<(), Error>
+                r#"You are a senior software engineer specializing in Rust development. Your task is to diagnose and fix bugs based on a Github issue.
 
 WORKSPACE INFO:
 - Project Structure: {}
-- Issue Title: {}
-- Issue Description: {}
 - Repository: {}/{}
 {}
 
 WORKFLOW:
-1. Analyze the issue description to identify the root cause
-2. Request file contents using the format:
-   REQUEST: <file_path>
-3. After reviewing the files, propose fixes using the format:
-   FILE: <file_path>
-   ```rust
-    <fixed content>
-    ```
+1. Pull the issue from GitHub
+2. Analyze the issue description to identify the root cause
+3. At any time if you need to execute a tool, type the tool name followed by the required arguments, for example:
+
 "#,
                 index::build_tree()?,
-                issue_details.title,
-                issue_details.body.unwrap(),
                 git_owner,
                 git_repo,
                 if let Some(instr) = &further_instruction {
@@ -177,6 +165,30 @@ WORKFLOW:
                 role: MessageRole::System,
                 content: system_prompt,
             });
+
+            let tools = vec![Tool {
+                r#type: ToolType::Function,
+                function: ToolFunction {
+                    name: "pull_github_issue".to_string(),
+                    description: "Pull issue from GitHub".to_string(),
+                    parameters: json!({
+                        "type": "object",
+                        "properties": {
+                            "issue": {
+                                "type": "number",
+                                "description": "Issue number"
+                            }
+                        },
+                        "required": ["issue"]
+                    }),
+                },
+            }];
+
+            convo.add_message(Message {
+                role: MessageRole::User,
+                content: format!("I need help fixing this issue #{}", issue),
+            });
+
             let timeout = Duration::from_secs(300);
             info!("Starting AI Coder agent...");
             info!("Press Ctrl+C to stop the agent.");
@@ -186,154 +198,146 @@ WORKFLOW:
                     break;
                 }
 
-                info!("Generating fix proposal...");
-
-                convo.add_message(Message {
-                    role: MessageRole::User,
-                    content: "I need help fixing this issue".to_string(),
-                });
-
                 let resp = client
                     .generate_content(
                         Provider::Groq,
                         "deepseek-r1-distill-llama-70b",
                         convo.clone().try_into()?,
+                        Some(tools.clone()),
                     )
                     .await?;
 
-                let assistant_message = utils::strip_thinking(&resp.response.content);
+                let response = resp.response;
+
+                let assistant_message = utils::strip_thinking(&response.content);
                 if assistant_message.is_none() {
                     warn!("Assistant message is empty. Exiting...");
                     break;
                 }
 
-                convo.add_message(Message {
-                    role: MessageRole::Assistant,
-                    content: assistant_message.unwrap().trim().to_string(),
-                });
-
-                let file_requests = conversation::Conversation::parse_response_for_requested_files(
-                    &resp.response.content,
-                );
-
-                info!("File requests: {:?}", file_requests);
-
-                for file_path in file_requests {
-                    match tools::get_file_content(&file_path) {
-                        Ok(content) => {
-                            info!("Retrieved content for {}", file_path);
-                            convo.add_reviewed_file(file_path.clone());
-                            convo.add_message(Message {
-                                role: MessageRole::User,
-                                content: format!(
-                                    "Content of {}:\n```rust\n{}\n```",
-                                    file_path, content
-                                ),
-                            });
-                        }
-                        Err(e) => {
-                            warn!("Failed to retrieve content for {}: {}", file_path, e);
-                            convo.add_message(Message {
-                                role: MessageRole::User,
-                                content: format!(
-                                    "Could not retrieve content for {}: {}",
-                                    file_path, e
-                                ),
-                            });
-                        }
-                    }
-                }
-
-                let resp = client
-                    .generate_content(
-                        Provider::Groq,
-                        "deepseek-r1-distill-llama-70b",
-                        convo.clone().try_into()?,
-                    )
-                    .await?;
-
-                let assistant_message = utils::strip_thinking(&resp.response.content);
-                if assistant_message.is_none() {
-                    warn!("Assistant message is empty. Exiting...");
-                    break;
-                }
-                let assistant_message_unwarpped = assistant_message.unwrap().trim().to_string();
+                let assistant_message = assistant_message.unwrap().trim().to_string();
 
                 convo.add_message(Message {
                     role: MessageRole::Assistant,
-                    content: assistant_message_unwarpped.clone(),
+                    content: assistant_message.clone(),
                 });
 
-                let fixes = conversation::Conversation::parse_response_for_fixes(
-                    assistant_message_unwarpped.as_str(),
-                );
+                info!("{:?}", assistant_message);
 
-                for fix in fixes.clone() {
-                    for (file_path, content) in fix {
-                        match tools::write_file_content(&file_path, &content) {
-                            Ok(_) => {
-                                info!("Wrote content to {}", file_path);
+                if response.tool_calls.is_some() {
+                    let tools: Vec<inference_gateway_sdk::ToolCallResponse> =
+                        response.tool_calls.unwrap();
+                    for tool_call_response in tools {
+                        match tool_call_response.function.name.as_str() {
+                            "pull_github_issue" => {
+                                let issue_number = tool_call_response.function.parameters["issue"]
+                                    .as_u64()
+                                    .ok_or(CoderError::ToolError(
+                                        "Issue number not found".to_string(),
+                                    ))?;
+                                info!("Pulling issue #{} from GitHub...", issue_number);
                                 convo.add_message(Message {
-                                    role: MessageRole::User,
-                                    content: format!("Wrote content to {}", file_path),
-                                });
-                            }
-                            Err(e) => {
-                                warn!("Failed to write content to {}: {}", file_path, e);
-                                convo.add_message(Message {
-                                    role: MessageRole::User,
+                                    role: MessageRole::Tool,
                                     content: format!(
-                                        "Could not write content to {}: {}",
-                                        file_path, e
+                                        "Pulling issue #{} from GitHub...",
+                                        issue_number
                                     ),
                                 });
                             }
+                            _ => {}
                         }
                     }
                 }
 
-                // Create branch and PR if there are fixes
-                if !fixes.is_empty() {
-                    // Create a new branch
-                    let branch_name = format!("fix/issue-{}", issue);
-                    Command::new("git")
-                        .args(["checkout", "-b", &branch_name])
-                        .output()
-                        .map_err(|e| CoderError::GitError(e.to_string()))?;
+                // let file_requests = conversation::Conversation::parse_response_for_requested_files(
+                //     &resp.response.content,
+                // );
 
-                    // Commit changes
-                    Command::new("git")
-                        .args(["add", "."])
-                        .output()
-                        .map_err(|e| CoderError::GitError(e.to_string()))?;
+                // info!("File requests: {:?}", file_requests);
 
-                    Command::new("git")
-                        .args(["commit", "-m", &format!("fix: address issue #{}", issue)])
-                        .output()
-                        .map_err(|e| CoderError::GitError(e.to_string()))?;
+                // for file_path in file_requests {
+                //     match tools::get_file_content(&file_path) {
+                //         Ok(content) => {
+                //             info!("Retrieved content for {}", file_path);
+                //             convo.add_reviewed_file(file_path.clone());
+                //             convo.add_message(Message {
+                //                 role: MessageRole::User,
+                //                 content: format!(
+                //                     "Content of {}:\n```rust\n{}\n```",
+                //                     file_path, content
+                //                 ),
+                //             });
+                //         }
+                //         Err(e) => {
+                //             warn!("Failed to retrieve content for {}: {}", file_path, e);
+                //             convo.add_message(Message {
+                //                 role: MessageRole::User,
+                //                 content: format!(
+                //                     "Could not retrieve content for {}: {}",
+                //                     file_path, e
+                //                 ),
+                //             });
+                //         }
+                //     }
+                // }
 
-                    // Push branch
-                    Command::new("git")
-                        .args(["push", "origin", &branch_name])
-                        .output()
-                        .map_err(|e| CoderError::GitError(e.to_string()))?;
+                // let resp = client
+                //     .generate_content(
+                //         Provider::Groq,
+                //         "deepseek-r1-distill-llama-70b",
+                //         convo.clone().try_into()?,
+                //     )
+                //     .await?;
 
-                    // Create PR using octocrab
-                    let pr = octocrab
-                        .pulls(git_owner, git_repo)
-                        .create(format!("Fix issue #{}", issue), branch_name, "main")
-                        .body(format!(
-                            "This PR addresses issue #{}. Please review the changes.",
-                            issue
-                        ))
-                        .send()
-                        .await
-                        .map_err(|e| CoderError::GitHubError(e))?;
+                // let assistant_message = utils::strip_thinking(&resp.response.content);
+                // if assistant_message.is_none() {
+                //     warn!("Assistant message is empty. Exiting...");
+                //     break;
+                // }
+                // let assistant_message_unwarpped = assistant_message.unwrap().trim().to_string();
 
-                    info!("Created PR: {}", pr.html_url.unwrap());
-                }
+                // println!("{:?}", convo);
 
-                // - Create pull requests
+                // convo.add_message(Message {
+                //     role: MessageRole::Assistant,
+                //     content: assistant_message_unwarpped.clone(),
+                // });
+
+                // let fixes = conversation::Conversation::parse_response_for_fixes(
+                //     assistant_message_unwarpped.as_str(),
+                // );
+
+                // for fix in fixes.clone() {
+                //     for (file_path, content) in fix {
+                //         match tools::write_file_content(&file_path, &content) {
+                //             Ok(_) => {
+                //                 info!("Wrote content to {}", file_path);
+                //                 convo.add_message(Message {
+                //                     role: MessageRole::User,
+                //                     content: format!("Wrote content to {}", file_path),
+                //                 });
+                //             }
+                //             Err(e) => {
+                //                 warn!("Failed to write content to {}: {}", file_path, e);
+                //                 convo.add_message(Message {
+                //                     role: MessageRole::User,
+                //                     content: format!(
+                //                         "Could not write content to {}: {}",
+                //                         file_path, e
+                //                     ),
+                //                 });
+                //             }
+                //         }
+                //     }
+                // }
+
+                // // Create branch and PR if there are fixes
+                // if !fixes.is_empty() {
+                //     // Create a new branch
+                //     let branch_name = format!("fix/issue-{}", issue);
+                //     tools::create_pull_request(&branch_name, issue, title, body, head, base)
+                // }
+
                 sleep(Duration::from_secs(5));
             }
         }
@@ -389,7 +393,7 @@ WORKFLOW:
             info!("Press Ctrl+C to stop the agent.");
             loop {
                 let resp = client
-                    .generate_content(Provider::Groq, model, convo.clone().try_into()?)
+                    .generate_content(Provider::Groq, model, convo.clone().try_into()?, None)
                     .await?;
                 let assistant_message = utils::strip_thinking(&resp.response.content);
                 if assistant_message.is_none() {
@@ -423,7 +427,7 @@ WORKFLOW:
                 });
 
                 let resp = client
-                    .generate_content(Provider::Groq, model, convo.clone().try_into()?)
+                    .generate_content(Provider::Groq, model, convo.clone().try_into()?, None)
                     .await?;
                 let assistant_message = utils::strip_thinking(&resp.response.content);
                 if assistant_message.is_none() {
