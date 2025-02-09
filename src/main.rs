@@ -7,12 +7,11 @@ use inference_gateway_sdk::{
     InferenceGatewayAPI, InferenceGatewayClient, Message, MessageRole, Provider, Tool,
     ToolFunction, ToolType,
 };
-use log::{info, warn};
+use log::{debug, info, warn};
 use serde_json::json;
 use serde_yaml::Value;
 use std::str::FromStr;
 use std::{env, fs, path::Path, thread::sleep, time::Duration};
-use tools::GithubPullIssueArgs;
 
 mod cli;
 mod config;
@@ -228,7 +227,7 @@ WORKFLOW:
                     content: assistant_message.clone(),
                 });
 
-                info!("{:?}", assistant_message);
+                debug!("{:?}", assistant_message);
 
                 if response.tool_calls.is_some() {
                     let tools = response.tool_calls.unwrap();
