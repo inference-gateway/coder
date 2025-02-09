@@ -118,12 +118,12 @@ WORKSPACE INFO:
 
 WORKFLOW:
 1. Pull the issue from GitHub
-2. Analyze the issue description to identify the root cause
-3. At any time if you need to execute a tool, type the tool name followed by the required arguments, for example: `pull_github_issue issue=123`
-4. Review the code and provide a fix
-5. Submit the fix as a pull request to the repository
-6. Wait for the pull request to be reviewed and merged
-7. If there is a new comment on the pull request, analyze the comment and provide a response
+2. Analyze the issue description to identify the root cause - don't jump into conclusions
+3. Review the code by reading the file content using the provided tool get_file_content
+4. Fix the issue by adjusting the code using the provided tool write_file_content
+4. Submit the fix as a pull request to the repository
+5. Wait for the pull request to be reviewed and merged
+6. If there is a new comment on the pull request, analyze the comment and provide a response
 
 FURTHER INSTRUCTIONS:
 {}
@@ -143,23 +143,42 @@ FURTHER INSTRUCTIONS:
                 tool_call_id: None,
             });
 
-            let tools = vec![Tool {
-                r#type: ToolType::Function,
-                function: ToolFunction {
-                    name: tools::Tool::GithubPullIssue.to_string(),
-                    description: "Pull issue from GitHub".to_string(),
-                    parameters: json!({
-                        "type": "object",
-                        "properties": {
-                            "issue": {
-                                "type": "number",
-                                "description": "Issue number"
-                            }
-                        },
-                        "required": ["issue"]
-                    }),
+            let tools = vec![
+                Tool {
+                    r#type: ToolType::Function,
+                    function: ToolFunction {
+                        name: tools::Tool::GithubPullIssue.to_string(),
+                        description: "Pull issue from GitHub".to_string(),
+                        parameters: json!({
+                            "type": "object",
+                            "properties": {
+                                "issue": {
+                                    "type": "number",
+                                    "description": "Issue number"
+                                }
+                            },
+                            "required": ["issue"]
+                        }),
+                    },
                 },
-            }];
+                Tool {
+                    r#type: ToolType::Function,
+                    function: ToolFunction {
+                        name: tools::Tool::GetFileContent.to_string(),
+                        description: "Read a file content".to_string(),
+                        parameters: json!({
+                            "type": "object",
+                            "properties": {
+                                "path": {
+                                    "type": "string",
+                                    "description": "The path to the file"
+                                }
+                            },
+                            "required": ["path"]
+                        }),
+                    },
+                },
+            ];
 
             convo.add_message(Message {
                 role: MessageRole::User,
