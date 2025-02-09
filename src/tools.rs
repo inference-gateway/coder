@@ -1,7 +1,42 @@
+use core::fmt;
 use octocrab::Octocrab;
-use std::{path::Path, process::Command};
+use std::{path::Path, process::Command, str::FromStr};
 
 use crate::errors::CoderError;
+
+#[derive(Debug, Clone)]
+pub enum Tool {
+    GithubPullIssue,
+    GithubCreatePullRequest,
+    GetFileContent,
+    WriteFileContent,
+}
+
+impl FromStr for Tool {
+    type Err = CoderError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "github_pull_issue" => Ok(Tool::GithubPullIssue),
+            "github_create_pull_request" => Ok(Tool::GithubCreatePullRequest),
+            "get_file_content" => Ok(Tool::GetFileContent),
+            "write_file_content" => Ok(Tool::WriteFileContent),
+            _ => Err(CoderError::ConfigError(format!("Invalid tool: {}", s))),
+        }
+    }
+}
+
+impl fmt::Display for Tool {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Tool::GithubPullIssue => write!(f, "github_pull_issue"),
+            Tool::GithubCreatePullRequest => write!(f, "github_create_pull_request"),
+            Tool::GetFileContent => write!(f, "get_file_content"),
+            Tool::WriteFileContent => write!(f, "write_file_content"),
+        }
+    }
+}
+
 /// Read file content from .coder/index.yaml
 ///
 /// # Arguments
@@ -50,7 +85,7 @@ pub fn get_file_content(path: &str) -> Result<String, CoderError> {
 /// # Returns
 ///
 /// * `Result<octocrab::models::pulls::PullRequest, CoderError>` - Result of creating the pull request
-// pub fn create_pull_request(
+// pub fn github_create_pull_request(
 //     branch_name: &str,
 //     issue: u64,
 //     title: &str,

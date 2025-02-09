@@ -10,6 +10,7 @@ use inference_gateway_sdk::{
 use log::{info, warn};
 use serde_json::json;
 use serde_yaml::Value;
+use std::str::FromStr;
 use std::{env, fs, path::Path, thread::sleep, time::Duration};
 
 mod cli;
@@ -229,11 +230,11 @@ WORKFLOW:
                 info!("{:?}", assistant_message);
 
                 if response.tool_calls.is_some() {
-                    let tools: Vec<inference_gateway_sdk::ToolCallResponse> =
-                        response.tool_calls.unwrap();
+                    let tools = response.tool_calls.unwrap();
                     for tool_call_response in tools {
-                        match tool_call_response.function.name.as_str() {
-                            "pull_github_issue" => {
+                        let tool = tools::Tool::from_str(tool_call_response.function.name.as_str());
+                        match tool {
+                            Ok(tools::Tool::GithubPullIssue) => {
                                 let issue_number = tool_call_response.function.parameters["issue"]
                                     .as_u64()
                                     .ok_or(CoderError::ToolError(
@@ -249,6 +250,78 @@ WORKFLOW:
                                         issue_number
                                     ),
                                 });
+                                convo.add_message(Message {
+                                    role: MessageRole::Tool,
+                                    content: format!("Found issue: {}", github_issue.title),
+                                });
+                                convo.add_message(Message {
+                                    role: MessageRole::Tool,
+                                    content: format!("Description: {:?}", github_issue.body),
+                                });
+                            }
+                            Ok(tools::Tool::GetFileContent) => {
+                                let path = tool_call_response.function.parameters["path"]
+                                    .as_str()
+                                    .ok_or(CoderError::ToolError("Path not found".to_string()))?;
+                                info!("Reading content from file: {}", path);
+                                let content = tools::get_file_content(path)?;
+                                convo.add_message(Message {
+                                    role: MessageRole::Tool,
+                                    content: format!("Reading content from file: {}", path),
+                                });
+                                convo.add_message(Message {
+                                    role: MessageRole::Tool,
+                                    content: format!("Content: {}", content),
+                                });
+                            }
+                            Ok(tools::Tool::WriteFileContent) => {
+                                let path = tool_call_response.function.parameters["path"]
+                                    .as_str()
+                                    .ok_or(CoderError::ToolError("Path not found".to_string()))?;
+                                let content = tool_call_response.function.parameters["content"]
+                                    .as_str()
+                                    .ok_or(CoderError::ToolError(
+                                        "Content not found".to_string(),
+                                    ))?;
+                                info!("Writing content to file: {}", path);
+                                tools::write_file_content(path, content)?;
+                                convo.add_message(Message {
+                                    role: MessageRole::Tool,
+                                    content: format!("Writing content to file: {}", path),
+                                });
+                            }
+                            Ok(tools::Tool::GithubCreatePullRequest) => {
+                                info!("Creating pull request...");
+                                // let branch_name = tool_call_response.function.parameters["branch"]
+                                //     .as_str()
+                                //     .ok_or(CoderError::ToolError(
+                                //         "Branch name not found".to_string(),
+                                //     ))?;
+                                // let issue = tool_call_response.function.parameters["issue"]
+                                //     .as_u64()
+                                //     .ok_or(CoderError::ToolError(
+                                //         "Issue number not found".to_string(),
+                                //     ))?;
+                                // info!("Creating pull request for issue #{}...", issue);
+                                // let pr = tools::github_create_pull_request(
+                                //     git_owner,
+                                //     git_repo,
+                                //     format!("Fix issue #{}", issue),
+                                //     branch_name,
+                                //     "main",
+                                //     format!(
+                                //         "This PR addresses issue #{}. Please review the changes.",
+                                //         issue
+                                //     ),
+                                // )
+                                // .await?;
+                                // convo.add_message(Message {
+                                //     role: MessageRole::Tool,
+                                //     content: format!(
+                                //         "Creating pull request for issue #{}...",
+                                //         issue
+                                //     ),
+                                // });
                             }
                             _ => {}
                         }
