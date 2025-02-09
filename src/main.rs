@@ -266,17 +266,20 @@ WORKFLOW:
                                 let github_issue =
                                     tools::pull_github_issue(args.issue, git_owner, git_repo)
                                         .await?;
-                                info!("Found issue: {}", github_issue.title);
-                                info!("Description: {:?}", github_issue.body);
                                 convo.add_message(Message {
                                     role: MessageRole::Tool,
-                                    content: format!("Found issue: {}", github_issue.title),
+                                    content: format!(
+                                        "Issue:\n\n{}\n\n\nDescription:\n\n{:?}",
+                                        github_issue.title, github_issue.body
+                                    ),
                                     tool_call_id: Some(tool_call_response.id.clone()),
                                 });
                                 convo.add_message(Message {
-                                    role: MessageRole::Tool,
-                                    content: format!("Description: {:?}", github_issue.body),
-                                    tool_call_id: Some(tool_call_response.id),
+                                    role: MessageRole::User,
+                                    content:
+                                        "Please read the issue description and let me know if you need any further information."
+                                            .to_string(),
+                                    tool_call_id: None,
                                 });
                             }
                             tools::Tool::GetFileContent => {
@@ -292,13 +295,16 @@ WORKFLOW:
                                 let content = tools::get_file_content(&args.path)?;
                                 convo.add_message(Message {
                                     role: MessageRole::Tool,
-                                    content: format!("Reading content from file: {}", args.path),
+                                    content: format!(
+                                        "File content fetched.\nFILE: {}\n\nCONTENT:\n\n```rust\n{}\n```\n",
+                                        args.path, content
+                                    ),
                                     tool_call_id: Some(tool_call_response.id.clone()),
                                 });
                                 convo.add_message(Message {
-                                    role: MessageRole::Tool,
-                                    content: format!("Content: {}", content),
-                                    tool_call_id: Some(tool_call_response.id),
+                                    role: MessageRole::User,
+                                    content: "Do you want to modify the file content?".to_string(),
+                                    tool_call_id: None,
                                 });
                             }
                             tools::Tool::WriteFileContent => {
