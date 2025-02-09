@@ -303,7 +303,7 @@ WORKFLOW:
                                 });
                                 convo.add_message(Message {
                                     role: MessageRole::User,
-                                    content: "Do you want to modify the file content?".to_string(),
+                                    content: "Do you want to modify the file content? If yes, just modify it using the tool write_file_content. Don't ask questions back.".to_string(),
                                     tool_call_id: None,
                                 });
                             }
@@ -328,7 +328,7 @@ WORKFLOW:
                                 });
                                 convo.add_message(Message {
                                     role: MessageRole::User,
-                                    content: "Are there any other files need modifications? if not, let's proceed to creating a pull request".to_string(),
+                                    content: "Are there any other files need modifications? if yes, use the get_file_content tool to retrive and write_file_content tool to write it. If not, let's proceed to creating a pull request. Don't ask questions back.".to_string(),
                                     tool_call_id: None,
                                 });
                             }
