@@ -176,6 +176,27 @@ WORKFLOW:
                         }),
                     },
                 },
+                Tool {
+                    r#type: ToolType::Function,
+                    function: ToolFunction {
+                        name: tools::Tool::WriteFileContent.to_string(),
+                        description: "Write content to a file".to_string(),
+                        parameters: json!({
+                            "type": "object",
+                            "properties": {
+                                "path": {
+                                    "type": "string",
+                                    "description": "The path to the file"
+                                },
+                                "content": {
+                                    "type": "string",
+                                    "description": "The content to write"
+                                }
+                            },
+                            "required": ["path", "content"]
+                        }),
+                    },
+                },
             ];
 
             convo.add_message(Message {
@@ -281,17 +302,22 @@ WORKFLOW:
                                 });
                             }
                             tools::Tool::WriteFileContent => {
-                                let path = function_arguments["path"]
-                                    .as_str()
-                                    .ok_or(CoderError::ToolError("Path not found".to_string()))?;
-                                let content = function_arguments["content"].as_str().ok_or(
-                                    CoderError::ToolError("Content not found".to_string()),
-                                )?;
-                                info!("Writing content to file: {}", path);
-                                tools::write_file_content(path, content)?;
+                                let function_args =
+                                    function_arguments.as_str().ok_or_else(|| {
+                                        CoderError::MissingArguments(
+                                            "Function arguments not provided".to_string(),
+                                        )
+                                    })?;
+                                let args: tools::WriteFileContentArgs =
+                                    serde_json::from_str(function_args)?;
+                                info!("Writing content to file: {}", args.path);
+                                tools::write_file_content(&args.path, &args.content)?;
                                 convo.add_message(Message {
                                     role: MessageRole::Tool,
-                                    content: format!("Writing content to file: {}", path),
+                                    content: format!(
+                                        "Content has been written to the file: {}",
+                                        args.path
+                                    ),
                                     tool_call_id: Some(tool_call_response.id),
                                 });
                             }

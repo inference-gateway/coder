@@ -18,6 +18,12 @@ pub struct GetFileContentArgs {
     pub path: String,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct WriteFileContentArgs {
+    pub path: String,
+    pub content: String,
+}
+
 #[derive(Debug, Clone)]
 pub enum Tool {
     GithubPullIssue,
