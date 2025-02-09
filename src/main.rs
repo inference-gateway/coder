@@ -233,6 +233,7 @@ WORKFLOW:
                     let tools = response.tool_calls.unwrap();
                     for tool_call_response in tools {
                         let tool = tools::Tool::from_str(tool_call_response.function.name.as_str());
+                        info!("Using tool {:?}", tool);
                         match tool {
                             Ok(tools::Tool::GithubPullIssue) => {
                                 let issue_number = tool_call_response.function.parameters["issue"]
