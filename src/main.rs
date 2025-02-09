@@ -236,7 +236,7 @@ WORKFLOW:
                         info!("Using tool {:?}", tool);
                         match tool {
                             Ok(tools::Tool::GithubPullIssue) => {
-                                let issue_number = tool_call_response.function.parameters["issue"]
+                                let issue_number = tool_call_response.function.arguments["issue"]
                                     .as_u64()
                                     .ok_or(CoderError::ToolError(
                                         "Issue number not found".to_string(),
@@ -261,9 +261,11 @@ WORKFLOW:
                                 });
                             }
                             Ok(tools::Tool::GetFileContent) => {
-                                let path = tool_call_response.function.parameters["path"]
+                                let path = tool_call_response.function.arguments["path"]
                                     .as_str()
-                                    .ok_or(CoderError::ToolError("Path not found".to_string()))?;
+                                    .ok_or(CoderError::ToolError(
+                                    "Path not found".to_string(),
+                                ))?;
                                 info!("Reading content from file: {}", path);
                                 let content = tools::get_file_content(path)?;
                                 convo.add_message(Message {
@@ -276,10 +278,12 @@ WORKFLOW:
                                 });
                             }
                             Ok(tools::Tool::WriteFileContent) => {
-                                let path = tool_call_response.function.parameters["path"]
+                                let path = tool_call_response.function.arguments["path"]
                                     .as_str()
-                                    .ok_or(CoderError::ToolError("Path not found".to_string()))?;
-                                let content = tool_call_response.function.parameters["content"]
+                                    .ok_or(CoderError::ToolError(
+                                    "Path not found".to_string(),
+                                ))?;
+                                let content = tool_call_response.function.arguments["content"]
                                     .as_str()
                                     .ok_or(CoderError::ToolError(
                                         "Content not found".to_string(),
