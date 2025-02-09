@@ -223,7 +223,7 @@ WORKFLOW:
                     tool_call_id: None,
                 });
 
-                debug!("{:?}", assistant_message);
+                info!("{:?}", assistant_message);
 
                 if response.tool_calls.is_some() {
                     let tools: Vec<inference_gateway_sdk::ToolCallResponse> =
@@ -310,8 +310,6 @@ WORKFLOW:
 
                 // TODO - Instead of sleeping the agent supposed to wait for user input on the Pull Request comments
                 // Each pull request comment should be sent to the agent for further processing
-
-                info!("Convo: {:?}", assistant_message);
                 info!("Iteration completed. Waiting for the next instruction...");
 
                 sleep(Duration::from_secs(5));
