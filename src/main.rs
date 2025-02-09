@@ -169,6 +169,7 @@ WORKFLOW:
             convo.add_message(Message {
                 role: MessageRole::System,
                 content: system_prompt,
+                tool_call_id: None,
             });
 
             let tools = vec![Tool {
@@ -192,6 +193,7 @@ WORKFLOW:
             convo.add_message(Message {
                 role: MessageRole::User,
                 content: format!("I need help fixing this issue #{}", issue),
+                tool_call_id: None,
             });
 
             let timeout = Duration::from_secs(300);
@@ -225,6 +227,7 @@ WORKFLOW:
                 convo.add_message(Message {
                     role: MessageRole::Assistant,
                     content: assistant_message.clone(),
+                    tool_call_id: None,
                 });
 
                 debug!("{:?}", assistant_message);
@@ -253,10 +256,12 @@ WORKFLOW:
                                 convo.add_message(Message {
                                     role: MessageRole::Tool,
                                     content: format!("Found issue: {}", github_issue.title),
+                                    tool_call_id: Some(tool_call_response.id.clone()),
                                 });
                                 convo.add_message(Message {
                                     role: MessageRole::Tool,
                                     content: format!("Description: {:?}", github_issue.body),
+                                    tool_call_id: Some(tool_call_response.id),
                                 });
                             }
                             tools::Tool::GetFileContent => {
@@ -268,10 +273,12 @@ WORKFLOW:
                                 convo.add_message(Message {
                                     role: MessageRole::Tool,
                                     content: format!("Reading content from file: {}", path),
+                                    tool_call_id: Some(tool_call_response.id.clone()),
                                 });
                                 convo.add_message(Message {
                                     role: MessageRole::Tool,
                                     content: format!("Content: {}", content),
+                                    tool_call_id: Some(tool_call_response.id),
                                 });
                             }
                             tools::Tool::WriteFileContent => {
@@ -286,6 +293,7 @@ WORKFLOW:
                                 convo.add_message(Message {
                                     role: MessageRole::Tool,
                                     content: format!("Writing content to file: {}", path),
+                                    tool_call_id: Some(tool_call_response.id),
                                 });
                             }
                             tools::Tool::GithubCreatePullRequest => {
@@ -371,10 +379,12 @@ WORKFLOW:
             convo.add_message(Message {
                 role: MessageRole::System,
                 content: system_message,
+                tool_call_id: None,
             });
             convo.add_message(Message {
                 role: MessageRole::User,
                 content: prompt,
+                tool_call_id: None,
             });
 
             info!("Intializing the inference gateway client.");
@@ -406,6 +416,7 @@ WORKFLOW:
                 convo.add_message(Message {
                     role: MessageRole::Assistant,
                     content: assistant_message.trim().to_string(),
+                    tool_call_id: None,
                 });
 
                 let contents = index::extract_file_contents(&index_content);
@@ -415,6 +426,7 @@ WORKFLOW:
                 convo.add_message(Message {
                     role: MessageRole::User,
                     content: review_prompt.trim().to_string(),
+                    tool_call_id: None,
                 });
 
                 let resp = client
@@ -429,6 +441,7 @@ WORKFLOW:
                 convo.add_message(Message {
                     role: MessageRole::Assistant,
                     content: assistant_message.unwrap().trim().to_string(),
+                    tool_call_id: None,
                 });
 
                 info!("{:?}", convo);
