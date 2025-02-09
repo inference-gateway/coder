@@ -133,11 +133,6 @@ WORKFLOW:
 
 "#,
                 index::build_tree()?,
-                // if let Some(instr) = &further_instruction {
-                //     format!("Additional Instructions: {}", instr)
-                // } else {
-                //     String::new()
-                // }
             );
 
             convo.add_message(Message {
