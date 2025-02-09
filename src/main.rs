@@ -204,7 +204,8 @@ WORKFLOW:
                 debug!("{:?}", assistant_message);
 
                 if response.tool_calls.is_some() {
-                    let tools = response.tool_calls.unwrap();
+                    let tools: Vec<inference_gateway_sdk::ToolCallResponse> =
+                        response.tool_calls.unwrap();
                     for tool_call_response in tools {
                         let function_name = tool_call_response.function.name.as_str();
                         let function_arguments = tool_call_response.function.arguments;
@@ -236,8 +237,6 @@ WORKFLOW:
                                     content: format!("Description: {:?}", github_issue.body),
                                     tool_call_id: Some(tool_call_response.id),
                                 });
-
-                                info!("Convo: {:?}", convo);
                             }
                             tools::Tool::GetFileContent => {
                                 let path = function_arguments["path"]
@@ -311,6 +310,9 @@ WORKFLOW:
 
                 // TODO - Instead of sleeping the agent supposed to wait for user input on the Pull Request comments
                 // Each pull request comment should be sent to the agent for further processing
+
+                info!("Convo: {:?}", convo);
+                info!("Iteration completed. Waiting for the next instruction...");
 
                 sleep(Duration::from_secs(5));
             }
