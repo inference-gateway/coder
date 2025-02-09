@@ -100,35 +100,6 @@ async fn main() -> Result<(), CoderError> {
                 .as_str()
                 .ok_or(CoderError::ConfigError("GitHub repo not found".to_string()))?;
 
-            // info!("Fetching issue #{} from {}/{}", issue, git_owner, git_repo);
-
-            // let github_token = std::env::var("GITHUB_TOKEN")
-            //     .map_err(|_| CoderError::ConfigError("GITHUB_TOKEN not set".to_string()))?;
-
-            // let octocrab = Octocrab::builder()
-            //     .personal_token(github_token)
-            //     .build()
-            //     .map_err(|e| CoderError::GitHubError(e))?;
-
-            // let issue_details = octocrab
-            //     .issues(git_owner, git_repo)
-            //     .get(issue as u64)
-            //     .await
-            //     .map_err(|e| CoderError::GitHubError(e))?;
-
-            // let is_bug = issue_details
-            //     .labels
-            //     .iter()
-            //     .any(|label| label.name.to_lowercase() == "bug");
-
-            // if !is_bug {
-            //     warn!("Issue #{} is not labeled as a bug. This command is intended for bug fixes only.", issue);
-            //     return Ok(());
-            // }
-
-            // info!("Found issue: {}", issue_details.title);
-            // info!("Description: {:?}", issue_details.body);
-
             let client = InferenceGatewayClient::new(
                 &config["api"]["endpoint"].as_str().unwrap_or_default(),
             );
@@ -250,7 +221,9 @@ WORKFLOW:
                                 let args: tools::GithubPullIssueArgs =
                                     serde_json::from_str(function_args)?;
                                 info!("Pulling issue #{:?} from GitHub...", args.issue);
-                                let github_issue = tools::pull_github_issue(args.issue).await?;
+                                let github_issue =
+                                    tools::pull_github_issue(args.issue, git_owner, git_repo)
+                                        .await?;
                                 info!("Found issue: {}", github_issue.title);
                                 info!("Description: {:?}", github_issue.body);
                                 convo.add_message(Message {

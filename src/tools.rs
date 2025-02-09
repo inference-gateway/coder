@@ -160,6 +160,8 @@ pub fn get_file_content(path: &str) -> Result<String, CoderError> {
 /// * `Result<octocrab::models::issues::Issue, CoderError>` - Result of pulling the issue
 pub async fn pull_github_issue(
     issue_number: u64,
+    github_owner: &str,
+    github_repo: &str,
 ) -> Result<octocrab::models::issues::Issue, CoderError> {
     let octocrab = Octocrab::builder()
         .personal_token(std::env::var("GITHUB_TOKEN").unwrap())
@@ -167,7 +169,7 @@ pub async fn pull_github_issue(
         .map_err(|e| CoderError::GitHubError(e))?;
 
     let issue = octocrab
-        .issues("inference-gateway", "coder")
+        .issues(github_owner, github_repo)
         .get(issue_number)
         .await
         .map_err(|e| CoderError::GitHubError(e))?;
