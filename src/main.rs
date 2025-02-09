@@ -12,6 +12,7 @@ use serde_json::json;
 use serde_yaml::Value;
 use std::str::FromStr;
 use std::{env, fs, path::Path, thread::sleep, time::Duration};
+use tools::GithubPullIssueArgs;
 
 mod cli;
 mod config;
@@ -232,25 +233,24 @@ WORKFLOW:
                 if response.tool_calls.is_some() {
                     let tools = response.tool_calls.unwrap();
                     for tool_call_response in tools {
-                        let tool = tools::Tool::from_str(tool_call_response.function.name.as_str());
+                        let function_name = tool_call_response.function.name.as_str();
+                        let function_arguments = tool_call_response
+                            .function
+                            .arguments
+                            .as_str()
+                            .ok_or_else(|| {
+                                CoderError::MissingArguments(
+                                    "Function arguments not provided".to_string(),
+                                )
+                            })?;
+                        let tool = tools::Tool::from_str(function_name)?;
                         info!("Using tool {:?}", tool);
                         match tool {
-                            Ok(tools::Tool::GithubPullIssue) => {
-                                let issue_number = tool_call_response.function.arguments["issue"]
-                                    .as_u64()
-                                    .ok_or(CoderError::ToolError(
-                                        "Issue number not found".to_string(),
-                                    ))?;
-                                info!("Pulling issue #{} from GitHub...", issue_number);
-                                let github_issue =
-                                    tools::pull_github_issue(issue_number as u64).await?;
-                                convo.add_message(Message {
-                                    role: MessageRole::Tool,
-                                    content: format!(
-                                        "Pulling issue #{} from GitHub...",
-                                        issue_number
-                                    ),
-                                });
+                            tools::Tool::GithubPullIssue => {
+                                let args: tools::GithubPullIssueArgs =
+                                    serde_json::from_str(function_arguments)?;
+                                info!("Pulling issue #{:?} from GitHub...", args);
+                                let github_issue = tools::pull_github_issue(args.issue).await?;
                                 convo.add_message(Message {
                                     role: MessageRole::Tool,
                                     content: format!("Found issue: {}", github_issue.title),
@@ -260,7 +260,7 @@ WORKFLOW:
                                     content: format!("Description: {:?}", github_issue.body),
                                 });
                             }
-                            Ok(tools::Tool::GetFileContent) => {
+                            tools::Tool::GetFileContent => {
                                 let path = tool_call_response.function.arguments["path"]
                                     .as_str()
                                     .ok_or(CoderError::ToolError(
@@ -277,7 +277,7 @@ WORKFLOW:
                                     content: format!("Content: {}", content),
                                 });
                             }
-                            Ok(tools::Tool::WriteFileContent) => {
+                            tools::Tool::WriteFileContent => {
                                 let path = tool_call_response.function.arguments["path"]
                                     .as_str()
                                     .ok_or(CoderError::ToolError(
@@ -295,7 +295,7 @@ WORKFLOW:
                                     content: format!("Writing content to file: {}", path),
                                 });
                             }
-                            Ok(tools::Tool::GithubCreatePullRequest) => {
+                            tools::Tool::GithubCreatePullRequest => {
                                 info!("Creating pull request...");
                                 // let branch_name = tool_call_response.function.parameters["branch"]
                                 //     .as_str()

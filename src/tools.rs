@@ -1,4 +1,5 @@
 use octocrab::Octocrab;
+use serde::{Deserialize, Serialize};
 use std::{
     fmt::{self, Display},
     path::Path,
@@ -6,6 +7,11 @@ use std::{
 };
 
 use crate::errors::CoderError;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GithubPullIssueArgs {
+    pub issue: u64,
+}
 
 #[derive(Debug, Clone)]
 pub enum Tool {
