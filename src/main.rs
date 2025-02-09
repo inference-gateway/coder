@@ -334,8 +334,6 @@ WORKFLOW:
                     }
                 }
 
-                // TODO - Instead of sleeping the agent supposed to wait for user input on the Pull Request comments
-                // Each pull request comment should be sent to the agent for further processing
                 info!("Iteration completed. Waiting for the next instruction...");
 
                 sleep(Duration::from_secs(15));
