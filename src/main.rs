@@ -234,21 +234,19 @@ WORKFLOW:
                     let tools = response.tool_calls.unwrap();
                     for tool_call_response in tools {
                         let function_name = tool_call_response.function.name.as_str();
-                        let function_arguments = tool_call_response
-                            .function
-                            .arguments
-                            .as_str()
-                            .ok_or_else(|| {
-                                CoderError::MissingArguments(
-                                    "Function arguments not provided".to_string(),
-                                )
-                            })?;
+                        let function_arguments = tool_call_response.function.arguments;
                         let tool = tools::Tool::from_str(function_name)?;
                         info!("Using tool {:?}", tool);
                         match tool {
                             tools::Tool::GithubPullIssue => {
+                                let function_args =
+                                    function_arguments.as_str().ok_or_else(|| {
+                                        CoderError::MissingArguments(
+                                            "Function arguments not provided".to_string(),
+                                        )
+                                    })?;
                                 let args: tools::GithubPullIssueArgs =
-                                    serde_json::from_str(function_arguments)?;
+                                    serde_json::from_str(function_args)?;
                                 info!("Pulling issue #{:?} from GitHub...", args);
                                 let github_issue = tools::pull_github_issue(args.issue).await?;
                                 convo.add_message(Message {
@@ -261,11 +259,9 @@ WORKFLOW:
                                 });
                             }
                             tools::Tool::GetFileContent => {
-                                let path = tool_call_response.function.arguments["path"]
+                                let path = function_arguments["path"]
                                     .as_str()
-                                    .ok_or(CoderError::ToolError(
-                                    "Path not found".to_string(),
-                                ))?;
+                                    .ok_or(CoderError::ToolError("Path not found".to_string()))?;
                                 info!("Reading content from file: {}", path);
                                 let content = tools::get_file_content(path)?;
                                 convo.add_message(Message {
@@ -278,16 +274,12 @@ WORKFLOW:
                                 });
                             }
                             tools::Tool::WriteFileContent => {
-                                let path = tool_call_response.function.arguments["path"]
+                                let path = function_arguments["path"]
                                     .as_str()
-                                    .ok_or(CoderError::ToolError(
-                                    "Path not found".to_string(),
-                                ))?;
-                                let content = tool_call_response.function.arguments["content"]
-                                    .as_str()
-                                    .ok_or(CoderError::ToolError(
-                                        "Content not found".to_string(),
-                                    ))?;
+                                    .ok_or(CoderError::ToolError("Path not found".to_string()))?;
+                                let content = function_arguments["content"].as_str().ok_or(
+                                    CoderError::ToolError("Content not found".to_string()),
+                                )?;
                                 info!("Writing content to file: {}", path);
                                 tools::write_file_content(path, content)?;
                                 convo.add_message(Message {
