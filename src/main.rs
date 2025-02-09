@@ -113,9 +113,9 @@ async fn main() -> Result<(), CoderError> {
                 r#"You are a senior software engineer specializing in Rust development. Your task is to diagnose and fix bugs based on a Github issue.
 
 WORKSPACE INFO:
-- Project Structure: {}
-- Repository: {}/{}
+- Project Structure:
 {}
+
 
 WORKFLOW:
 1. Pull the issue from GitHub
