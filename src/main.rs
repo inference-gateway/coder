@@ -338,7 +338,7 @@ WORKFLOW:
                 // Each pull request comment should be sent to the agent for further processing
                 info!("Iteration completed. Waiting for the next instruction...");
 
-                sleep(Duration::from_secs(5));
+                sleep(Duration::from_secs(15));
             }
         }
         Commands::Refactor {} => {}
