@@ -174,7 +174,7 @@ WORKFLOW:
             let tools = vec![Tool {
                 r#type: ToolType::Function,
                 function: ToolFunction {
-                    name: "pull_github_issue".to_string(),
+                    name: tools::Tool::GithubPullIssue.to_string(),
                     description: "Pull issue from GitHub".to_string(),
                     parameters: json!({
                         "type": "object",

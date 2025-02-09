@@ -1,6 +1,9 @@
-use core::fmt;
 use octocrab::Octocrab;
-use std::{path::Path, process::Command, str::FromStr};
+use std::{
+    fmt::{self, Display},
+    path::Path,
+    str::FromStr,
+};
 
 use crate::errors::CoderError;
 
@@ -26,14 +29,15 @@ impl FromStr for Tool {
     }
 }
 
-impl fmt::Display for Tool {
+impl Display for Tool {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Tool::GithubPullIssue => write!(f, "github_pull_issue"),
-            Tool::GithubCreatePullRequest => write!(f, "github_create_pull_request"),
-            Tool::GetFileContent => write!(f, "get_file_content"),
-            Tool::WriteFileContent => write!(f, "write_file_content"),
-        }
+        let s = match self {
+            Tool::GithubPullIssue => "github_pull_issue",
+            Tool::GithubCreatePullRequest => "github_create_pull_request",
+            Tool::GetFileContent => "get_file_content",
+            Tool::WriteFileContent => "write_file_content",
+        };
+        write!(f, "{}", s)
     }
 }
 
