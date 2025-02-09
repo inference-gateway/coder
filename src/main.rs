@@ -151,6 +151,8 @@ WORKFLOW:
 3. At any time if you need to execute a tool, type the tool name followed by the required arguments, for example: `pull_github_issue issue=123`
 4. Review the code and provide a fix
 5. Submit the fix as a pull request to the repository
+6. Wait for the pull request to be reviewed and merged
+7. If there is a new comment on the pull request, analyze the comment and provide a response
 
 "#,
                 index::build_tree()?,
@@ -253,94 +255,8 @@ WORKFLOW:
                     }
                 }
 
-                // let file_requests = conversation::Conversation::parse_response_for_requested_files(
-                //     &resp.response.content,
-                // );
-
-                // info!("File requests: {:?}", file_requests);
-
-                // for file_path in file_requests {
-                //     match tools::get_file_content(&file_path) {
-                //         Ok(content) => {
-                //             info!("Retrieved content for {}", file_path);
-                //             convo.add_reviewed_file(file_path.clone());
-                //             convo.add_message(Message {
-                //                 role: MessageRole::User,
-                //                 content: format!(
-                //                     "Content of {}:\n```rust\n{}\n```",
-                //                     file_path, content
-                //                 ),
-                //             });
-                //         }
-                //         Err(e) => {
-                //             warn!("Failed to retrieve content for {}: {}", file_path, e);
-                //             convo.add_message(Message {
-                //                 role: MessageRole::User,
-                //                 content: format!(
-                //                     "Could not retrieve content for {}: {}",
-                //                     file_path, e
-                //                 ),
-                //             });
-                //         }
-                //     }
-                // }
-
-                // let resp = client
-                //     .generate_content(
-                //         Provider::Groq,
-                //         "deepseek-r1-distill-llama-70b",
-                //         convo.clone().try_into()?,
-                //     )
-                //     .await?;
-
-                // let assistant_message = utils::strip_thinking(&resp.response.content);
-                // if assistant_message.is_none() {
-                //     warn!("Assistant message is empty. Exiting...");
-                //     break;
-                // }
-                // let assistant_message_unwarpped = assistant_message.unwrap().trim().to_string();
-
-                // println!("{:?}", convo);
-
-                // convo.add_message(Message {
-                //     role: MessageRole::Assistant,
-                //     content: assistant_message_unwarpped.clone(),
-                // });
-
-                // let fixes = conversation::Conversation::parse_response_for_fixes(
-                //     assistant_message_unwarpped.as_str(),
-                // );
-
-                // for fix in fixes.clone() {
-                //     for (file_path, content) in fix {
-                //         match tools::write_file_content(&file_path, &content) {
-                //             Ok(_) => {
-                //                 info!("Wrote content to {}", file_path);
-                //                 convo.add_message(Message {
-                //                     role: MessageRole::User,
-                //                     content: format!("Wrote content to {}", file_path),
-                //                 });
-                //             }
-                //             Err(e) => {
-                //                 warn!("Failed to write content to {}: {}", file_path, e);
-                //                 convo.add_message(Message {
-                //                     role: MessageRole::User,
-                //                     content: format!(
-                //                         "Could not write content to {}: {}",
-                //                         file_path, e
-                //                     ),
-                //                 });
-                //             }
-                //         }
-                //     }
-                // }
-
-                // // Create branch and PR if there are fixes
-                // if !fixes.is_empty() {
-                //     // Create a new branch
-                //     let branch_name = format!("fix/issue-{}", issue);
-                //     tools::create_pull_request(&branch_name, issue, title, body, head, base)
-                // }
+                // TODO - Instead of sleeping the agent supposed to wait for user input on the Pull Request comments
+                // Each pull request comment should be sent to the agent for further processing
 
                 sleep(Duration::from_secs(5));
             }
