@@ -246,7 +246,7 @@ WORKFLOW:
                                     })?;
                                 let args: tools::GithubPullIssueArgs =
                                     serde_json::from_str(function_args)?;
-                                info!("Pulling issue #{} from GitHub...", args.issue);
+                                info!("Pulling issue #{:?} from GitHub...", args.issue);
                                 let github_issue = tools::pull_github_issue(args.issue).await?;
                                 info!("Found issue: {}", github_issue.title);
                                 info!("Description: {:?}", github_issue.body);

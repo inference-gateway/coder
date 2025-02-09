@@ -167,7 +167,7 @@ pub async fn pull_github_issue(
         .map_err(|e| CoderError::GitHubError(e))?;
 
     let issue = octocrab
-        .issues("octocrab", "octocrab")
+        .issues("inference-gateway", "coder")
         .get(issue_number)
         .await
         .map_err(|e| CoderError::GitHubError(e))?;
