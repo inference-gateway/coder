@@ -3,6 +3,7 @@ use crate::errors::CoderError;
 use clap::{CommandFactory, Parser};
 use clap_complete::generate;
 use config::DEFAULT_CONFIG_TEMPLATE;
+use conversation::Conversation;
 use inference_gateway_sdk::{
     InferenceGatewayAPI, InferenceGatewayClient, Message, MessageRole, Provider, Tool,
     ToolFunction, ToolType,
@@ -11,7 +12,7 @@ use log::{debug, info, warn};
 use serde_json::json;
 use serde_yaml::Value;
 use std::str::FromStr;
-use std::{env, fs, path::Path, thread::sleep, time::Duration};
+use std::{env, fs, panic, path::Path, thread::sleep, time::Duration};
 
 mod cli;
 mod config;
@@ -21,6 +22,15 @@ mod index;
 mod prompt;
 mod tools;
 mod utils;
+
+fn setup_panic_handler(conversation: Conversation) {
+    let default_hook = panic::take_hook();
+    panic::set_hook(Box::new(move |panic_info| {
+        info!("{:?}", conversation);
+
+        default_hook(panic_info);
+    }));
+}
 
 #[tokio::main]
 async fn main() -> Result<(), CoderError> {
@@ -104,10 +114,10 @@ async fn main() -> Result<(), CoderError> {
                 &config["api"]["endpoint"].as_str().unwrap_or_default(),
             );
 
-            let mut convo = conversation::Conversation::new(
-                "deepseek-r1-distill-llama-70b".to_string(),
-                Provider::Groq,
-            );
+            let mut convo =
+                Conversation::new("deepseek-r1-distill-llama-70b".to_string(), Provider::Groq);
+
+            setup_panic_handler(convo.clone());
 
             let system_prompt = format!(
                 r#"You are a senior software engineer specializing in Rust development. Your task is to diagnose and fix bugs based on a Github issue.
@@ -301,7 +311,7 @@ WORKFLOW:
                 // TODO - Instead of sleeping the agent supposed to wait for user input on the Pull Request comments
                 // Each pull request comment should be sent to the agent for further processing
 
-                info!("Convo: {:?}", convo);
+                info!("Convo: {:?}", assistant_message);
                 info!("Iteration completed. Waiting for the next instruction...");
 
                 sleep(Duration::from_secs(5));
