@@ -236,6 +236,8 @@ WORKFLOW:
                                         "Issue number not found".to_string(),
                                     ))?;
                                 info!("Pulling issue #{} from GitHub...", issue_number);
+                                let github_issue =
+                                    tools::pull_github_issue(issue_number as u64).await?;
                                 convo.add_message(Message {
                                     role: MessageRole::Tool,
                                     content: format!(

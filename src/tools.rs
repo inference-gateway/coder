@@ -113,7 +113,9 @@ pub fn get_file_content(path: &str) -> Result<String, CoderError> {
 /// # Returns
 ///
 /// * `Result<octocrab::models::issues::Issue, CoderError>` - Result of pulling the issue
-pub async fn pull_issue(issue_number: u64) -> Result<octocrab::models::issues::Issue, CoderError> {
+pub async fn pull_github_issue(
+    issue_number: u64,
+) -> Result<octocrab::models::issues::Issue, CoderError> {
     let octocrab = Octocrab::builder()
         .personal_token(std::env::var("GITHUB_TOKEN").unwrap())
         .build()
