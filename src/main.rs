@@ -253,11 +253,11 @@ WORKFLOW:
                                 let github_issue = tools::pull_github_issue(args.issue).await?;
                                 info!("Found issue: {}", github_issue.title);
                                 info!("Description: {:?}", github_issue.body);
-                                // convo.add_message(Message {
-                                //     role: MessageRole::Tool,
-                                //     content: format!("Found issue: {}", github_issue.title),
-                                //     tool_call_id: Some(tool_call_response.id.clone()),
-                                // });
+                                convo.add_message(Message {
+                                    role: MessageRole::Tool,
+                                    content: format!("Found issue: {}", github_issue.title),
+                                    tool_call_id: Some(tool_call_response.id.clone()),
+                                });
                                 convo.add_message(Message {
                                     role: MessageRole::Tool,
                                     content: format!("Description: {:?}", github_issue.body),
