@@ -1,6 +1,6 @@
 use log::info;
 use octocrab::Octocrab;
-use serde::{Deserialize, Serialize};
+use serde::{de::Error, Deserialize, Deserializer, Serialize};
 use std::{
     fmt::{self, Display},
     path::Path,
@@ -10,8 +10,26 @@ use std::{
 
 use crate::errors::CoderError;
 
+fn deserialize_issue_number<'de, D>(deserializer: D) -> Result<u64, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum StringOrInt {
+        String(String),
+        Int(u64),
+    }
+
+    match StringOrInt::deserialize(deserializer)? {
+        StringOrInt::String(s) => s.parse().map_err(D::Error::custom),
+        StringOrInt::Int(i) => Ok(i),
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GithubPullIssueArgs {
+    #[serde(deserialize_with = "deserialize_issue_number")]
     pub issue: u64,
 }
 
