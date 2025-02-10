@@ -179,7 +179,7 @@ async fn main() -> Result<(), CoderError> {
             setup_panic_handler(convo.clone());
 
             let system_prompt = format!(
-                r#"You are a senior software engineer specializing in Rust development. Your task is to diagnose and fix bugs based on a Github issue.
+                r#"You are a senior software engineer specializing in Rust development. Your task is to diagnose and fix bugs based on a Github issue. Keep your answers short and consice. Do not ask questions back.
 
 WORKSPACE INFO:
 
@@ -378,7 +378,7 @@ WORKFLOW:
 
                 info!("Iteration completed. Waiting for the next iteration..");
 
-                sleep(Duration::from_secs(15));
+                sleep(Duration::from_secs(60));
             }
         }
         Commands::Refactor {} => {}
