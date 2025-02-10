@@ -1,6 +1,5 @@
 use ignore::WalkBuilder;
-use serde_yaml::Value;
-use std::{collections::HashMap, fs, io, path::Path};
+use std::{fs, io, path::Path};
 
 pub fn build_tree() -> io::Result<String> {
     let mut tree = String::from(".\n");
@@ -66,35 +65,4 @@ pub fn build_content() -> io::Result<String> {
     }
 
     Ok(content)
-}
-
-pub fn extract_file_contents(index_content: &str) -> HashMap<String, String> {
-    let mut contents = HashMap::new();
-
-    if let Ok(yaml) = serde_yaml::from_str::<Value>(index_content) {
-        if let Some(content) = yaml.get("content") {
-            if let Some(dirs) = content.as_mapping() {
-                for (dir, files) in dirs {
-                    let dir_name = dir.as_str().unwrap_or("");
-
-                    if let Some(files_map) = files.as_mapping() {
-                        for (file, content) in files_map {
-                            let file_name = file.as_str().unwrap_or("");
-                            let file_content = content.as_str().unwrap_or("").to_string();
-
-                            let full_path = if dir_name.is_empty() {
-                                file_name.to_string()
-                            } else {
-                                format!("{}/{}", dir_name, file_name)
-                            };
-
-                            contents.insert(full_path, file_content);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    contents
 }

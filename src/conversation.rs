@@ -1,6 +1,6 @@
 use inference_gateway_sdk::{Message, Provider};
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, fmt, time::SystemTime};
+use std::{fmt, time::SystemTime};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Conversation {
@@ -40,9 +40,9 @@ impl Conversation {
         self.messages.push(message);
     }
 
-    pub fn add_reviewed_file(&mut self, file: String) {
-        self.metadata.files_reviewed.push(file);
-    }
+    // pub fn add_reviewed_file(&mut self, file: String) {
+    //     self.metadata.files_reviewed.push(file);
+    // }
 }
 
 impl TryInto<Vec<Message>> for Conversation {

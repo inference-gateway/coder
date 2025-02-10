@@ -8,7 +8,7 @@ use inference_gateway_sdk::{
     InferenceGatewayAPI, InferenceGatewayClient, Message, MessageRole, Provider, Tool,
     ToolFunction, ToolType,
 };
-use log::{debug, info, warn};
+use log::{info, warn};
 use serde_json::json;
 use serde_yaml::Value;
 use std::str::FromStr;
@@ -19,7 +19,6 @@ mod config;
 mod conversation;
 mod errors;
 mod index;
-mod prompt;
 mod tools;
 mod utils;
 
@@ -101,12 +100,13 @@ async fn main() -> Result<(), CoderError> {
             let config_content = fs::read_to_string(config_path)?;
             let config: Value = serde_yaml::from_str(&config_content)?;
 
-            let git_owner = config["github"]["owner"]
-                .as_str()
-                .ok_or(CoderError::ConfigError(
-                    "GitHub owner not found".to_string(),
-                ))?;
-            let git_repo = config["github"]["repo"]
+            let github_owner =
+                config["github"]["owner"]
+                    .as_str()
+                    .ok_or(CoderError::ConfigError(
+                        "GitHub owner not found".to_string(),
+                    ))?;
+            let github_repo = config["github"]["repo"]
                 .as_str()
                 .ok_or(CoderError::ConfigError("GitHub repo not found".to_string()))?;
 
@@ -261,10 +261,10 @@ WORKFLOW:
                                     serde_json::from_str(function_args)?;
                                 info!(
                                     "Pulling issue #{:?} from GitHub {}/{}...",
-                                    args.issue, git_owner, git_repo
+                                    args.issue, github_owner, github_repo
                                 );
                                 let github_issue =
-                                    tools::pull_github_issue(args.issue, git_owner, git_repo)
+                                    tools::pull_github_issue(args.issue, github_owner, github_repo)
                                         .await?;
                                 convo.add_message(Message {
                                     role: MessageRole::Tool,
@@ -334,8 +334,39 @@ WORKFLOW:
                             }
                             tools::Tool::GithubCreatePullRequest => {
                                 info!("Creating pull request...");
+                                let function_args =
+                                    function_arguments.as_str().ok_or_else(|| {
+                                        CoderError::MissingArguments(
+                                            "Function arguments not provided".to_string(),
+                                        )
+                                    })?;
+                                let args: tools::GithubCreatePullRequestArgs =
+                                    serde_json::from_str(function_args)?;
+                                let pull_request = tools::github_create_pull_request(
+                                    &github_owner,
+                                    &github_repo,
+                                    &args.branch_name,
+                                    args.issue,
+                                    &args.title,
+                                    &args.body,
+                                )
+                                .await?;
+
+                                info!("Pull request created: {:?}", pull_request.html_url);
+                                convo.add_message(Message {
+                                    role: MessageRole::Tool,
+                                    content: format!(
+                                        "Pull request created: {:?}\n\nURL: {:?}",
+                                        pull_request.title, pull_request.html_url
+                                    ),
+                                    tool_call_id: Some(tool_call_response.id),
+                                });
+                                convo.add_message(Message {
+                                    role: MessageRole::User,
+                                    content: "Pull request has been created. If not further action needed, you can go idle using the provided tool".to_string(),
+                                    ..Default::default()
+                                });
                             }
-                            _ => {}
                         }
                     }
                 }

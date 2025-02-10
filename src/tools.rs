@@ -26,6 +26,14 @@ pub struct WriteFileContentArgs {
     pub content: String,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GithubCreatePullRequestArgs {
+    pub branch_name: String,
+    pub issue: u64,
+    pub title: String,
+    pub body: String,
+}
+
 #[derive(Debug, Clone)]
 pub enum Tool {
     GithubPullIssue,
@@ -100,11 +108,12 @@ pub fn get_file_content(path: &str) -> Result<String, CoderError> {
 ///
 /// # Arguments
 ///
+/// * `github_owner` - Owner of the repository
+/// * `github_repo` - Name of the repository  
 /// * `branch_name` - Name of the branch
+/// * `issue` - Issue number
 /// * `title` - Title of the pull request
 /// * `body` - Body of the pull request
-/// * `head` - Head branch
-/// * `base` - Base branch
 ///
 /// # Returns
 ///
@@ -116,11 +125,7 @@ pub async fn github_create_pull_request(
     issue: u64,
     title: &str,
     body: &str,
-    head: &str,
-    base: &str,
 ) -> Result<octocrab::models::pulls::PullRequest, CoderError> {
-    let client = octocrab::instance();
-
     let github_token = std::env::var("GITHUB_TOKEN")
         .map_err(|_| CoderError::ConfigError("GITHUB_TOKEN not set".to_string()))?;
 
@@ -151,11 +156,8 @@ pub async fn github_create_pull_request(
 
     let pr = octocrab
         .pulls(github_owner, github_repo)
-        .create(format!("Fix issue #{}", issue), branch_name, "main")
-        .body(format!(
-            "This PR addresses issue #{}. Please review the changes.",
-            issue
-        ))
+        .create(title, branch_name, "main")
+        .body(body)
         .send()
         .await
         .map_err(|e| CoderError::GitHubError(e))?;
