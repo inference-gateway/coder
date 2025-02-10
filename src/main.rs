@@ -209,6 +209,7 @@ async fn main() -> Result<(), CoderError> {
             let client = InferenceGatewayClient::new(
                 &config["api"]["endpoint"].as_str().unwrap_or_default(),
             )
+            .with_max_tokens(Some(900))
             .with_tools(Some(tools));
 
             let mut convo =
