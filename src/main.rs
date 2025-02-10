@@ -371,7 +371,7 @@ WORKFLOW:
                     }
                 }
 
-                info!("Iteration completed. Waiting for the next instruction...");
+                info!("Iteration completed. Waiting for the next iteration..");
 
                 sleep(Duration::from_secs(15));
             }
