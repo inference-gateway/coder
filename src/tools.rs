@@ -47,6 +47,7 @@ pub struct WriteFileContentArgs {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GithubCreatePullRequestArgs {
     pub branch_name: String,
+    #[serde(deserialize_with = "deserialize_issue_number")]
     pub issue: u64,
     pub title: String,
     pub body: String,

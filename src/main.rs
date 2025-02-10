@@ -115,7 +115,7 @@ async fn main() -> Result<(), CoderError> {
                     r#type: ToolType::Function,
                     function: ToolFunction {
                         name: tools::Tool::GithubPullIssue.to_string(),
-                        description: "Pull issue from GitHub".to_string(),
+                        description: "Pull the issue from GitHub".to_string(),
                         parameters: json!({
                             "type": "object",
                             "properties": {
@@ -166,6 +166,36 @@ async fn main() -> Result<(), CoderError> {
                         }),
                     },
                 },
+                Tool {
+                    r#type: ToolType::Function,
+                    function: ToolFunction {
+                        name: tools::Tool::GithubCreatePullRequest.to_string(),
+                        description: "Create a GitHub Pull Request".to_string(),
+                        parameters: json!({
+                            "type": "object",
+                            "properties": {
+                                "branch_name": {
+                                    "type": "string",
+                                    "description": "The branch name"
+                                },
+                                "issue": {
+                                    "type": "number",
+                                    "description": "The issue number"
+                                },
+                                "title": {
+                                    "type": "string",
+                                    "description": "The pull request title"
+                                },
+                                "body": {
+                                    "type": "string",
+                                    "description": "The pull request body"
+                                },
+
+                            },
+                            "required": ["branch_name", "issue", "title", "body"]
+                        }),
+                    },
+                },
             ];
 
             let client = InferenceGatewayClient::new(
@@ -179,7 +209,7 @@ async fn main() -> Result<(), CoderError> {
             setup_panic_handler(convo.clone());
 
             let system_prompt = format!(
-                r#"You are a senior software engineer specializing in Rust development. Your task is to diagnose and fix bugs based on a Github issue. Keep your answers short and consice. Do not ask questions back.
+                r#"You are a senior software engineer specializing in Rust development. Your task is to diagnose and fix bugs based on a GitHub issue. Keep your answers short and consice. Do not ask questions back.
 
 WORKSPACE INFO:
 
@@ -187,10 +217,10 @@ WORKSPACE INFO:
 
 WORKFLOW:
 1. Pull the issue from GitHub
-2. Think about the issue through - don't jump to conclusions before reading the necessary files and reviewing them.
-3. Review the code by reading the file content using the provided tool get_file_content
-4. Update the file content using the provided tool write_file_content
-5. Finally, create a pull request using the provided tool github_create_pull_request
+2. Think about the issue through
+3. Review the code by reading the file content
+4. Write the content to the file
+5. Finally, create a GitHub Pull Request
 
 "#,
                 index::build_tree()?,
@@ -268,6 +298,10 @@ WORKFLOW:
                                 let github_issue =
                                     tools::pull_github_issue(args.issue, github_owner, github_repo)
                                         .await?;
+                                info!(
+                                    "Issue pulled: {:?}\n\n{:?}",
+                                    github_issue.title, github_issue.body
+                                );
                                 convo.add_message(Message {
                                     role: MessageRole::Tool,
                                     content: format!(
