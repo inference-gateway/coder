@@ -1,8 +1,10 @@
+use log::info;
 use octocrab::Octocrab;
 use serde::{Deserialize, Serialize};
 use std::{
     fmt::{self, Display},
     path::Path,
+    process::Command,
     str::FromStr,
 };
 
@@ -98,6 +100,7 @@ pub fn get_file_content(path: &str) -> Result<String, CoderError> {
 ///
 /// # Arguments
 ///
+/// * `branch_name` - Name of the branch
 /// * `title` - Title of the pull request
 /// * `body` - Body of the pull request
 /// * `head` - Head branch
@@ -106,59 +109,60 @@ pub fn get_file_content(path: &str) -> Result<String, CoderError> {
 /// # Returns
 ///
 /// * `Result<octocrab::models::pulls::PullRequest, CoderError>` - Result of creating the pull request
-// pub fn github_create_pull_request(
-//     branch_name: &str,
-//     issue: u64,
-//     title: &str,
-//     body: &str,
-//     head: &str,
-//     base: &str,
-// ) -> Result<octocrab::models::pulls::PullRequest, CoderError> {
-//     let client = octocrab::instance();
-//     let octocrab = Octocrab::builder()
-//         .personal_token(github_token)
-//         .build()
-//         .map_err(|e| CoderError::GitHubError(e))?;
-//     let github_token = std::env::var("GITHUB_TOKEN")
-//         .map_err(|_| CoderError::ConfigError("GITHUB_TOKEN not set".to_string()))?;
+pub async fn github_create_pull_request(
+    github_owner: &str,
+    github_repo: &str,
+    branch_name: &str,
+    issue: u64,
+    title: &str,
+    body: &str,
+    head: &str,
+    base: &str,
+) -> Result<octocrab::models::pulls::PullRequest, CoderError> {
+    let client = octocrab::instance();
 
-//     Command::new("git")
-//         .args(["checkout", "-b", &branch_name])
-//         .output()
-//         .map_err(|e| CoderError::GitError(e.to_string()))?;
+    let github_token = std::env::var("GITHUB_TOKEN")
+        .map_err(|_| CoderError::ConfigError("GITHUB_TOKEN not set".to_string()))?;
 
-//     // Commit changes
-//     Command::new("git")
-//         .args(["add", "."])
-//         .output()
-//         .map_err(|e| CoderError::GitError(e.to_string()))?;
+    let octocrab = Octocrab::builder()
+        .personal_token(github_token)
+        .build()
+        .map_err(|e| CoderError::GitHubError(e))?;
 
-//     Command::new("git")
-//         .args(["commit", "-m", &format!("fix: address issue #{}", issue)])
-//         .output()
-//         .map_err(|e| CoderError::GitError(e.to_string()))?;
+    Command::new("git")
+        .args(["checkout", "-b", &branch_name])
+        .output()
+        .map_err(|e| CoderError::GitError(e.to_string()))?;
 
-//     // Push branch
-//     Command::new("git")
-//         .args(["push", "origin", &branch_name])
-//         .output()
-//         .map_err(|e| CoderError::GitError(e.to_string()))?;
+    Command::new("git")
+        .args(["add", "."])
+        .output()
+        .map_err(|e| CoderError::GitError(e.to_string()))?;
 
-//     // Create PR using octocrab
-//     let pr = octocrab
-//         .pulls(git_owner, git_repo)
-//         .create(format!("Fix issue #{}", issue), branch_name, "main")
-//         .body(format!(
-//             "This PR addresses issue #{}. Please review the changes.",
-//             issue
-//         ))
-//         .send()
-//         .await
-//         .map_err(|e| CoderError::GitHubError(e))?;
+    Command::new("git")
+        .args(["commit", "-m", &format!("fix: address issue #{}", issue)])
+        .output()
+        .map_err(|e| CoderError::GitError(e.to_string()))?;
 
-//     info!("Created PR: {}", pr.html_url.unwrap());
-//     Ok(pr)
-// }
+    Command::new("git")
+        .args(["push", "origin", &branch_name])
+        .output()
+        .map_err(|e| CoderError::GitError(e.to_string()))?;
+
+    let pr = octocrab
+        .pulls(github_owner, github_repo)
+        .create(format!("Fix issue #{}", issue), branch_name, "main")
+        .body(format!(
+            "This PR addresses issue #{}. Please review the changes.",
+            issue
+        ))
+        .send()
+        .await
+        .map_err(|e| CoderError::GitHubError(e))?;
+
+    info!("Created PR: {}", pr.clone().html_url.unwrap());
+    Ok(pr)
+}
 
 /// Pull issue from GitHub
 ///

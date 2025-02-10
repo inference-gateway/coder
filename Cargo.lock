@@ -1012,9 +1012,9 @@ dependencies = [
 
 [[package]]
 name = "inference-gateway-sdk"
-version = "0.8.0-rc.1"
+version = "0.8.0-rc.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0ffa8f731f0245d4aeda99d2cc939e669a7d2cb04c4659482873bc42e977f0b"
+checksum = "b43519ea1968f095ab38fc12673f63222ad2dda25c903788eb4d863065cf4d7d"
 dependencies = [
  "async-stream",
  "futures-util",

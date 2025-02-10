@@ -110,37 +110,6 @@ async fn main() -> Result<(), CoderError> {
                 .as_str()
                 .ok_or(CoderError::ConfigError("GitHub repo not found".to_string()))?;
 
-            let client = InferenceGatewayClient::new(
-                &config["api"]["endpoint"].as_str().unwrap_or_default(),
-            );
-
-            let mut convo =
-                Conversation::new("deepseek-r1-distill-llama-70b".to_string(), Provider::Groq);
-
-            setup_panic_handler(convo.clone());
-
-            let system_prompt = format!(
-                r#"You are a senior software engineer specializing in Rust development. Your task is to diagnose and fix bugs based on a Github issue.
-
-WORKSPACE INFO:
-
-{}
-
-WORKFLOW:
-1. Pull the issue from GitHub
-2. Think about the issue through - don't jump to conclusions before reading the necessary files and reviewing them.
-3. Review the code by reading the file content using the provided tool get_file_content
-
-"#,
-                index::build_tree()?,
-            );
-
-            convo.add_message(Message {
-                role: MessageRole::System,
-                content: system_prompt,
-                tool_call_id: None,
-            });
-
             let tools = vec![
                 Tool {
                     r#type: ToolType::Function,
@@ -199,10 +168,42 @@ WORKFLOW:
                 },
             ];
 
+            let client = InferenceGatewayClient::new(
+                &config["api"]["endpoint"].as_str().unwrap_or_default(),
+            )
+            .with_tools(Some(tools));
+
+            let mut convo =
+                Conversation::new("deepseek-r1-distill-llama-70b".to_string(), Provider::Groq);
+
+            setup_panic_handler(convo.clone());
+
+            let system_prompt = format!(
+                r#"You are a senior software engineer specializing in Rust development. Your task is to diagnose and fix bugs based on a Github issue.
+
+WORKSPACE INFO:
+
+{}
+
+WORKFLOW:
+1. Pull the issue from GitHub
+2. Think about the issue through - don't jump to conclusions before reading the necessary files and reviewing them.
+3. Review the code by reading the file content using the provided tool get_file_content
+
+"#,
+                index::build_tree()?,
+            );
+
+            convo.add_message(Message {
+                role: MessageRole::System,
+                content: system_prompt,
+                ..Default::default()
+            });
+
             convo.add_message(Message {
                 role: MessageRole::User,
                 content: format!("I need help fixing this issue #{}", issue),
-                tool_call_id: None,
+                ..Default::default()
             });
 
             let timeout = Duration::from_secs(300);
@@ -214,12 +215,11 @@ WORKFLOW:
                     break;
                 }
 
-                let resp = client
+                let resp: inference_gateway_sdk::GenerateResponse = client
                     .generate_content(
                         Provider::Groq,
                         "deepseek-r1-distill-llama-70b",
                         convo.clone().try_into()?,
-                        Some(tools.clone()),
                     )
                     .await?;
 
@@ -236,7 +236,7 @@ WORKFLOW:
                 convo.add_message(Message {
                     role: MessageRole::Assistant,
                     content: assistant_message.clone(),
-                    tool_call_id: None,
+                    ..Default::default()
                 });
 
                 info!("{:?}", assistant_message);
@@ -279,7 +279,7 @@ WORKFLOW:
                                     content:
                                         "Please read the issue description and let me know if you need any further information."
                                             .to_string(),
-                                    tool_call_id: None,
+                                    ..Default::default()
                                 });
                             }
                             tools::Tool::GetFileContent => {
@@ -304,7 +304,7 @@ WORKFLOW:
                                 convo.add_message(Message {
                                     role: MessageRole::User,
                                     content: "Do you want to modify the file content? If yes, just modify it using the tool write_file_content. Don't ask questions back.".to_string(),
-                                    tool_call_id: None,
+                                    ..Default::default()
                                 });
                             }
                             tools::Tool::WriteFileContent => {
@@ -329,7 +329,7 @@ WORKFLOW:
                                 convo.add_message(Message {
                                     role: MessageRole::User,
                                     content: "Are there any other files need modifications? if yes, use the get_file_content tool to retrive and write_file_content tool to write it. If not, let's proceed to creating a pull request. Don't ask questions back.".to_string(),
-                                    tool_call_id: None,
+                                    ..Default::default()
                                 });
                             }
                             tools::Tool::GithubCreatePullRequest => {
