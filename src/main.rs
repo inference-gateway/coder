@@ -109,6 +109,14 @@ async fn main() -> Result<(), CoderError> {
             let github_repo = config["github"]["repo"]
                 .as_str()
                 .ok_or(CoderError::ConfigError("GitHub repo not found".to_string()))?;
+            let model = config["agent"]["model"]
+                .as_str()
+                .ok_or(CoderError::ConfigError("Model not found".to_string()))?;
+            let provider = Provider::try_from(
+                config["agent"]["provider"]
+                    .as_str()
+                    .ok_or(CoderError::ConfigError("Provider not found".to_string()))?,
+            )?;
 
             let tools = vec![
                 Tool {
@@ -248,11 +256,7 @@ WORKFLOW:
                 }
 
                 let resp: inference_gateway_sdk::GenerateResponse = client
-                    .generate_content(
-                        Provider::Groq,
-                        "deepseek-r1-distill-llama-70b",
-                        convo.clone().try_into()?,
-                    )
+                    .generate_content(provider.clone(), model, convo.clone().try_into()?)
                     .await?;
 
                 let response = resp.response;
