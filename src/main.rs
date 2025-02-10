@@ -189,6 +189,8 @@ WORKFLOW:
 1. Pull the issue from GitHub
 2. Think about the issue through - don't jump to conclusions before reading the necessary files and reviewing them.
 3. Review the code by reading the file content using the provided tool get_file_content
+4. Update the file content using the provided tool write_file_content
+5. Finally, create a pull request using the provided tool github_create_pull_request
 
 "#,
                 index::build_tree()?,
@@ -303,7 +305,7 @@ WORKFLOW:
                                 });
                                 convo.add_message(Message {
                                     role: MessageRole::User,
-                                    content: "Do you want to modify the file content? If yes, just modify it using the tool write_file_content. Don't ask questions back.".to_string(),
+                                    content: "Do you want to modify the file content? If yes, just modify it using the tool write_file_content.".to_string(),
                                     ..Default::default()
                                 });
                             }
@@ -328,7 +330,7 @@ WORKFLOW:
                                 });
                                 convo.add_message(Message {
                                     role: MessageRole::User,
-                                    content: "Are there any other files need modifications? if yes, use the get_file_content tool to retrive and write_file_content tool to write it. If not, let's proceed to creating a pull request. Don't ask questions back.".to_string(),
+                                    content: "Are there any other files need modifications? if yes, use the get_file_content tool to retrive and write_file_content tool to write it. If not, let's proceed with github_create_pull_request.".to_string(),
                                     ..Default::default()
                                 });
                             }
