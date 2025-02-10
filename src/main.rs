@@ -366,6 +366,11 @@ WORKFLOW:
                                     content: "Pull request has been created. If not further action needed, you can go idle using the provided tool".to_string(),
                                     ..Default::default()
                                 });
+                                info!(
+                                    "The conversation has been completed. Exiting... {:?}",
+                                    convo
+                                );
+                                break;
                             }
                         }
                     }
