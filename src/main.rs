@@ -192,8 +192,7 @@ WORKFLOW:
                 if response.tool_calls.is_some() {
                     for tool_call in response.tool_calls.unwrap() {
                         let tool = tools::Tools::from_str(tool_call.function.name.as_str())?;
-                        let args = serde_json::to_value(tool_call.function.arguments)
-                            .map_err(|e| CoderError::MissingArguments(e.to_string()))?;
+                        let args = tool_call.function.arguments;
                         tools::handle_tool_calls(&tool, args, &config).await?;
                     }
                 }
@@ -290,8 +289,7 @@ WORKFLOW:
                 if response.tool_calls.is_some() {
                     for tool_call in response.tool_calls.unwrap() {
                         let tool = tools::Tools::from_str(tool_call.function.name.as_str())?;
-                        let args = serde_json::to_value(tool_call.function.arguments)
-                            .map_err(|e| CoderError::MissingArguments(e.to_string()))?;
+                        let args = tool_call.function.arguments;
                         tools::handle_tool_calls(&tool, args, &config).await?;
                     }
                 }
