@@ -123,15 +123,15 @@ async fn main() -> Result<(), CoderError> {
             setup_panic_handler(convo.clone());
 
             let system_prompt = format!(
-                r#"You are a senior software engineer specializing in Rust development. Your task is to diagnose and fix bugs based on a GitHub issue. Keep your answers short and consice. Do not ask questions back.
+                r#"You are a senior software engineer specializing in Rust development. Your task is to diagnose and fix bugs based on a {} issue. Keep your answers short and consice. Do not ask questions back.
 
 WORKSPACE INFO:
 
 {}
 
 WORKFLOW:
-1. Validate the issue from GitHub
-1. Pull the issue from GitHub
+1. Validate the issue from {} using issue_validate
+1. Pull the issue from {} using issue_pull
 2. Think about the issue through
 3. Review the code by reading the file content
 4. Optionally, read the documentations for referencing update to date information
@@ -139,11 +139,15 @@ WORKFLOW:
 6. Lint the code
 7. Analyse the code
 8. Test the code
-9. Create a GitHub Pull Request
+9. Create a {} Pull Request or Merge Request
 10. Finally, if you're done, just call "done" tool
 
 "#,
+                config.scm.name,
                 index::build_tree()?,
+                config.scm.name,
+                config.scm.name,
+                config.scm.name,
             );
 
             convo.add_message(Message {
