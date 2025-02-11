@@ -122,24 +122,28 @@ async fn main() -> Result<(), CoderError> {
                 Tool {
                     r#type: ToolType::Function,
                     function: ToolFunction {
-                        name: tools::Tool::GithubPullIssue.to_string(),
-                        description: "Pull the issue from GitHub".to_string(),
+                        name: tools::Tool::IssuePull.to_string(),
+                        description: "Pull the issue from SCM".to_string(),
                         parameters: json!({
                             "type": "object",
                             "properties": {
+                                "scm": {
+                                    "type": "string",
+                                    "description": "SCM name"
+                                },
                                 "issue": {
                                     "type": "number",
                                     "description": "Issue number"
                                 }
                             },
-                            "required": ["issue"]
+                            "required": ["scm","issue"]
                         }),
                     },
                 },
                 Tool {
                     r#type: ToolType::Function,
                     function: ToolFunction {
-                        name: tools::Tool::GetFileContent.to_string(),
+                        name: tools::Tool::CodeRead.to_string(),
                         description: "Read a file content".to_string(),
                         parameters: json!({
                             "type": "object",
@@ -156,7 +160,7 @@ async fn main() -> Result<(), CoderError> {
                 Tool {
                     r#type: ToolType::Function,
                     function: ToolFunction {
-                        name: tools::Tool::WriteFileContent.to_string(),
+                        name: tools::Tool::CodeWrite.to_string(),
                         description: "Write content to a file".to_string(),
                         parameters: json!({
                             "type": "object",
@@ -177,7 +181,7 @@ async fn main() -> Result<(), CoderError> {
                 Tool {
                     r#type: ToolType::Function,
                     function: ToolFunction {
-                        name: tools::Tool::GithubCreatePullRequest.to_string(),
+                        name: tools::Tool::PullRequest.to_string(),
                         description: "Create a GitHub Pull Request".to_string(),
                         parameters: json!({
                             "type": "object",
@@ -287,7 +291,8 @@ WORKFLOW:
                         let tool = tools::Tool::from_str(function_name)?;
                         info!("Using tool {:?}", tool);
                         match tool {
-                            tools::Tool::GithubPullIssue => {
+                            tools::Tool::IssueValidate => {}
+                            tools::Tool::IssuePull => {
                                 let function_args =
                                     function_arguments.as_str().ok_or_else(|| {
                                         CoderError::MissingArguments(
@@ -301,7 +306,7 @@ WORKFLOW:
                                     args.issue, github_owner, github_repo
                                 );
                                 let github_issue =
-                                    tools::pull_github_issue(args.issue, github_owner, github_repo)
+                                    tools::issue_pull(args.issue, github_owner, github_repo)
                                         .await?;
                                 info!(
                                     "Issue pulled: {:?}\n\n{:?}",
@@ -323,7 +328,19 @@ WORKFLOW:
                                     ..Default::default()
                                 });
                             }
-                            tools::Tool::GetFileContent => {
+                            tools::Tool::CodeAnalyse => {
+                                todo!("Implement code analysis tool");
+                            }
+                            tools::Tool::CodeLint => {
+                                todo!("Implement code linting tool");
+                            }
+                            tools::Tool::CodeTest => {
+                                todo!("Implement code testing tool");
+                            }
+                            tools::Tool::DocsReference => {
+                                todo!("Implement documentation reference tool");
+                            }
+                            tools::Tool::CodeRead => {
                                 let function_args =
                                     function_arguments.as_str().ok_or_else(|| {
                                         CoderError::MissingArguments(
@@ -333,7 +350,7 @@ WORKFLOW:
                                 let args: tools::GetFileContentArgs =
                                     serde_json::from_str(function_args)?;
                                 info!("Reading content from file: {}", args.path);
-                                let content = tools::get_file_content(&args.path)?;
+                                let content = tools::code_read(&args.path)?;
                                 convo.add_message(Message {
                                     role: MessageRole::Tool,
                                     content: format!(
@@ -348,7 +365,7 @@ WORKFLOW:
                                     ..Default::default()
                                 });
                             }
-                            tools::Tool::WriteFileContent => {
+                            tools::Tool::CodeWrite => {
                                 let function_args =
                                     function_arguments.as_str().ok_or_else(|| {
                                         CoderError::MissingArguments(
@@ -358,7 +375,7 @@ WORKFLOW:
                                 let args: tools::WriteFileContentArgs =
                                     serde_json::from_str(function_args)?;
                                 info!("Writing content to file: {}", args.path);
-                                tools::write_file_content(&args.path, &args.content)?;
+                                tools::code_write(&args.path, &args.content)?;
                                 convo.add_message(Message {
                                     role: MessageRole::Tool,
                                     content: format!(
@@ -373,7 +390,7 @@ WORKFLOW:
                                     ..Default::default()
                                 });
                             }
-                            tools::Tool::GithubCreatePullRequest => {
+                            tools::Tool::PullRequest => {
                                 info!("Creating pull request...");
                                 let function_args =
                                     function_arguments.as_str().ok_or_else(|| {
@@ -383,7 +400,7 @@ WORKFLOW:
                                     })?;
                                 let args: tools::GithubCreatePullRequestArgs =
                                     serde_json::from_str(function_args)?;
-                                let pull_request = tools::github_create_pull_request(
+                                let pull_request = tools::pull_request(
                                     &github_owner,
                                     &github_repo,
                                     &args.branch_name,

@@ -10,6 +10,44 @@ use std::{
 
 use crate::errors::CoderError;
 
+// Tool structure for language-agnostic code fixes
+#[derive(Debug, Clone)]
+pub enum Tool {
+    // Issue management
+    IssueValidate, // Validate issue format
+    IssuePull,     // Pull issue from repo
+
+    // Code specific tools
+    CodeRead,    // Read file content
+    CodeWrite,   // Write file content
+    CodeAnalyse, // Analyse code (language-specific)
+    CodeLint,    // Lint code (language-specific)
+    CodeTest,    // Run tests (language-specific)
+
+    // Version control
+    PullRequest, // Create PR with fixes
+
+    // Documentation
+    DocsReference, // Get documentation references
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct LanguageConfig {
+    name: String,
+    formatters: Vec<String>,    // e.g. ["cargo fmt", "prettier"]
+    linters: Vec<String>,       // e.g. ["cargo clippy", "eslint"]
+    test_commands: Vec<String>, // e.g. ["cargo test", "npm test"]
+    docs_urls: Vec<String>,     // e.g. ["docs.rs", "developer.mozilla.org"]
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ProjectConfig {
+    language: LanguageConfig,
+    provider: String, // e.g. "github", "gitlab"
+    repository: String,
+    issue_template: Option<String>,
+}
+
 fn deserialize_issue_number<'de, D>(deserializer: D) -> Result<u64, D::Error>
 where
     D: Deserializer<'de>,
@@ -53,23 +91,20 @@ pub struct GithubCreatePullRequestArgs {
     pub body: String,
 }
 
-#[derive(Debug, Clone)]
-pub enum Tool {
-    GithubPullIssue,
-    GithubCreatePullRequest,
-    GetFileContent,
-    WriteFileContent,
-}
-
 impl FromStr for Tool {
     type Err = CoderError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "github_pull_issue" => Ok(Tool::GithubPullIssue),
-            "github_create_pull_request" => Ok(Tool::GithubCreatePullRequest),
-            "get_file_content" => Ok(Tool::GetFileContent),
-            "write_file_content" => Ok(Tool::WriteFileContent),
+            "issue_validate" => Ok(Tool::IssueValidate),
+            "issue_pull" => Ok(Tool::IssuePull),
+            "pull_request" => Ok(Tool::PullRequest),
+            "code_read" => Ok(Tool::CodeRead),
+            "code_analyse" => Ok(Tool::CodeAnalyse),
+            "code_lint" => Ok(Tool::CodeLint),
+            "code_write" => Ok(Tool::CodeWrite),
+            "code_test" => Ok(Tool::CodeTest),
+            "docs_reference" => Ok(Tool::DocsReference),
             _ => Err(CoderError::ConfigError(format!("Invalid tool: {}", s))),
         }
     }
@@ -78,10 +113,15 @@ impl FromStr for Tool {
 impl Display for Tool {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
-            Tool::GithubPullIssue => "github_pull_issue",
-            Tool::GithubCreatePullRequest => "github_create_pull_request",
-            Tool::GetFileContent => "get_file_content",
-            Tool::WriteFileContent => "write_file_content",
+            Tool::IssueValidate => "issue_validate",
+            Tool::IssuePull => "issue_pull",
+            Tool::PullRequest => "pull_request",
+            Tool::CodeRead => "code_read",
+            Tool::CodeAnalyse => "code_analyse",
+            Tool::CodeLint => "code_lint",
+            Tool::CodeWrite => "code_write",
+            Tool::CodeTest => "code_test",
+            Tool::DocsReference => "docs_reference",
         };
         write!(f, "{}", s)
     }
@@ -100,9 +140,9 @@ impl Display for Tool {
 /// # Example
 ///
 /// ```
-/// let content = get_file_content("src/main.rs");
+/// let content = code_read("src/main.rs");
 /// ```
-pub fn get_file_content(path: &str) -> Result<String, CoderError> {
+pub fn code_read(path: &str) -> Result<String, CoderError> {
     let index_path = Path::new(".coder/index.yaml");
 
     if !index_path.exists() {
@@ -137,7 +177,7 @@ pub fn get_file_content(path: &str) -> Result<String, CoderError> {
 /// # Returns
 ///
 /// * `Result<octocrab::models::pulls::PullRequest, CoderError>` - Result of creating the pull request
-pub async fn github_create_pull_request(
+pub async fn pull_request(
     github_owner: &str,
     github_repo: &str,
     branch_name: &str,
@@ -194,7 +234,7 @@ pub async fn github_create_pull_request(
 /// # Returns
 ///
 /// * `Result<octocrab::models::issues::Issue, CoderError>` - Result of pulling the issue
-pub async fn pull_github_issue(
+pub async fn issue_pull(
     issue_number: u64,
     github_owner: &str,
     github_repo: &str,
@@ -223,7 +263,7 @@ pub async fn pull_github_issue(
 /// # Returns
 ///
 /// * `Result<(), CoderError>` - Result of writing the file content
-pub fn write_file_content(path: &str, content: &str) -> Result<(), CoderError> {
+pub fn code_write(path: &str, content: &str) -> Result<(), CoderError> {
     let file_path = Path::new(path);
     if let Some(parent) = file_path.parent() {
         std::fs::create_dir_all(parent)?;
@@ -240,7 +280,7 @@ mod tests {
     use tempfile::tempdir;
 
     #[test]
-    fn test_get_file_content_success() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_code_read_success() -> Result<(), Box<dyn std::error::Error>> {
         let yaml_content = r#"
 content:
   src/main.rs: |
@@ -257,7 +297,7 @@ content:
 
         std::env::set_current_dir(&dir)?;
 
-        let result = get_file_content("src/main.rs");
+        let result = code_read("src/main.rs");
         assert!(result.is_ok());
         assert_eq!(result?, "fn main() {}\n");
         drop(file);
@@ -267,25 +307,25 @@ content:
     }
 
     #[test]
-    fn test_get_file_content_missing_index() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_code_read_missing_index() -> Result<(), Box<dyn std::error::Error>> {
         let dir = tempdir()?;
         std::env::set_current_dir(&dir)?;
 
-        let result = get_file_content("src/main.rs");
+        let result = code_read("src/main.rs");
         assert!(result.is_err());
         dir.close()?;
         Ok(())
     }
 
     #[test]
-    fn test_write_file_content_success() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_code_write_success() -> Result<(), Box<dyn std::error::Error>> {
         let dir = tempdir()?;
         let path = dir.path().to_path_buf();
         std::env::set_current_dir(&path)?;
 
         let src_dir = path.join("src");
         create_dir_all(&src_dir)?;
-        let _result = write_file_content(src_dir.join("new.rs").to_str().unwrap(), "fn new() {}")?;
+        let _result = code_write(src_dir.join("new.rs").to_str().unwrap(), "fn new() {}")?;
 
         let source_file_path = src_dir.join("new.rs");
         let fs_content = fs::read_to_string(&source_file_path)?;
