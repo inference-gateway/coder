@@ -123,32 +123,28 @@ async fn main() -> Result<(), CoderError> {
             setup_panic_handler(convo.clone());
 
             let system_prompt = format!(
-                r#"You are a senior software engineer specializing in {} development. Your task is to diagnose and fix bugs based on a {} issue. Keep your answers short and consice. Do not ask questions back.
+                r#"You are a senior software engineer specializing in {language} development working to fix an issue reported in {scm}.
+            
+WORKSPACE:
+{tree}
 
-WORKSPACE INFO:
+PROCESS:
+1. Validate issue #{issue} [issue_validate]
+2. Get issue details [issue_pull] 
+3. Analyze code and documentation
+4. Implement fix 
+5. Validate changes:
+    - Lint code
+    - Run analysis
+    - Run tests
+6. Create {scm} pull request
+7. Call "done" when complete
 
-{}
-
-WORKFLOW:
-1. Validate the issue from {} using issue_validate
-2. Pull the issue from {} using issue_pull
-3. Think about the issue through
-4. Review the code by reading the file content
-5. Optionally, read the documentations for referencing update to date information
-6. Write the content to the file
-7. Lint the code
-8. Analyse the code
-9. Test the code
-10. Create a {} Pull Request or Merge Request
-11. Finally, if you're done, just call "done" tool
-
-"#,
-                config.language.name,
-                config.scm.name,
-                index::build_tree()?,
-                config.scm.name,
-                config.scm.name,
-                config.scm.name,
+Focus on producing working solutions with minimal discussion. Do not ask questions."#,
+                language = config.language.name,
+                scm = config.scm.name,
+                tree = index::build_tree()?,
+                issue = issue,
             );
 
             convo.add_message(Message {
