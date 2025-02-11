@@ -26,6 +26,31 @@ fn setup_panic_handler(conversation: Conversation) {
     }));
 }
 
+fn init() -> Result<(), CoderError> {
+    info!("Initializing AI Coder agent...");
+    let coder_dir = Path::new(".coder");
+    fs::create_dir_all(coder_dir)?;
+    info!("Created .coder directory");
+    fs::write(coder_dir.join("config.yaml"), config::default_config())?;
+
+    let gitignore_path = Path::new(".gitignore");
+    let gitignore_content = if gitignore_path.exists() {
+        let mut content = fs::read_to_string(gitignore_path)?;
+        if !content.contains(".coder") {
+            if !content.ends_with('\n') {
+                content.push('\n');
+            }
+            content.push_str(".coder\n");
+        }
+        content
+    } else {
+        ".coder\n".to_string()
+    };
+    fs::write(gitignore_path, gitignore_content)?;
+
+    return Ok(());
+}
+
 #[tokio::main]
 async fn main() -> Result<(), CoderError> {
     if env::var("RUST_LOG").is_err() {
@@ -34,9 +59,21 @@ async fn main() -> Result<(), CoderError> {
     env_logger::init();
 
     let tools = tools::get_tools();
+    let cli = Cli::parse();
+
+    if let Commands::Init {} = cli.command {
+        return init();
+    }
 
     let coder_dir = Path::new(".coder");
     let config_path = coder_dir.join("config.yaml");
+    if !coder_dir.exists() {
+        return Err(CoderError::ConfigError(
+            "'.coder' directory not found. Run 'coder init' first to initialize the project"
+                .to_string(),
+        ));
+    }
+
     let config = config::load(&config_path)?;
 
     let project_config = tools::ProjectConfig {
@@ -55,35 +92,13 @@ async fn main() -> Result<(), CoderError> {
     let model = &config.agent.model;
     let provider = Provider::try_from(config.agent.provider.as_str())?;
 
-    let cli = Cli::parse();
     match cli.command {
         Commands::Completions { shell } => {
             generate(shell, &mut Cli::command(), "coder", &mut std::io::stdout());
             return Ok(());
         }
         Commands::Init {} => {
-            info!("Initializing AI Coder agent...");
-            let coder_dir = Path::new(".coder");
-            fs::create_dir_all(coder_dir)?;
-            info!("Created .coder directory");
-            fs::write(coder_dir.join("config.yaml"), config::default_config())?;
-
-            let gitignore_path = Path::new(".gitignore");
-            let gitignore_content = if gitignore_path.exists() {
-                let mut content = fs::read_to_string(gitignore_path)?;
-                if !content.contains(".coder") {
-                    if !content.ends_with('\n') {
-                        content.push('\n');
-                    }
-                    content.push_str(".coder\n");
-                }
-                content
-            } else {
-                ".coder\n".to_string()
-            };
-            fs::write(gitignore_path, gitignore_content)?;
-
-            return Ok(());
+            return init();
         }
         Commands::Index {} => {
             info!("Indexing files...");
