@@ -143,6 +143,54 @@ async fn main() -> Result<(), CoderError> {
                 Tool {
                     r#type: ToolType::Function,
                     function: ToolFunction {
+                        name: tools::Tool::CodeLint.to_string(),
+                        description: "Lint the code".to_string(),
+                        parameters: json!({
+                            "type": "object",
+                            "properties": {},
+                            "required": []
+                        }),
+                    },
+                },
+                Tool {
+                    r#type: ToolType::Function,
+                    function: ToolFunction {
+                        name: tools::Tool::CodeAnalyse.to_string(),
+                        description: "Analyse the code".to_string(),
+                        parameters: json!({
+                            "type": "object",
+                            "properties": {},
+                            "required": []
+                        }),
+                    },
+                },
+                Tool {
+                    r#type: ToolType::Function,
+                    function: ToolFunction {
+                        name: tools::Tool::CodeTest.to_string(),
+                        description: "Test the code".to_string(),
+                        parameters: json!({
+                            "type": "object",
+                            "properties": {},
+                            "required": []
+                        }),
+                    },
+                },
+                Tool {
+                    r#type: ToolType::Function,
+                    function: ToolFunction {
+                        name: tools::Tool::DocsReference.to_string(),
+                        description: "Reference the docs".to_string(),
+                        parameters: json!({
+                            "type": "object",
+                            "properties": {},
+                            "required": []
+                        }),
+                    },
+                },
+                Tool {
+                    r#type: ToolType::Function,
+                    function: ToolFunction {
                         name: tools::Tool::CodeRead.to_string(),
                         description: "Read a file content".to_string(),
                         parameters: json!({
@@ -333,16 +381,16 @@ WORKFLOW:
                                 });
                             }
                             tools::Tool::CodeAnalyse => {
-                                todo!("Implement code analysis tool");
+                                info!("Implement code analysis tool");
                             }
                             tools::Tool::CodeLint => {
-                                todo!("Implement code linting tool");
+                                info!("Implement code linting tool");
                             }
                             tools::Tool::CodeTest => {
-                                todo!("Implement code testing tool");
+                                info!("Implement code testing tool");
                             }
                             tools::Tool::DocsReference => {
-                                todo!("Implement documentation reference tool");
+                                info!("Implement documentation reference tool");
                             }
                             tools::Tool::CodeRead => {
                                 let function_args =
