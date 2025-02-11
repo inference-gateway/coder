@@ -255,9 +255,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.5.28"
+version = "4.5.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3e77c3243bd94243c03672cb5154667347c457ca271254724f9f393aee1c05ff"
+checksum = "8acebd8ad879283633b343856142139f2da2317c96b05b4dd6181c61e2480184"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -265,9 +265,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.5.27"
+version = "4.5.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b26884eb4b57140e4d2d93652abfa49498b938b3c9179f9fc487b0acc3edad7"
+checksum = "f6ba32cbda51c7e1dfd49acc1457ba1a7dec5b64fe360e828acb13ca8dc9c2f9"
 dependencies = [
  "anstream",
  "anstyle",
@@ -1012,9 +1012,9 @@ dependencies = [
 
 [[package]]
 name = "inference-gateway-sdk"
-version = "0.9.0-rc.1"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7e5d4a929b9e0fd9ce7a0ccbcfcf04ec57ea6962659fc888b9c79d0f7976ad3b"
+checksum = "8c71eb236f39d649a058052a2baecc9bb7d7494f349ebb4e31a6237bb3496881"
 dependencies = [
  "async-stream",
  "futures-util",
