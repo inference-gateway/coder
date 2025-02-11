@@ -52,7 +52,7 @@ impl Default for Config {
             scm: ScmConfig {
                 name: "github".to_string(),
                 owner: "owner".to_string(),
-                repository: "owner/repo".to_string(),
+                repository: "repo".to_string(),
                 issue_template: Some(
                     [
                         "## Description",
