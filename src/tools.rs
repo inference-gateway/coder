@@ -29,6 +29,9 @@ pub enum Tool {
 
     // Documentation
     DocsReference, // Get documentation references
+
+    // Done
+    Done, // Done with the task
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -63,6 +66,11 @@ where
         StringOrInt::String(s) => s.parse().map_err(D::Error::custom),
         StringOrInt::Int(i) => Ok(i),
     }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DocsReferenceArgs {
+    pub term: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -105,6 +113,7 @@ impl FromStr for Tool {
             "code_write" => Ok(Tool::CodeWrite),
             "code_test" => Ok(Tool::CodeTest),
             "docs_reference" => Ok(Tool::DocsReference),
+            "done" => Ok(Tool::Done),
             _ => Err(CoderError::ConfigError(format!("Invalid tool: {}", s))),
         }
     }
@@ -122,6 +131,7 @@ impl Display for Tool {
             Tool::CodeWrite => "code_write",
             Tool::CodeTest => "code_test",
             Tool::DocsReference => "docs_reference",
+            Tool::Done => "done",
         };
         write!(f, "{}", s)
     }
@@ -263,6 +273,21 @@ pub async fn issue_pull(
     Ok(issue)
 }
 
+pub async fn code_analyse(command: &str) -> Result<(), CoderError> {
+    let output = Command::new(command)
+        .output()
+        .map_err(|e| CoderError::CommandError(e.to_string()))?;
+
+    if !output.status.success() {
+        return Err(CoderError::CommandError(format!(
+            "Failed to run command: {}",
+            command
+        )));
+    }
+
+    Ok(())
+}
+
 /// Write file content
 ///
 /// # Arguments
@@ -279,6 +304,32 @@ pub fn code_write(path: &str, content: &str) -> Result<(), CoderError> {
         std::fs::create_dir_all(parent)?;
     }
     std::fs::write(file_path, content)?;
+    Ok(())
+}
+
+/// Get documentation references
+///
+/// # Arguments
+///
+/// * `term` - Term to get documentation references for
+///
+/// # Returns
+///
+/// * `Result<(), CoderError>` - Result of getting documentation references
+pub async fn docs_reference(term: &str) -> Result<(), CoderError> {
+    info!("Getting documentation references for the term: {}", term);
+    Ok(())
+}
+
+/// Done with the task
+///
+/// # Returns
+///
+/// * `Result<(), CoderError>` - Result of completing the task
+pub fn done() -> Result<(), CoderError> {
+    info!("Task completed");
+
+    // TODO - perhaps add some cleanup code here
     Ok(())
 }
 

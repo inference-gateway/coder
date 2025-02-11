@@ -44,7 +44,11 @@ pub enum Commands {
     /// Pulls the issues from Github or Gitlab.
     /// Runs the AI coder agent to generate a potential fix.
     /// Creates a pull request with the potential fix.
-    Refactor {},
+    Refactor {
+        /// Optional file path to refactor specific file
+        #[arg(long)]
+        file: Option<String>,
+    },
 }
 
 // Helper function to parse issue number from #N format
