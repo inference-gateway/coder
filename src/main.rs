@@ -232,8 +232,12 @@ WORKFLOW:
 1. Pull the issue from GitHub
 2. Think about the issue through
 3. Review the code by reading the file content
-4. Write the content to the file
-5. Finally, create a GitHub Pull Request
+4. Optionally, read the documentations for referencing update to date information
+5. Write the content to the file
+6. Lint the code
+7. Analyse the code
+8. Test the code
+9. Finally, create a GitHub Pull Request
 
 "#,
                 index::build_tree()?,
@@ -280,7 +284,7 @@ WORKFLOW:
                     ..Default::default()
                 });
 
-                info!("{:?}", assistant_message);
+                info!("assistant: {}", assistant_message);
 
                 if response.tool_calls.is_some() {
                     let tools: Vec<inference_gateway_sdk::ToolCallResponse> =
@@ -386,7 +390,7 @@ WORKFLOW:
                                 });
                                 convo.add_message(Message {
                                     role: MessageRole::User,
-                                    content: "Are there any other files need modifications? if yes, use the get_file_content tool to retrive and write_file_content tool to write it. If not, let's proceed with github_create_pull_request.".to_string(),
+                                    content: "Are there any other files need modifications? If not, let's proceed.".to_string(),
                                     ..Default::default()
                                 });
                             }
@@ -421,7 +425,8 @@ WORKFLOW:
                                 });
                                 convo.add_message(Message {
                                     role: MessageRole::User,
-                                    content: "Pull request has been created. If not further action needed, you can go idle using the provided tool".to_string(),
+                                    content: "Pull request has been created. Task completed."
+                                        .to_string(),
                                     ..Default::default()
                                 });
                                 info!(
@@ -434,7 +439,7 @@ WORKFLOW:
                     }
                 }
 
-                info!("Iteration completed. Waiting for the next iteration..");
+                info!("Iteration completed. Developer is taking a coffee break due to rate-limiting..");
 
                 sleep(Duration::from_secs(60));
             }
