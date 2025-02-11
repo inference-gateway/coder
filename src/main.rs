@@ -151,9 +151,6 @@ WORKFLOW:
                 config.scm.name,
             );
 
-            info!("System prompt: {}", system_prompt);
-            todo!("");
-
             convo.add_message(Message {
                 role: MessageRole::System,
                 content: system_prompt,
