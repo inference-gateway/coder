@@ -8,6 +8,9 @@ pub enum CoderError {
     #[error("Git error: {0}")]
     GitError(String),
 
+    #[error("Command error: {0}")]
+    CommandError(String),
+
     #[error("Missing arguments: {0}")]
     MissingArguments(String),
 
