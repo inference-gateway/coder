@@ -76,19 +76,6 @@ async fn main() -> Result<(), CoderError> {
 
     let config = config::load(&config_path)?;
 
-    let project_config = tools::ProjectConfig {
-        language: tools::LanguageConfig {
-            name: config.language.name,
-            formatters: config.language.formatters,
-            linters: config.language.linters,
-            test_commands: config.language.test_commands,
-            docs_urls: config.language.docs_urls,
-        },
-        provider: config.scm.name,
-        repository: config.scm.repository,
-        issue_template: config.scm.issue_template,
-    };
-
     let model = &config.agent.model;
     let provider = Provider::try_from(config.agent.provider.as_str())?;
 
@@ -207,7 +194,7 @@ WORKFLOW:
                         let tool = tools::Tools::from_str(tool_call.function.name.as_str())?;
                         let args = serde_json::to_value(tool_call.function.arguments)
                             .map_err(|e| CoderError::MissingArguments(e.to_string()))?;
-                        tools::handle_tool_calls(&tool, args, &project_config).await?;
+                        tools::handle_tool_calls(&tool, args, &config).await?;
                     }
                 }
 
@@ -305,7 +292,7 @@ WORKFLOW:
                         let tool = tools::Tools::from_str(tool_call.function.name.as_str())?;
                         let args = serde_json::to_value(tool_call.function.arguments)
                             .map_err(|e| CoderError::MissingArguments(e.to_string()))?;
-                        tools::handle_tool_calls(&tool, args, &project_config).await?;
+                        tools::handle_tool_calls(&tool, args, &config).await?;
                     }
                 }
             }

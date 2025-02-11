@@ -23,6 +23,7 @@ pub struct LanguageConfig {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ScmConfig {
     pub name: String,
+    pub owner: String,
     pub repository: String,
     pub issue_template: Option<String>,
 }
@@ -50,6 +51,7 @@ impl Default for Config {
             },
             scm: ScmConfig {
                 name: "github".to_string(),
+                owner: "owner".to_string(),
                 repository: "owner/repo".to_string(),
                 issue_template: Some(
                     [

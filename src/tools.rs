@@ -10,6 +10,7 @@ use std::{
     str::FromStr,
 };
 
+use crate::config;
 use crate::errors::CoderError;
 
 // Tool structure for language-agnostic code fixes
@@ -36,23 +37,6 @@ pub enum Tools {
     Done, // Done with the task
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct LanguageConfig {
-    pub name: String,
-    pub formatters: Vec<String>,    // e.g. ["cargo fmt", "prettier"]
-    pub linters: Vec<String>,       // e.g. ["cargo clippy", "eslint"]
-    pub test_commands: Vec<String>, // e.g. ["cargo test", "npm test"]
-    pub docs_urls: Vec<String>,     // e.g. ["docs.rs", "developer.mozilla.org"]
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct ProjectConfig {
-    pub language: LanguageConfig,
-    pub provider: String, // e.g. "github", "gitlab"
-    pub repository: String,
-    pub issue_template: Option<String>,
-}
-
 fn deserialize_issue_number<'de, D>(deserializer: D) -> Result<u64, D::Error>
 where
     D: Deserializer<'de>,
@@ -76,9 +60,10 @@ pub struct DocsReferenceArgs {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct GithubPullIssueArgs {
+pub struct PullIssueArgs {
     #[serde(deserialize_with = "deserialize_issue_number")]
     pub issue: u64,
+    pub scm: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -179,8 +164,9 @@ pub fn code_read(path: &str) -> Result<String, CoderError> {
 ///
 /// # Arguments
 ///
-/// * `github_owner` - Owner of the repository
-/// * `github_repo` - Name of the repository  
+/// * `scm_name` - Owner of the repository
+/// * `owner` - Owner of the repository
+/// * `repo` - Name of the repository  
 /// * `branch_name` - Name of the branch
 /// * `issue` - Issue number
 /// * `title` - Title of the pull request
@@ -190,13 +176,26 @@ pub fn code_read(path: &str) -> Result<String, CoderError> {
 ///
 /// * `Result<octocrab::models::pulls::PullRequest, CoderError>` - Result of creating the pull request
 pub async fn pull_request(
-    github_owner: &str,
-    github_repo: &str,
+    scm_name: &str,
+    owner: &str,
+    repo: &str,
     branch_name: &str,
     issue: u64,
     title: &str,
     body: &str,
 ) -> Result<octocrab::models::pulls::PullRequest, CoderError> {
+    if scm_name == "github" {
+        info!(
+            "Creating PR for issue #{} on branch {} with title: {}",
+            issue, branch_name, title
+        );
+    } else {
+        info!(
+            "Creating a MR for issue #{} on branch {} with title: {}",
+            issue, branch_name, title
+        );
+    }
+
     let github_token = std::env::var("GITHUB_TOKEN")
         .map_err(|_| CoderError::ConfigError("GITHUB_TOKEN not set".to_string()))?;
 
@@ -226,7 +225,7 @@ pub async fn pull_request(
         .map_err(|e| CoderError::GitError(e.to_string()))?;
 
     let pr = octocrab
-        .pulls(github_owner, github_repo)
+        .pulls(owner, repo)
         .create(title, branch_name, "main")
         .body(body)
         .send()
@@ -251,23 +250,33 @@ pub async fn pull_request(
 ///
 /// # Arguments
 ///
+/// * `scm_name` - The name of the SCM (e.g. github, gitlab)
 /// * `issue_number` - Issue number
+/// * `owner` - Owner of the repository
+/// * `repo` - Name of the repository
 ///
 /// # Returns
 ///
 /// * `Result<octocrab::models::issues::Issue, CoderError>` - Result of pulling the issue
 pub async fn issue_pull(
+    scm_name: &str,
     issue_number: u64,
-    github_owner: &str,
-    github_repo: &str,
+    owner: &str,
+    repo: &str,
 ) -> Result<octocrab::models::issues::Issue, CoderError> {
+    if scm_name == "github" {
+        info!("Pulling issue #{} from GitHub", issue_number);
+    } else {
+        info!("Pulling MR #{} from GitLab", issue_number);
+    }
+
     let octocrab = Octocrab::builder()
         .personal_token(std::env::var("GITHUB_TOKEN").unwrap())
         .build()
         .map_err(CoderError::GitHubError)?;
 
     let issue = octocrab
-        .issues(github_owner, github_repo)
+        .issues(owner, repo)
         .get(issue_number)
         .await
         .map_err(CoderError::GitHubError)?;
@@ -276,7 +285,7 @@ pub async fn issue_pull(
 }
 
 pub fn issue_validate(
-    config: &ProjectConfig,
+    config: &config::Config,
     issue_number: u64,
     issue_title: &str,
     issue_body: Option<String>,
@@ -293,7 +302,7 @@ pub fn issue_validate(
         ));
     }
 
-    if let Some(template) = &config.issue_template {
+    if let Some(template) = &config.scm.issue_template {
         let body = issue_body.ok_or_else(|| {
             CoderError::ConfigError(
                 "Issue body is required when template is configured".to_string(),
@@ -377,7 +386,7 @@ pub fn get_tools() -> Vec<Tool> {
                     "properties": {
                         "scm": {
                             "type": "string",
-                            "description": "SCM name"
+                            "description": "SCM name lowercase"
                         },
                         "issue": {
                             "type": "number",
@@ -526,7 +535,7 @@ pub fn get_tools() -> Vec<Tool> {
 
 /// Execute a language-specific command from config
 pub async fn execute_language_specific_command(
-    config: &LanguageConfig,
+    config: &config::LanguageConfig,
     command_type: CommandType,
 ) -> Result<(), CoderError> {
     let command = match command_type {
@@ -582,7 +591,7 @@ impl Display for CommandType {
 pub async fn handle_tool_calls(
     tool: &Tools,
     args: serde_json::Value,
-    config: &ProjectConfig,
+    config: &config::Config,
 ) -> Result<serde_json::Value, CoderError> {
     info!("Handling tool call: {}", tool);
     match tool {
@@ -597,21 +606,34 @@ pub async fn handle_tool_calls(
             Ok(serde_json::Value::Null)
         }
         Tools::IssueValidate => {
-            let args: GithubPullIssueArgs = serde_json::from_value(args)?;
-            let issue = issue_pull(args.issue, "owner", "repo").await?;
+            let args: PullIssueArgs = serde_json::from_value(args)?;
+            let issue = issue_pull(
+                &config.scm.name,
+                args.issue,
+                &config.scm.owner,
+                &config.scm.repository,
+            )
+            .await?;
             issue_validate(config, issue.number, &issue.title, issue.body)?;
             Ok(serde_json::Value::Null)
         }
         Tools::IssuePull => {
-            let args: GithubPullIssueArgs = serde_json::from_value(args)?;
-            let issue = issue_pull(args.issue, "owner", "repo").await?;
+            let args: PullIssueArgs = serde_json::from_value(args)?;
+            let issue = issue_pull(
+                &config.scm.name,
+                args.issue,
+                &config.scm.owner,
+                &config.scm.repository,
+            )
+            .await?;
             Ok(serde_json::to_value(issue)?)
         }
         Tools::PullRequest => {
             let args: GithubCreatePullRequestArgs = serde_json::from_value(args)?;
             let pr = pull_request(
-                "owner",
-                "repo",
+                &config.scm.name,
+                &config.scm.owner,
+                &config.scm.repository,
                 &args.branch_name,
                 args.issue,
                 &args.title,
