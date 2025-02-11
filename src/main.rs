@@ -193,7 +193,14 @@ WORKFLOW:
                     for tool_call in response.tool_calls.unwrap() {
                         let tool = tools::Tools::from_str(tool_call.function.name.as_str())?;
                         let args = tool_call.function.arguments.as_str();
-                        tools::handle_tool_calls(&tool, args, &config).await?;
+                        let tool_result = tools::handle_tool_calls(&tool, args, &config).await?;
+
+                        convo.add_message(Message {
+                            role: MessageRole::Tool,
+                            content: tool_result.to_string(),
+                            tool_call_id: Some(tool_call.id),
+                            ..Default::default()
+                        });
                     }
                 }
 
@@ -212,10 +219,7 @@ WORKFLOW:
                 .with_max_tokens(Some(900))
                 .with_tools(Some(tools));
 
-            let mut convo = Conversation::new(
-                "deepseek-r1-distill-llama-70b".to_string(),
-                provider.clone(),
-            );
+            let mut convo = Conversation::new(config.agent.model.to_string(), provider.clone());
 
             setup_panic_handler(convo.clone());
 
@@ -263,7 +267,7 @@ WORKFLOW:
                 let resp: inference_gateway_sdk::GenerateResponse = client
                     .generate_content(
                         provider.clone(),
-                        "deepseek-r1-distill-llama-70b",
+                        config.agent.model.as_str(),
                         convo.clone().try_into()?,
                     )
                     .await?;
@@ -290,7 +294,14 @@ WORKFLOW:
                     for tool_call in response.tool_calls.unwrap() {
                         let tool = tools::Tools::from_str(tool_call.function.name.as_str())?;
                         let args = tool_call.function.arguments.as_str();
-                        tools::handle_tool_calls(&tool, args, &config).await?;
+                        let tool_result = tools::handle_tool_calls(&tool, args, &config).await?;
+
+                        convo.add_message(Message {
+                            role: MessageRole::Tool,
+                            content: tool_result.to_string(),
+                            tool_call_id: Some(tool_call.id),
+                            ..Default::default()
+                        });
                     }
                 }
             }
