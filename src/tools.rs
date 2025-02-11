@@ -60,25 +60,25 @@ pub struct DocsReferenceArgs {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct PullIssueArgs {
+pub struct IssuePullArgs {
     #[serde(deserialize_with = "deserialize_issue_number")]
     pub issue: u64,
     pub scm: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct GetFileContentArgs {
+pub struct CodeReadArgs {
     pub path: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct WriteFileContentArgs {
+pub struct CodeWriteArgs {
     pub path: String,
     pub content: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct GithubCreatePullRequestArgs {
+pub struct PullRequestArgs {
     pub branch_name: String,
     #[serde(deserialize_with = "deserialize_issue_number")]
     pub issue: u64,
@@ -590,23 +590,32 @@ impl Display for CommandType {
 
 pub async fn handle_tool_calls(
     tool: &Tools,
-    args: serde_json::Value,
+    args: Option<&str>,
     config: &config::Config,
 ) -> Result<serde_json::Value, CoderError> {
     info!("Handling tool call: {}", tool);
     match tool {
         Tools::CodeRead => {
-            let args: GetFileContentArgs = serde_json::from_value(args)?;
+            let args = args.ok_or_else(|| {
+                CoderError::MissingArguments("CodeRead requires arguments".to_string())
+            })?;
+            let args: CodeReadArgs = serde_json::from_str(args)?;
             let content = code_read(&args.path)?;
             Ok(serde_json::to_value(content)?)
         }
         Tools::CodeWrite => {
-            let args: WriteFileContentArgs = serde_json::from_value(args)?;
+            let args = args.ok_or_else(|| {
+                CoderError::MissingArguments("CodeWrite requires arguments".to_string())
+            })?;
+            let args: CodeWriteArgs = serde_json::from_str(args)?;
             code_write(&args.path, &args.content)?;
             Ok(serde_json::Value::Null)
         }
         Tools::IssueValidate => {
-            let args: PullIssueArgs = serde_json::from_value(args)?;
+            let args = args.ok_or_else(|| {
+                CoderError::MissingArguments("IssueValidate requires arguments".to_string())
+            })?;
+            let args: IssuePullArgs = serde_json::from_str(args)?;
             let issue = issue_pull(
                 &config.scm.name,
                 args.issue,
@@ -618,7 +627,10 @@ pub async fn handle_tool_calls(
             Ok(serde_json::Value::Null)
         }
         Tools::IssuePull => {
-            let args: PullIssueArgs = serde_json::from_value(args)?;
+            let args = args.ok_or_else(|| {
+                CoderError::MissingArguments("IssuePull requires arguments".to_string())
+            })?;
+            let args: IssuePullArgs = serde_json::from_str(args)?;
             let issue = issue_pull(
                 &config.scm.name,
                 args.issue,
@@ -629,7 +641,10 @@ pub async fn handle_tool_calls(
             Ok(serde_json::to_value(issue)?)
         }
         Tools::PullRequest => {
-            let args: GithubCreatePullRequestArgs = serde_json::from_value(args)?;
+            let args = args.ok_or_else(|| {
+                CoderError::MissingArguments("PullRequest requires arguments".to_string())
+            })?;
+            let args: PullRequestArgs = serde_json::from_str(args)?;
             let pr = pull_request(
                 &config.scm.name,
                 &config.scm.owner,
@@ -655,7 +670,10 @@ pub async fn handle_tool_calls(
             Ok(serde_json::Value::Null)
         }
         Tools::DocsReference => {
-            let args: DocsReferenceArgs = serde_json::from_value(args)?;
+            let args = args.ok_or_else(|| {
+                CoderError::MissingArguments("DocsReference requires arguments".to_string())
+            })?;
+            let args: DocsReferenceArgs = serde_json::from_str(args)?;
             docs_reference(&args.term).await?;
             Ok(serde_json::Value::Null)
         }

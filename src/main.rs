@@ -192,7 +192,7 @@ WORKFLOW:
                 if response.tool_calls.is_some() {
                     for tool_call in response.tool_calls.unwrap() {
                         let tool = tools::Tools::from_str(tool_call.function.name.as_str())?;
-                        let args = tool_call.function.arguments;
+                        let args = tool_call.function.arguments.as_str();
                         tools::handle_tool_calls(&tool, args, &config).await?;
                     }
                 }
@@ -289,7 +289,7 @@ WORKFLOW:
                 if response.tool_calls.is_some() {
                     for tool_call in response.tool_calls.unwrap() {
                         let tool = tools::Tools::from_str(tool_call.function.name.as_str())?;
-                        let args = tool_call.function.arguments;
+                        let args = tool_call.function.arguments.as_str();
                         tools::handle_tool_calls(&tool, args, &config).await?;
                     }
                 }
