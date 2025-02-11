@@ -586,6 +586,16 @@ pub async fn handle_tool_calls(
 ) -> Result<serde_json::Value, CoderError> {
     info!("Handling tool call: {}", tool);
     match tool {
+        Tools::CodeRead => {
+            let args: GetFileContentArgs = serde_json::from_value(args)?;
+            let content = code_read(&args.path)?;
+            Ok(serde_json::to_value(content)?)
+        }
+        Tools::CodeWrite => {
+            let args: WriteFileContentArgs = serde_json::from_value(args)?;
+            code_write(&args.path, &args.content)?;
+            Ok(serde_json::Value::Null)
+        }
         Tools::IssueValidate => {
             let args: GithubPullIssueArgs = serde_json::from_value(args)?;
             let issue = issue_pull(args.issue, "owner", "repo").await?;
@@ -625,16 +635,6 @@ pub async fn handle_tool_calls(
         Tools::DocsReference => {
             let args: DocsReferenceArgs = serde_json::from_value(args)?;
             docs_reference(&args.term).await?;
-            Ok(serde_json::Value::Null)
-        }
-        Tools::CodeRead => {
-            let args: GetFileContentArgs = serde_json::from_value(args)?;
-            let content = code_read(&args.path)?;
-            Ok(serde_json::to_value(content)?)
-        }
-        Tools::CodeWrite => {
-            let args: WriteFileContentArgs = serde_json::from_value(args)?;
-            code_write(&args.path, &args.content)?;
             Ok(serde_json::Value::Null)
         }
         Tools::Done => {

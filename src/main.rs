@@ -2,13 +2,11 @@ use crate::cli::{Cli, Commands};
 use crate::errors::CoderError;
 use clap::{CommandFactory, Parser};
 use clap_complete::generate;
-use config::DEFAULT_CONFIG_TEMPLATE;
 use conversation::Conversation;
 use inference_gateway_sdk::{
     InferenceGatewayAPI, InferenceGatewayClient, Message, MessageRole, Provider,
 };
 use log::{info, warn};
-use serde_yaml::Value;
 use std::{env, fs, panic, path::Path, str::FromStr, thread::sleep, time::Duration};
 
 mod cli;
@@ -39,67 +37,23 @@ async fn main() -> Result<(), CoderError> {
 
     let coder_dir = Path::new(".coder");
     let config_path = coder_dir.join("config.yaml");
-    let config_content = fs::read_to_string(config_path)?;
-    let config: Value = serde_yaml::from_str(&config_content)?;
+    let config = config::load(&config_path)?;
 
     let project_config = tools::ProjectConfig {
         language: tools::LanguageConfig {
-            name: config["language"]["name"]
-                .as_str()
-                .unwrap_or("rust")
-                .to_string(),
-            formatters: config["language"]["formatters"]
-                .as_sequence()
-                .map(|s| {
-                    s.iter()
-                        .filter_map(|v| v.as_str().map(String::from))
-                        .collect()
-                })
-                .unwrap_or_default(),
-            linters: config["language"]["linters"]
-                .as_sequence()
-                .map(|s| {
-                    s.iter()
-                        .filter_map(|v| v.as_str().map(String::from))
-                        .collect()
-                })
-                .unwrap_or_default(),
-            test_commands: config["language"]["test_commands"]
-                .as_sequence()
-                .map(|s| {
-                    s.iter()
-                        .filter_map(|v| v.as_str().map(String::from))
-                        .collect()
-                })
-                .unwrap_or_default(),
-            docs_urls: config["language"]["docs_urls"]
-                .as_sequence()
-                .map(|s| {
-                    s.iter()
-                        .filter_map(|v| v.as_str().map(String::from))
-                        .collect()
-                })
-                .unwrap_or_default(),
+            name: config.language.name,
+            formatters: config.language.formatters,
+            linters: config.language.linters,
+            test_commands: config.language.test_commands,
+            docs_urls: config.language.docs_urls,
         },
-        provider: config["scm"]["name"]
-            .as_str()
-            .unwrap_or("github")
-            .to_string(),
-        repository: config["scm"]["repository"]
-            .as_str()
-            .unwrap_or("")
-            .to_string(),
-        issue_template: config["scm"]["issue_template"].as_str().map(String::from),
+        provider: config.scm.name,
+        repository: config.scm.repository,
+        issue_template: config.scm.issue_template,
     };
 
-    let model = config["agent"]["model"]
-        .as_str()
-        .ok_or(CoderError::ConfigError("Model not found".to_string()))?;
-    let provider = Provider::try_from(
-        config["agent"]["provider"]
-            .as_str()
-            .ok_or(CoderError::ConfigError("Provider not found".to_string()))?,
-    )?;
+    let model = &config.agent.model;
+    let provider = Provider::try_from(config.agent.provider.as_str())?;
 
     let cli = Cli::parse();
     match cli.command {
@@ -112,7 +66,7 @@ async fn main() -> Result<(), CoderError> {
             let coder_dir = Path::new(".coder");
             fs::create_dir_all(coder_dir)?;
             info!("Created .coder directory");
-            fs::write(coder_dir.join("config.yaml"), DEFAULT_CONFIG_TEMPLATE)?;
+            fs::write(coder_dir.join("config.yaml"), config::default_config())?;
 
             let gitignore_path = Path::new(".gitignore");
             let gitignore_content = if gitignore_path.exists() {
@@ -158,10 +112,9 @@ async fn main() -> Result<(), CoderError> {
             info!("Fixing issue #{}...", issue);
             info!("Further instructions: {:?}", further_instruction);
 
-            let client =
-                InferenceGatewayClient::new(config["api"]["endpoint"].as_str().unwrap_or_default())
-                    .with_max_tokens(Some(900))
-                    .with_tools(Some(tools));
+            let client = InferenceGatewayClient::new(&config.api.endpoint)
+                .with_max_tokens(Some(900))
+                .with_tools(Some(tools));
 
             let mut convo = Conversation::new(model.to_string(), provider.clone());
 
@@ -175,6 +128,7 @@ WORKSPACE INFO:
 {}
 
 WORKFLOW:
+1. Validate the issue from GitHub
 1. Pull the issue from GitHub
 2. Think about the issue through
 3. Review the code by reading the file content
@@ -253,16 +207,9 @@ WORKFLOW:
                 None => info!("Refactoring entire project..."),
             }
 
-            let provider = Provider::try_from(
-                config["agent"]["provider"]
-                    .as_str()
-                    .ok_or(CoderError::ConfigError("Provider not found".to_string()))?,
-            )?;
-
-            let client =
-                InferenceGatewayClient::new(config["api"]["endpoint"].as_str().unwrap_or_default())
-                    .with_max_tokens(Some(900))
-                    .with_tools(Some(tools));
+            let client = InferenceGatewayClient::new(&config.api.endpoint)
+                .with_max_tokens(Some(900))
+                .with_tools(Some(tools));
 
             let mut convo = Conversation::new(
                 "deepseek-r1-distill-llama-70b".to_string(),
@@ -355,12 +302,13 @@ WORKFLOW:
 
 #[cfg(test)]
 mod tests {
-    use crate::config::DEFAULT_CONFIG_TEMPLATE;
     use assert_cmd::Command;
     use assert_fs::prelude::*;
     use log::LevelFilter;
     use predicates::prelude::*;
     use std::fs;
+
+    use crate::config;
 
     #[test]
     fn test_init_command() {
@@ -381,7 +329,7 @@ mod tests {
 
         let config_file = temp_dir.child(".coder/config.yaml");
         config_file.assert(predicate::path::exists());
-        config_file.assert(predicate::str::contains(DEFAULT_CONFIG_TEMPLATE));
+        config_file.assert(predicate::str::contains(config::default_config()));
 
         let gitignore_path = temp_dir.join(".gitignore");
         assert!(fs::write(&gitignore_path, ".coder\n").is_ok());
