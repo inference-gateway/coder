@@ -5,14 +5,11 @@ use clap_complete::generate;
 use config::DEFAULT_CONFIG_TEMPLATE;
 use conversation::Conversation;
 use inference_gateway_sdk::{
-    InferenceGatewayAPI, InferenceGatewayClient, Message, MessageRole, Provider, Tool,
-    ToolFunction, ToolType,
+    InferenceGatewayAPI, InferenceGatewayClient, Message, MessageRole, Provider,
 };
 use log::{info, warn};
-use serde_json::json;
 use serde_yaml::Value;
-use std::str::FromStr;
-use std::{env, fs, panic, path::Path, thread::sleep, time::Duration};
+use std::{env, fs, panic, path::Path, str::FromStr, thread::sleep, time::Duration};
 
 mod cli;
 mod config;
@@ -38,167 +35,71 @@ async fn main() -> Result<(), CoderError> {
     }
     env_logger::init();
 
-    let tools = vec![
-        Tool {
-            r#type: ToolType::Function,
-            function: ToolFunction {
-                name: tools::Tool::IssuePull.to_string(),
-                description: "Pull the issue from SCM".to_string(),
-                parameters: json!({
-                    "type": "object",
-                    "properties": {
-                        "scm": {
-                            "type": "string",
-                            "description": "SCM name"
-                        },
-                        "issue": {
-                            "type": "number",
-                            "description": "Issue number"
-                        }
-                    },
-                    "required": ["scm","issue"]
-                }),
-            },
-        },
-        Tool {
-            r#type: ToolType::Function,
-            function: ToolFunction {
-                name: tools::Tool::CodeLint.to_string(),
-                description: "Lint the code".to_string(),
-                parameters: json!({
-                    "type": "object",
-                    "properties": {},
-                    "required": []
-                }),
-            },
-        },
-        Tool {
-            r#type: ToolType::Function,
-            function: ToolFunction {
-                name: tools::Tool::CodeAnalyse.to_string(),
-                description: "Analyse the code".to_string(),
-                parameters: json!({
-                    "type": "object",
-                    "properties": {},
-                    "required": []
-                }),
-            },
-        },
-        Tool {
-            r#type: ToolType::Function,
-            function: ToolFunction {
-                name: tools::Tool::CodeTest.to_string(),
-                description: "Test the code".to_string(),
-                parameters: json!({
-                    "type": "object",
-                    "properties": {},
-                    "required": []
-                }),
-            },
-        },
-        Tool {
-            r#type: ToolType::Function,
-            function: ToolFunction {
-                name: tools::Tool::DocsReference.to_string(),
-                description: "Reference the docs".to_string(),
-                parameters: json!({
-                    "type": "object",
-                    "properties": {
-                        "term": {
-                            "type": "string",
-                            "description": "The term to search for"
-                        }
-                    },
-                    "required": ["term"]
-                }),
-            },
-        },
-        Tool {
-            r#type: ToolType::Function,
-            function: ToolFunction {
-                name: tools::Tool::CodeRead.to_string(),
-                description: "Read a file content".to_string(),
-                parameters: json!({
-                    "type": "object",
-                    "properties": {
-                        "path": {
-                            "type": "string",
-                            "description": "The path to the file"
-                        }
-                    },
-                    "required": ["path"]
-                }),
-            },
-        },
-        Tool {
-            r#type: ToolType::Function,
-            function: ToolFunction {
-                name: tools::Tool::CodeWrite.to_string(),
-                description: "Write content to a file".to_string(),
-                parameters: json!({
-                    "type": "object",
-                    "properties": {
-                        "path": {
-                            "type": "string",
-                            "description": "The path to the file"
-                        },
-                        "content": {
-                            "type": "string",
-                            "description": "The content to write"
-                        }
-                    },
-                    "required": ["path", "content"]
-                }),
-            },
-        },
-        Tool {
-            r#type: ToolType::Function,
-            function: ToolFunction {
-                name: tools::Tool::PullRequest.to_string(),
-                description: "Create a GitHub Pull Request".to_string(),
-                parameters: json!({
-                    "type": "object",
-                    "properties": {
-                        "branch_name": {
-                            "type": "string",
-                            "description": "The branch name"
-                        },
-                        "issue": {
-                            "type": "number",
-                            "description": "The issue number"
-                        },
-                        "title": {
-                            "type": "string",
-                            "description": "The pull request title"
-                        },
-                        "body": {
-                            "type": "string",
-                            "description": "The pull request body"
-                        },
-
-                    },
-                    "required": ["branch_name", "issue", "title", "body"]
-                }),
-            },
-        },
-        Tool {
-            r#type: ToolType::Function,
-            function: ToolFunction {
-                name: tools::Tool::Done.to_string(),
-                description: "Finish the task".to_string(),
-                parameters: json!({
-                    "type": "object",
-                    "properties": {},
-                    "required": []
-                }),
-            },
-        },
-    ];
+    let tools = tools::get_tools();
 
     let coder_dir = Path::new(".coder");
     let config_path = coder_dir.join("config.yaml");
     let config_content = fs::read_to_string(config_path)?;
     let config: Value = serde_yaml::from_str(&config_content)?;
+
+    let project_config = tools::ProjectConfig {
+        language: tools::LanguageConfig {
+            name: config["language"]["name"]
+                .as_str()
+                .unwrap_or("rust")
+                .to_string(),
+            formatters: config["language"]["formatters"]
+                .as_sequence()
+                .map(|s| {
+                    s.iter()
+                        .filter_map(|v| v.as_str().map(String::from))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            linters: config["language"]["linters"]
+                .as_sequence()
+                .map(|s| {
+                    s.iter()
+                        .filter_map(|v| v.as_str().map(String::from))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            test_commands: config["language"]["test_commands"]
+                .as_sequence()
+                .map(|s| {
+                    s.iter()
+                        .filter_map(|v| v.as_str().map(String::from))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            docs_urls: config["language"]["docs_urls"]
+                .as_sequence()
+                .map(|s| {
+                    s.iter()
+                        .filter_map(|v| v.as_str().map(String::from))
+                        .collect()
+                })
+                .unwrap_or_default(),
+        },
+        provider: config["scm"]["name"]
+            .as_str()
+            .unwrap_or("github")
+            .to_string(),
+        repository: config["scm"]["repository"]
+            .as_str()
+            .unwrap_or("")
+            .to_string(),
+        issue_template: config["scm"]["issue_template"].as_str().map(String::from),
+    };
+
+    let model = config["agent"]["model"]
+        .as_str()
+        .ok_or(CoderError::ConfigError("Model not found".to_string()))?;
+    let provider = Provider::try_from(
+        config["agent"]["provider"]
+            .as_str()
+            .ok_or(CoderError::ConfigError("Provider not found".to_string()))?,
+    )?;
 
     let cli = Cli::parse();
     match cli.command {
@@ -257,29 +158,10 @@ async fn main() -> Result<(), CoderError> {
             info!("Fixing issue #{}...", issue);
             info!("Further instructions: {:?}", further_instruction);
 
-            let github_owner =
-                config["github"]["owner"]
-                    .as_str()
-                    .ok_or(CoderError::ConfigError(
-                        "GitHub owner not found".to_string(),
-                    ))?;
-            let github_repo = config["github"]["repo"]
-                .as_str()
-                .ok_or(CoderError::ConfigError("GitHub repo not found".to_string()))?;
-            let model = config["agent"]["model"]
-                .as_str()
-                .ok_or(CoderError::ConfigError("Model not found".to_string()))?;
-            let provider = Provider::try_from(
-                config["agent"]["provider"]
-                    .as_str()
-                    .ok_or(CoderError::ConfigError("Provider not found".to_string()))?,
-            )?;
-
-            let client = InferenceGatewayClient::new(
-                &config["api"]["endpoint"].as_str().unwrap_or_default(),
-            )
-            .with_max_tokens(Some(900))
-            .with_tools(Some(tools));
+            let client =
+                InferenceGatewayClient::new(config["api"]["endpoint"].as_str().unwrap_or_default())
+                    .with_max_tokens(Some(900))
+                    .with_tools(Some(tools));
 
             let mut convo = Conversation::new(model.to_string(), provider.clone());
 
@@ -323,7 +205,7 @@ WORKFLOW:
             let timeout = Duration::from_secs(300);
             info!("Starting AI Coder agent...");
             info!("Press Ctrl+C to stop the agent.");
-            'outer: loop {
+            loop {
                 if timeout.as_secs() == 0 {
                     warn!("Timeout reached. Exiting...");
                     break;
@@ -352,170 +234,11 @@ WORKFLOW:
                 info!("Assistant: {}", assistant_message);
 
                 if response.tool_calls.is_some() {
-                    let tools: Vec<inference_gateway_sdk::ToolCallResponse> =
-                        response.tool_calls.unwrap();
-                    for tool_call_response in tools {
-                        let function_name = tool_call_response.function.name.as_str();
-                        let function_arguments = tool_call_response.function.arguments;
-                        let tool = tools::Tool::from_str(function_name)?;
-                        info!("Using tool {:?}", tool);
-                        match tool {
-                            tools::Tool::IssueValidate => {}
-                            tools::Tool::IssuePull => {
-                                let function_args =
-                                    function_arguments.as_str().ok_or_else(|| {
-                                        CoderError::MissingArguments(
-                                            "Function arguments not provided".to_string(),
-                                        )
-                                    })?;
-                                let args: tools::GithubPullIssueArgs =
-                                    serde_json::from_str(function_args)?;
-                                info!(
-                                    "Pulling issue #{:?} from GitHub {}/{}...",
-                                    args.issue, github_owner, github_repo
-                                );
-                                let github_issue =
-                                    tools::issue_pull(args.issue, github_owner, github_repo)
-                                        .await?;
-                                info!(
-                                    "Issue pulled: {:?}\n\n{:?}",
-                                    github_issue.title, github_issue.body
-                                );
-                                convo.add_message(Message {
-                                    role: MessageRole::Tool,
-                                    content: format!(
-                                        "Issue:\n\n{}\n\n\nDescription:\n\n{:?}",
-                                        github_issue.title, github_issue.body
-                                    ),
-                                    tool_call_id: Some(tool_call_response.id.clone()),
-                                });
-                                convo.add_message(Message {
-                                    role: MessageRole::User,
-                                    content:
-                                        "Please read the issue description and let me know if you need any further information."
-                                            .to_string(),
-                                    ..Default::default()
-                                });
-                            }
-                            tools::Tool::CodeAnalyse => {
-                                info!("Implement code analysis tool");
-                            }
-                            tools::Tool::CodeLint => {
-                                info!("Implement code linting tool");
-                            }
-                            tools::Tool::CodeTest => {
-                                info!("Implement code testing tool");
-                            }
-                            tools::Tool::DocsReference => {
-                                info!("Implement documentation reference tool");
-                                let function_args =
-                                    function_arguments.as_str().ok_or_else(|| {
-                                        CoderError::MissingArguments(
-                                            "Function arguments not provided".to_string(),
-                                        )
-                                    })?;
-                                let args: tools::DocsReferenceArgs =
-                                    serde_json::from_str(function_args)?;
-                                let docs = tools::docs_reference(&args.term).await?;
-                                log::info!("Docs: {:?}", docs);
-                            }
-                            tools::Tool::CodeRead => {
-                                let function_args =
-                                    function_arguments.as_str().ok_or_else(|| {
-                                        CoderError::MissingArguments(
-                                            "Function arguments not provided".to_string(),
-                                        )
-                                    })?;
-                                let args: tools::GetFileContentArgs =
-                                    serde_json::from_str(function_args)?;
-                                info!("Reading content from file: {}", args.path);
-                                let content = tools::code_read(&args.path)?;
-                                convo.add_message(Message {
-                                    role: MessageRole::Tool,
-                                    content: format!(
-                                        "File content fetched.\nFILE: {}\n\nCONTENT:\n\n```rust\n{}\n```\n",
-                                        args.path, content
-                                    ),
-                                    tool_call_id: Some(tool_call_response.id.clone()),
-                                });
-                                convo.add_message(Message {
-                                    role: MessageRole::User,
-                                    content: "Do you want to modify the file content? If yes, just modify it using the tool write_file_content.".to_string(),
-                                    ..Default::default()
-                                });
-                            }
-                            tools::Tool::CodeWrite => {
-                                let function_args =
-                                    function_arguments.as_str().ok_or_else(|| {
-                                        CoderError::MissingArguments(
-                                            "Function arguments not provided".to_string(),
-                                        )
-                                    })?;
-                                let args: tools::WriteFileContentArgs =
-                                    serde_json::from_str(function_args)?;
-                                info!("Writing content to file: {}", args.path);
-                                tools::code_write(&args.path, &args.content)?;
-                                convo.add_message(Message {
-                                    role: MessageRole::Tool,
-                                    content: format!(
-                                        "Content has been written to the file: {}",
-                                        args.path
-                                    ),
-                                    tool_call_id: Some(tool_call_response.id),
-                                });
-                                convo.add_message(Message {
-                                    role: MessageRole::User,
-                                    content: "Are there any other files need modifications? If not, let's proceed.".to_string(),
-                                    ..Default::default()
-                                });
-                            }
-                            tools::Tool::PullRequest => {
-                                info!("Creating pull request...");
-                                let function_args =
-                                    function_arguments.as_str().ok_or_else(|| {
-                                        CoderError::MissingArguments(
-                                            "Function arguments not provided".to_string(),
-                                        )
-                                    })?;
-                                let args: tools::GithubCreatePullRequestArgs =
-                                    serde_json::from_str(function_args)?;
-                                let pull_request = tools::pull_request(
-                                    &github_owner,
-                                    &github_repo,
-                                    &args.branch_name,
-                                    args.issue,
-                                    &args.title,
-                                    &args.body,
-                                )
-                                .await?;
-
-                                info!("Pull request created: {:?}", pull_request.html_url);
-                                convo.add_message(Message {
-                                    role: MessageRole::Tool,
-                                    content: format!(
-                                        "Pull request created: {:?}\n\nURL: {:?}",
-                                        pull_request.title, pull_request.html_url
-                                    ),
-                                    tool_call_id: Some(tool_call_response.id),
-                                });
-                                convo.add_message(Message {
-                                    role: MessageRole::User,
-                                    content: "Pull request has been created. Task completed."
-                                        .to_string(),
-                                    ..Default::default()
-                                });
-                            }
-                            tools::Tool::Done => {
-                                info!(
-                                    "Assistant: the task has been completed. Exiting... {:?}",
-                                    convo
-                                );
-                                break 'outer;
-                            }
-                            _ => {
-                                warn!("Tool {:?} not supported for fixing", tool);
-                            }
-                        }
+                    for tool_call in response.tool_calls.unwrap() {
+                        let tool = tools::Tools::from_str(tool_call.function.name.as_str())?;
+                        let args = serde_json::to_value(tool_call.function.arguments)
+                            .map_err(|e| CoderError::MissingArguments(e.to_string()))?;
+                        tools::handle_tool_calls(&tool, args, &project_config).await?;
                     }
                 }
 
@@ -536,11 +259,10 @@ WORKFLOW:
                     .ok_or(CoderError::ConfigError("Provider not found".to_string()))?,
             )?;
 
-            let client = InferenceGatewayClient::new(
-                &config["api"]["endpoint"].as_str().unwrap_or_default(),
-            )
-            .with_max_tokens(Some(900))
-            .with_tools(Some(tools));
+            let client =
+                InferenceGatewayClient::new(config["api"]["endpoint"].as_str().unwrap_or_default())
+                    .with_max_tokens(Some(900))
+                    .with_tools(Some(tools));
 
             let mut convo = Conversation::new(
                 "deepseek-r1-distill-llama-70b".to_string(),
@@ -584,7 +306,7 @@ WORKFLOW:
             let timeout = Duration::from_secs(300);
             info!("Starting AI Coder agent...");
             info!("Press Ctrl+C to stop the agent.");
-            'outer: loop {
+            loop {
                 if timeout.as_secs() == 0 {
                     warn!("Timeout reached. Exiting...");
                     break;
@@ -617,84 +339,11 @@ WORKFLOW:
                 info!("Assistant: {}", assistant_message);
 
                 if response.tool_calls.is_some() {
-                    let tools: Vec<inference_gateway_sdk::ToolCallResponse> =
-                        response.tool_calls.unwrap();
-                    for tool_call_response in tools {
-                        let function_name = tool_call_response.function.name.as_str();
-                        let function_arguments = tool_call_response.function.arguments;
-                        let tool = tools::Tool::from_str(function_name)?;
-                        info!("Using tool {:?}", tool);
-
-                        match tool {
-                            tools::Tool::CodeRead => {
-                                let function_args =
-                                    function_arguments.as_str().ok_or_else(|| {
-                                        CoderError::MissingArguments(
-                                            "Function arguments not provided".to_string(),
-                                        )
-                                    })?;
-                                let args: tools::GetFileContentArgs =
-                                    serde_json::from_str(function_args)?;
-                                info!("Reading content from file: {}", args.path);
-                                let content = tools::code_read(&args.path)?;
-                                convo.add_message(Message {
-                                    role: MessageRole::Tool,
-                                    content: format!(
-                                        "File content fetched.\nFILE: {}\n\nCONTENT:\n\n```rust\n{}\n```\n",
-                                        args.path, content
-                                    ),
-                                    tool_call_id: Some(tool_call_response.id.clone()),
-                                });
-                            }
-                            tools::Tool::CodeWrite => {
-                                let function_args =
-                                    function_arguments.as_str().ok_or_else(|| {
-                                        CoderError::MissingArguments(
-                                            "Function arguments not provided".to_string(),
-                                        )
-                                    })?;
-                                let args: tools::WriteFileContentArgs =
-                                    serde_json::from_str(function_args)?;
-                                info!("Writing content to file: {}", args.path);
-                                tools::code_write(&args.path, &args.content)?;
-                                convo.add_message(Message {
-                                    role: MessageRole::Tool,
-                                    content: format!(
-                                        "Content has been written to the file: {}",
-                                        args.path
-                                    ),
-                                    tool_call_id: Some(tool_call_response.id),
-                                });
-                            }
-                            tools::Tool::CodeAnalyse => {
-                                info!("Implement code analysis tool");
-                                let user_configured_command = config["tools"]["code_analyse"]
-                                    .as_str()
-                                    .ok_or(CoderError::ConfigError(
-                                        "Code analysis tool not configured".to_string(),
-                                    ))?;
-                                tools::code_analyse(user_configured_command).await?;
-                            }
-                            tools::Tool::CodeLint => {
-                                info!("Implement code linting tool");
-                            }
-                            tools::Tool::CodeTest => {
-                                info!("Implement code testing tool");
-                            }
-                            tools::Tool::DocsReference => {
-                                info!("Implement documentation reference tool");
-                            }
-                            tools::Tool::Done => {
-                                info!(
-                                    "Assistant: the task has been completed. Exiting... {:?}",
-                                    convo
-                                );
-                                break 'outer;
-                            }
-                            _ => {
-                                warn!("Tool {:?} not supported for refactoring", tool);
-                            }
-                        }
+                    for tool_call in response.tool_calls.unwrap() {
+                        let tool = tools::Tools::from_str(tool_call.function.name.as_str())?;
+                        let args = serde_json::to_value(tool_call.function.arguments)
+                            .map_err(|e| CoderError::MissingArguments(e.to_string()))?;
+                        tools::handle_tool_calls(&tool, args, &project_config).await?;
                     }
                 }
             }

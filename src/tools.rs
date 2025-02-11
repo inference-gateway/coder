@@ -1,6 +1,8 @@
+use inference_gateway_sdk::{Tool, ToolFunction, ToolType};
 use log::info;
 use octocrab::Octocrab;
 use serde::{de::Error, Deserialize, Deserializer, Serialize};
+use serde_json::json;
 use std::{
     fmt::{self, Display},
     path::Path,
@@ -12,7 +14,7 @@ use crate::errors::CoderError;
 
 // Tool structure for language-agnostic code fixes
 #[derive(Debug, Clone)]
-pub enum Tool {
+pub enum Tools {
     // Issue management
     IssueValidate, // Validate issue format
     IssuePull,     // Pull issue from repo
@@ -36,19 +38,19 @@ pub enum Tool {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LanguageConfig {
-    name: String,
-    formatters: Vec<String>,    // e.g. ["cargo fmt", "prettier"]
-    linters: Vec<String>,       // e.g. ["cargo clippy", "eslint"]
-    test_commands: Vec<String>, // e.g. ["cargo test", "npm test"]
-    docs_urls: Vec<String>,     // e.g. ["docs.rs", "developer.mozilla.org"]
+    pub name: String,
+    pub formatters: Vec<String>,    // e.g. ["cargo fmt", "prettier"]
+    pub linters: Vec<String>,       // e.g. ["cargo clippy", "eslint"]
+    pub test_commands: Vec<String>, // e.g. ["cargo test", "npm test"]
+    pub docs_urls: Vec<String>,     // e.g. ["docs.rs", "developer.mozilla.org"]
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ProjectConfig {
-    language: LanguageConfig,
-    provider: String, // e.g. "github", "gitlab"
-    repository: String,
-    issue_template: Option<String>,
+    pub language: LanguageConfig,
+    pub provider: String, // e.g. "github", "gitlab"
+    pub repository: String,
+    pub issue_template: Option<String>,
 }
 
 fn deserialize_issue_number<'de, D>(deserializer: D) -> Result<u64, D::Error>
@@ -99,39 +101,39 @@ pub struct GithubCreatePullRequestArgs {
     pub body: String,
 }
 
-impl FromStr for Tool {
+impl FromStr for Tools {
     type Err = CoderError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "issue_validate" => Ok(Tool::IssueValidate),
-            "issue_pull" => Ok(Tool::IssuePull),
-            "pull_request" => Ok(Tool::PullRequest),
-            "code_read" => Ok(Tool::CodeRead),
-            "code_analyse" => Ok(Tool::CodeAnalyse),
-            "code_lint" => Ok(Tool::CodeLint),
-            "code_write" => Ok(Tool::CodeWrite),
-            "code_test" => Ok(Tool::CodeTest),
-            "docs_reference" => Ok(Tool::DocsReference),
-            "done" => Ok(Tool::Done),
+            "issue_validate" => Ok(Tools::IssueValidate),
+            "issue_pull" => Ok(Tools::IssuePull),
+            "pull_request" => Ok(Tools::PullRequest),
+            "code_read" => Ok(Tools::CodeRead),
+            "code_analyse" => Ok(Tools::CodeAnalyse),
+            "code_lint" => Ok(Tools::CodeLint),
+            "code_write" => Ok(Tools::CodeWrite),
+            "code_test" => Ok(Tools::CodeTest),
+            "docs_reference" => Ok(Tools::DocsReference),
+            "done" => Ok(Tools::Done),
             _ => Err(CoderError::ConfigError(format!("Invalid tool: {}", s))),
         }
     }
 }
 
-impl Display for Tool {
+impl Display for Tools {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
-            Tool::IssueValidate => "issue_validate",
-            Tool::IssuePull => "issue_pull",
-            Tool::PullRequest => "pull_request",
-            Tool::CodeRead => "code_read",
-            Tool::CodeAnalyse => "code_analyse",
-            Tool::CodeLint => "code_lint",
-            Tool::CodeWrite => "code_write",
-            Tool::CodeTest => "code_test",
-            Tool::DocsReference => "docs_reference",
-            Tool::Done => "done",
+            Tools::IssueValidate => "issue_validate",
+            Tools::IssuePull => "issue_pull",
+            Tools::PullRequest => "pull_request",
+            Tools::CodeRead => "code_read",
+            Tools::CodeAnalyse => "code_analyse",
+            Tools::CodeLint => "code_lint",
+            Tools::CodeWrite => "code_write",
+            Tools::CodeTest => "code_test",
+            Tools::DocsReference => "docs_reference",
+            Tools::Done => "done",
         };
         write!(f, "{}", s)
     }
@@ -201,10 +203,10 @@ pub async fn pull_request(
     let octocrab = Octocrab::builder()
         .personal_token(github_token)
         .build()
-        .map_err(|e| CoderError::GitHubError(e))?;
+        .map_err(CoderError::GitHubError)?;
 
     Command::new("git")
-        .args(["checkout", "-b", &branch_name])
+        .args(["checkout", "-b", branch_name])
         .output()
         .map_err(|e| CoderError::GitError(e.to_string()))?;
 
@@ -219,7 +221,7 @@ pub async fn pull_request(
         .map_err(|e| CoderError::GitError(e.to_string()))?;
 
     Command::new("git")
-        .args(["push", "origin", &branch_name])
+        .args(["push", "origin", branch_name])
         .output()
         .map_err(|e| CoderError::GitError(e.to_string()))?;
 
@@ -229,7 +231,7 @@ pub async fn pull_request(
         .body(body)
         .send()
         .await
-        .map_err(|e| CoderError::GitHubError(e))?;
+        .map_err(CoderError::GitHubError)?;
 
     Command::new("git")
         .args(["checkout", "main"])
@@ -237,7 +239,7 @@ pub async fn pull_request(
         .map_err(|e| CoderError::GitError(e.to_string()))?;
 
     Command::new("git")
-        .args(["branch", "-D", &branch_name])
+        .args(["branch", "-D", branch_name])
         .output()
         .map_err(|e| CoderError::GitError(e.to_string()))?;
 
@@ -262,29 +264,59 @@ pub async fn issue_pull(
     let octocrab = Octocrab::builder()
         .personal_token(std::env::var("GITHUB_TOKEN").unwrap())
         .build()
-        .map_err(|e| CoderError::GitHubError(e))?;
+        .map_err(CoderError::GitHubError)?;
 
     let issue = octocrab
         .issues(github_owner, github_repo)
         .get(issue_number)
         .await
-        .map_err(|e| CoderError::GitHubError(e))?;
+        .map_err(CoderError::GitHubError)?;
 
     Ok(issue)
 }
 
-pub async fn code_analyse(command: &str) -> Result<(), CoderError> {
-    let output = Command::new(command)
-        .output()
-        .map_err(|e| CoderError::CommandError(e.to_string()))?;
-
-    if !output.status.success() {
-        return Err(CoderError::CommandError(format!(
-            "Failed to run command: {}",
-            command
-        )));
+pub fn issue_validate(
+    config: &ProjectConfig,
+    issue_number: u64,
+    issue_title: &str,
+    issue_body: Option<String>,
+) -> Result<(), CoderError> {
+    if issue_number == 0 {
+        return Err(CoderError::ConfigError(
+            "Issue number cannot be 0".to_string(),
+        ));
     }
 
+    if issue_title.trim().is_empty() {
+        return Err(CoderError::ConfigError(
+            "Issue title cannot be empty".to_string(),
+        ));
+    }
+
+    if let Some(template) = &config.issue_template {
+        let body = issue_body.ok_or_else(|| {
+            CoderError::ConfigError(
+                "Issue body is required when template is configured".to_string(),
+            )
+        })?;
+
+        for section in template.split("##").skip(1) {
+            let section_name = section
+                .lines()
+                .next()
+                .ok_or_else(|| CoderError::ConfigError("Invalid template section".to_string()))?
+                .trim();
+
+            if !body.contains(&format!("## {}", section_name)) {
+                return Err(CoderError::ConfigError(format!(
+                    "Missing required section: {}",
+                    section_name
+                )));
+            }
+        }
+    }
+
+    info!("Validating issue: {}", issue_number);
     Ok(())
 }
 
@@ -331,6 +363,285 @@ pub fn done() -> Result<(), CoderError> {
 
     // TODO - perhaps add some cleanup code here
     Ok(())
+}
+
+pub fn get_tools() -> Vec<Tool> {
+    vec![
+        Tool {
+            r#type: ToolType::Function,
+            function: ToolFunction {
+                name: Tools::IssuePull.to_string(),
+                description: "Pull the issue from SCM".to_string(),
+                parameters: json!({
+                    "type": "object",
+                    "properties": {
+                        "scm": {
+                            "type": "string",
+                            "description": "SCM name"
+                        },
+                        "issue": {
+                            "type": "number",
+                            "description": "Issue number"
+                        }
+                    },
+                    "required": ["scm","issue"]
+                }),
+            },
+        },
+        Tool {
+            r#type: ToolType::Function,
+            function: ToolFunction {
+                name: Tools::CodeLint.to_string(),
+                description: "Lint the code".to_string(),
+                parameters: json!({
+                    "type": "object",
+                    "properties": {},
+                    "required": []
+                }),
+            },
+        },
+        Tool {
+            r#type: ToolType::Function,
+            function: ToolFunction {
+                name: Tools::CodeAnalyse.to_string(),
+                description: "Analyse the code".to_string(),
+                parameters: json!({
+                    "type": "object",
+                    "properties": {},
+                    "required": []
+                }),
+            },
+        },
+        Tool {
+            r#type: ToolType::Function,
+            function: ToolFunction {
+                name: Tools::CodeTest.to_string(),
+                description: "Test the code".to_string(),
+                parameters: json!({
+                    "type": "object",
+                    "properties": {},
+                    "required": []
+                }),
+            },
+        },
+        Tool {
+            r#type: ToolType::Function,
+            function: ToolFunction {
+                name: Tools::DocsReference.to_string(),
+                description: "Reference the docs".to_string(),
+                parameters: json!({
+                    "type": "object",
+                    "properties": {
+                        "term": {
+                            "type": "string",
+                            "description": "The term to search for"
+                        }
+                    },
+                    "required": ["term"]
+                }),
+            },
+        },
+        Tool {
+            r#type: ToolType::Function,
+            function: ToolFunction {
+                name: Tools::CodeRead.to_string(),
+                description: "Read a file content".to_string(),
+                parameters: json!({
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "description": "The path to the file"
+                        }
+                    },
+                    "required": ["path"]
+                }),
+            },
+        },
+        Tool {
+            r#type: ToolType::Function,
+            function: ToolFunction {
+                name: Tools::CodeWrite.to_string(),
+                description: "Write content to a file".to_string(),
+                parameters: json!({
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "description": "The path to the file"
+                        },
+                        "content": {
+                            "type": "string",
+                            "description": "The content to write"
+                        }
+                    },
+                    "required": ["path", "content"]
+                }),
+            },
+        },
+        Tool {
+            r#type: ToolType::Function,
+            function: ToolFunction {
+                name: Tools::PullRequest.to_string(),
+                description: "Create a GitHub Pull Request".to_string(),
+                parameters: json!({
+                    "type": "object",
+                    "properties": {
+                        "branch_name": {
+                            "type": "string",
+                            "description": "The branch name"
+                        },
+                        "issue": {
+                            "type": "number",
+                            "description": "The issue number"
+                        },
+                        "title": {
+                            "type": "string",
+                            "description": "The pull request title"
+                        },
+                        "body": {
+                            "type": "string",
+                            "description": "The pull request body"
+                        },
+
+                    },
+                    "required": ["branch_name", "issue", "title", "body"]
+                }),
+            },
+        },
+        Tool {
+            r#type: ToolType::Function,
+            function: ToolFunction {
+                name: Tools::Done.to_string(),
+                description: "Finish the task".to_string(),
+                parameters: json!({
+                    "type": "object",
+                    "properties": {},
+                    "required": []
+                }),
+            },
+        },
+    ]
+}
+
+/// Execute a language-specific command from config
+pub async fn execute_language_specific_command(
+    config: &LanguageConfig,
+    command_type: CommandType,
+) -> Result<(), CoderError> {
+    let command = match command_type {
+        CommandType::Lint => config.linters.first(),
+        CommandType::Analyse => config.formatters.first(),
+        CommandType::Test => config.test_commands.first(),
+    }
+    .ok_or_else(|| {
+        CoderError::ConfigError(format!(
+            "No {} command configured for language {}",
+            command_type, config.name
+        ))
+    })?;
+
+    let parts: Vec<&str> = command.split_whitespace().collect();
+    if parts.is_empty() {
+        return Err(CoderError::ConfigError("Empty command".to_string()));
+    }
+
+    let output = Command::new(parts[0])
+        .args(&parts[1..])
+        .output()
+        .map_err(|e| CoderError::CommandError(e.to_string()))?;
+
+    if !output.status.success() {
+        return Err(CoderError::CommandError(format!(
+            "Command '{}' failed: {}",
+            command,
+            String::from_utf8_lossy(&output.stderr)
+        )));
+    }
+
+    Ok(())
+}
+
+#[derive(Debug)]
+pub enum CommandType {
+    Analyse,
+    Lint,
+    Test,
+}
+
+impl Display for CommandType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            CommandType::Lint => write!(f, "lint"),
+            CommandType::Analyse => write!(f, "analyse"),
+            CommandType::Test => write!(f, "test"),
+        }
+    }
+}
+
+pub async fn handle_tool_calls(
+    tool: &Tools,
+    args: serde_json::Value,
+    config: &ProjectConfig,
+) -> Result<serde_json::Value, CoderError> {
+    info!("Handling tool call: {}", tool);
+    match tool {
+        Tools::IssueValidate => {
+            let args: GithubPullIssueArgs = serde_json::from_value(args)?;
+            let issue = issue_pull(args.issue, "owner", "repo").await?;
+            issue_validate(config, issue.number, &issue.title, issue.body)?;
+            Ok(serde_json::Value::Null)
+        }
+        Tools::IssuePull => {
+            let args: GithubPullIssueArgs = serde_json::from_value(args)?;
+            let issue = issue_pull(args.issue, "owner", "repo").await?;
+            Ok(serde_json::to_value(issue)?)
+        }
+        Tools::PullRequest => {
+            let args: GithubCreatePullRequestArgs = serde_json::from_value(args)?;
+            let pr = pull_request(
+                "owner",
+                "repo",
+                &args.branch_name,
+                args.issue,
+                &args.title,
+                &args.body,
+            )
+            .await?;
+            Ok(serde_json::to_value(pr)?)
+        }
+        Tools::CodeLint => {
+            execute_language_specific_command(&config.language, CommandType::Lint).await?;
+            Ok(serde_json::Value::Null)
+        }
+        Tools::CodeAnalyse => {
+            execute_language_specific_command(&config.language, CommandType::Analyse).await?;
+            Ok(serde_json::Value::Null)
+        }
+        Tools::CodeTest => {
+            execute_language_specific_command(&config.language, CommandType::Test).await?;
+            Ok(serde_json::Value::Null)
+        }
+        Tools::DocsReference => {
+            let args: DocsReferenceArgs = serde_json::from_value(args)?;
+            docs_reference(&args.term).await?;
+            Ok(serde_json::Value::Null)
+        }
+        Tools::CodeRead => {
+            let args: GetFileContentArgs = serde_json::from_value(args)?;
+            let content = code_read(&args.path)?;
+            Ok(serde_json::to_value(content)?)
+        }
+        Tools::CodeWrite => {
+            let args: WriteFileContentArgs = serde_json::from_value(args)?;
+            code_write(&args.path, &args.content)?;
+            Ok(serde_json::Value::Null)
+        }
+        Tools::Done => {
+            done()?;
+            Ok(serde_json::Value::Null)
+        }
+    }
 }
 
 #[cfg(test)]
@@ -386,7 +697,7 @@ content:
 
         let src_dir = path.join("src");
         create_dir_all(&src_dir)?;
-        let _result = code_write(src_dir.join("new.rs").to_str().unwrap(), "fn new() {}")?;
+        code_write(src_dir.join("new.rs").to_str().unwrap(), "fn new() {}")?;
 
         let source_file_path = src_dir.join("new.rs");
         let fs_content = fs::read_to_string(&source_file_path)?;

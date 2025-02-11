@@ -81,7 +81,6 @@ impl fmt::Debug for Conversation {
 mod tests {
     use crate::conversation::Message;
     use crate::MessageRole;
-    use serde_json;
 
     #[test]
     fn test_message_tool_call_id_serialization() {

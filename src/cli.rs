@@ -61,7 +61,7 @@ fn validate_issue_number(s: &str) -> Result<u32, String> {
         Ok(num) if num > 0 => Ok(num as u32),
         Ok(0) => Err("Issue number cannot be 0".into()),
         Ok(_) => Err("Issue number cannot be negative".into()),
-        Err(_) => Err(format!("Invalid issue number: {}", s).into()),
+        Err(_) => Err(format!("Invalid issue number: {}", s)),
     }
 }
 
