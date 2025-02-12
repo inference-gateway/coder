@@ -492,7 +492,7 @@ pub fn get_tools() -> Vec<Tool> {
             r#type: ToolType::Function,
             function: ToolFunction {
                 name: Tools::PullRequest.to_string(),
-                description: "Create a GitHub Pull Request".to_string(),
+                description: "Create a Pull Request".to_string(),
                 parameters: json!({
                     "type": "object",
                     "properties": {
@@ -593,7 +593,11 @@ pub async fn handle_tool_calls(
     args: Option<&str>,
     config: &config::Config,
 ) -> Result<serde_json::Value, CoderError> {
-    info!("Handling tool call: {}", tool);
+    info!(
+        "Handling tool call: {} with args: {}",
+        tool,
+        args.unwrap_or_default()
+    );
     match tool {
         Tools::CodeRead => {
             let args = args.ok_or_else(|| {
