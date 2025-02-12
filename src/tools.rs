@@ -379,6 +379,27 @@ pub fn get_tools() -> Vec<Tool> {
         Tool {
             r#type: ToolType::Function,
             function: ToolFunction {
+                name: Tools::IssueValidate.to_string(),
+                description: "Validate the issue".to_string(),
+                parameters: json!({
+                    "type": "object",
+                    "properties": {
+                        "scm": {
+                            "type": "string",
+                            "description": "SCM name lowercase"
+                        },
+                        "issue": {
+                            "type": "number",
+                            "description": "Issue number"
+                        }
+                    },
+                    "required": ["scm", "issue"]
+                }),
+            },
+        },
+        Tool {
+            r#type: ToolType::Function,
+            function: ToolFunction {
                 name: Tools::IssuePull.to_string(),
                 description: "Pull the issue from SCM".to_string(),
                 parameters: json!({
@@ -393,7 +414,7 @@ pub fn get_tools() -> Vec<Tool> {
                             "description": "Issue number"
                         }
                     },
-                    "required": ["scm","issue"]
+                    "required": ["scm", "issue"]
                 }),
             },
         },
@@ -454,7 +475,7 @@ pub fn get_tools() -> Vec<Tool> {
             r#type: ToolType::Function,
             function: ToolFunction {
                 name: Tools::CodeRead.to_string(),
-                description: "Read a file content".to_string(),
+                description: "Read a code content".to_string(),
                 parameters: json!({
                     "type": "object",
                     "properties": {
