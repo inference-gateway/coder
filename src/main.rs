@@ -182,7 +182,7 @@ Focus on producing working solutions with minimal discussion. Do not ask questio
             let timeout = Duration::from_secs(300);
             info!("Starting AI Coder agent...");
             info!("Press Ctrl+C to stop the agent.");
-            loop {
+            'outer: loop {
                 if timeout.as_secs() == 0 {
                     warn!("Timeout reached. Exiting...");
                     break;
@@ -248,6 +248,11 @@ Focus on producing working solutions with minimal discussion. Do not ask questio
 
                         let tool_result_struct: tools::StatusResponse =
                             serde_json::from_value(result)?;
+
+                        if tool_result_struct.message == Some("Task completed".to_string()) {
+                            info!("Task completed. Exiting...");
+                            break 'outer;
+                        }
 
                         let mut user_message = Message {
                             role: MessageRole::User,
