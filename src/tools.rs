@@ -547,7 +547,7 @@ pub fn get_tools() -> Vec<Tool> {
             r#type: ToolType::Function,
             function: ToolFunction {
                 name: Tools::Done.to_string(),
-                description: "Finish the task".to_string(),
+                description: "Done the task".to_string(),
                 parameters: json!({
                     "type": "object",
                     "properties": {},
