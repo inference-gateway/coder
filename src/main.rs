@@ -215,6 +215,11 @@ Focus on producing working solutions with minimal discussion. Do not ask questio
                             tool_call_id: Some(tool_call.id),
                             ..Default::default()
                         });
+                        convo.add_message(Message {
+                            role: MessageRole::User,
+                            content: "Let's proceed, how can we fix it?".to_string(),
+                            ..Default::default()
+                        });
                     }
                 }
 
