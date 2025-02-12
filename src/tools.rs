@@ -559,7 +559,7 @@ pub fn get_tools() -> Vec<Tool> {
 }
 
 #[derive(Debug, Serialize)]
-struct StatusResponse {
+pub struct StatusResponse {
     status: String,
     message: Option<String>,
     result: Option<serde_json::Value>,
