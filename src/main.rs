@@ -168,7 +168,7 @@ Focus on producing working solutions with minimal discussion. Do not ask questio
 
             convo.add_message(Message {
                 role: MessageRole::User,
-                content: format!("I need help fixing this issue #{}", issue),
+                content: format!("I need help fixing this issue #{} first pull it before jumping to conclusions.", issue),
                 ..Default::default()
             });
 
