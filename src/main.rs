@@ -124,7 +124,9 @@ async fn main() -> Result<(), CoderError> {
 
             let system_prompt = format!(
                 r#"You are a senior software engineer specializing in {language} development working to fix an issue reported in {scm}.
-            
+
+When you need to call a tool, don't answer in XML. Instead, provide the tool name and arguments in JSON format.
+
 WORKSPACE:
 {tree}
 
