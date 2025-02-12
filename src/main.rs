@@ -251,7 +251,7 @@ Focus on producing working solutions with minimal discussion. Do not ask questio
 
                         let mut user_message = Message {
                             role: MessageRole::User,
-                            content: "Let's proceed to the next tool".to_string(),
+                            content: "Let's proceed to the next step".to_string(),
                             ..Default::default()
                         };
                         if tool_result_struct.retry {
