@@ -32,6 +32,7 @@ pub struct ScmConfig {
 pub struct AgentConfig {
     pub model: String,
     pub provider: String,
+    pub max_tokens: Option<usize>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -67,6 +68,7 @@ impl Default for Config {
             agent: AgentConfig {
                 model: "deepseek-r1-distill-llama-70b".to_string(),
                 provider: "groq".to_string(),
+                max_tokens: Some(4000),
             },
             api: ApiConfig {
                 endpoint: "http://localhost:8080".to_string(),

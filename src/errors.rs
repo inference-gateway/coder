@@ -14,6 +14,9 @@ pub enum CoderError {
     #[error("Missing arguments: {0}")]
     MissingArguments(String),
 
+    #[error("Tokenization error: {0}")]
+    TokenizationError(String),
+
     #[error("GitHub API error: {0}")]
     GitHubError(#[from] octocrab::Error),
 

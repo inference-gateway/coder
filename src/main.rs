@@ -120,7 +120,8 @@ async fn main() -> Result<(), CoderError> {
                 .with_max_tokens(Some(900))
                 .with_tools(Some(tools));
 
-            let mut convo = Conversation::new(model.to_string(), provider.clone());
+            let mut convo =
+                Conversation::new(model.to_string(), provider.clone(), config.agent.max_tokens);
 
             setup_panic_handler(convo.clone());
 
@@ -211,6 +212,7 @@ Focus on producing working solutions with minimal discussion. Do not ask questio
                 });
 
                 info!("Assistant: {}", assistant_message);
+                info!("Current tokens usage: {}", convo.get_current_tokens()?);
 
                 if response.tool_calls.is_some() {
                     for tool_call in response.tool_calls.unwrap() {
@@ -292,7 +294,11 @@ Focus on producing working solutions with minimal discussion. Do not ask questio
                 .with_max_tokens(Some(900))
                 .with_tools(Some(tools));
 
-            let mut convo = Conversation::new(config.agent.model.to_string(), provider.clone());
+            let mut convo = Conversation::new(
+                config.agent.model.to_string(),
+                provider.clone(),
+                config.agent.max_tokens,
+            );
 
             setup_panic_handler(convo.clone());
 
