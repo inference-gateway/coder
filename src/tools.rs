@@ -291,6 +291,7 @@ pub fn issue_validate(
     issue_body: Option<String>,
 ) -> Result<(), CoderError> {
     if issue_number == 0 {
+        warn!("Issue number cannot be 0");
         return Err(CoderError::ConfigError(
             "Issue number cannot be 0".to_string(),
         ));
