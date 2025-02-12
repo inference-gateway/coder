@@ -652,8 +652,19 @@ pub async fn handle_tool_calls(
                 &config.scm.repository,
             )
             .await?;
-            issue_validate(config, issue.number, &issue.title, issue.body)?;
-            Ok(serde_json::Value::Null)
+            issue_validate(config, issue.number, &issue.title, issue.body.clone())?;
+            #[derive(Debug, Serialize)]
+            struct SanitizedIssue {
+                number: u64,
+                title: String,
+                body: Option<String>,
+            }
+            let sanitized = SanitizedIssue {
+                number: issue.number,
+                title: issue.title,
+                body: issue.body,
+            };
+            Ok(serde_json::to_value(sanitized)?)
         }
         Tools::IssuePull => {
             let args = args.ok_or_else(|| {
