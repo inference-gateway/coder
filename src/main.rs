@@ -131,14 +131,14 @@ WORKSPACE:
 PROCESS:
 1. Validate issue #{issue} [issue_validate]
 2. Get issue details [issue_pull] 
-3. Analyze code and documentation
-4. Implement fix 
+3. Analyze code and documentation [code_read]
+4. Implement fix [code_write]
 5. Validate changes:
-    - Lint code
-    - Run analysis
-    - Run tests
-6. Create {scm} pull request
-7. Call "done" when complete
+    - Lint code [code_lint]
+    - Run analysis [code_analyse]
+    - Run tests [code_test]
+6. Create {scm} pull request [pull_request]
+7. Call "done" when complete [done]
 
 Focus on producing working solutions with minimal discussion. Do not ask questions."#,
                 language = config.language.name,
