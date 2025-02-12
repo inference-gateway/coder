@@ -643,7 +643,12 @@ pub async fn handle_tool_calls(
             })?;
             let args: CodeReadArgs = serde_json::from_str(args)?;
             let content = code_read(&args.path)?;
-            Ok(serde_json::to_value(content)?)
+            let response = StatusResponse {
+                status: "ok".to_string(),
+                message: Some("Code read".to_string()),
+                result: Some(serde_json::to_value(content)?),
+            };
+            Ok(serde_json::to_value(response)?)
         }
         Tools::CodeWrite => {
             let args = args.ok_or_else(|| {
@@ -651,7 +656,12 @@ pub async fn handle_tool_calls(
             })?;
             let args: CodeWriteArgs = serde_json::from_str(args)?;
             code_write(&args.path, &args.content)?;
-            Ok(serde_json::Value::Null)
+            let response = StatusResponse {
+                status: "ok".to_string(),
+                message: Some("Code written".to_string()),
+                result: None,
+            };
+            Ok(serde_json::to_value(response)?)
         }
         Tools::IssueValidate => {
             let args = args.ok_or_else(|| {
@@ -677,7 +687,12 @@ pub async fn handle_tool_calls(
                 title: issue.title,
                 body: issue.body,
             };
-            Ok(serde_json::to_value(sanitized)?)
+            let response = StatusResponse {
+                status: "ok".to_string(),
+                message: Some("Issue validated".to_string()),
+                result: Some(serde_json::to_value(sanitized)?),
+            };
+            Ok(serde_json::to_value(response)?)
         }
         Tools::IssuePull => {
             let args = args.ok_or_else(|| {
@@ -702,7 +717,12 @@ pub async fn handle_tool_calls(
                 title: issue.title,
                 body: issue.body,
             };
-            Ok(serde_json::to_value(sanitized)?)
+            let response = StatusResponse {
+                status: "ok".to_string(),
+                message: Some("Issue pulled".to_string()),
+                result: Some(serde_json::to_value(sanitized)?),
+            };
+            Ok(serde_json::to_value(response)?)
         }
         Tools::PullRequest => {
             let args = args.ok_or_else(|| {
@@ -730,7 +750,12 @@ pub async fn handle_tool_calls(
                 title: pr.title,
                 body: pr.body,
             };
-            Ok(serde_json::to_value(sanitized)?)
+            let response = StatusResponse {
+                status: "ok".to_string(),
+                message: Some("Pull request created".to_string()),
+                result: Some(serde_json::to_value(sanitized)?),
+            };
+            Ok(serde_json::to_value(response)?)
         }
         Tools::CodeLint => {
             let response =
@@ -757,7 +782,12 @@ pub async fn handle_tool_calls(
         }
         Tools::Done => {
             done()?;
-            Ok(serde_json::Value::Null)
+            let response = StatusResponse {
+                status: "ok".to_string(),
+                message: Some("Task completed".to_string()),
+                result: None,
+            };
+            Ok(serde_json::to_value(response)?)
         }
     }
 }
