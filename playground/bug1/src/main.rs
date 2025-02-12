@@ -17,12 +17,8 @@ fn main() {
 
     println!("Starting payment processing...");
 
-    while transactions.len() > 0 {
-        let transaction = transactions.front();
-
-        if let Some(tx) = transaction {
-            process_payment(&tx);
-        }
+    while let Some(tx) = transactions.pop_front() {
+        process_payment(&tx);
     }
 
     println!("All transactions processed!");
