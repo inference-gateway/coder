@@ -563,6 +563,7 @@ pub struct StatusResponse {
     status: String,
     message: Option<String>,
     result: Option<serde_json::Value>,
+    retry: bool,
 }
 
 /// Execute a language-specific command from config
@@ -606,6 +607,7 @@ pub async fn execute_language_specific_command(
         result: Some(serde_json::Value::String(
             String::from_utf8_lossy(&output.stdout).to_string(),
         )),
+        retry: false,
     })
 }
 
@@ -647,6 +649,7 @@ pub async fn handle_tool_calls(
                 status: "ok".to_string(),
                 message: Some("Code read".to_string()),
                 result: Some(serde_json::to_value(content)?),
+                retry: false,
             };
             Ok(serde_json::to_value(response)?)
         }
@@ -656,10 +659,20 @@ pub async fn handle_tool_calls(
             })?;
             let args: CodeWriteArgs = serde_json::from_str(args)?;
             code_write(&args.path, &args.content)?;
+            let mut retry = false;
+            let output = Command::new("git")
+                .args(["diff", "--exit-code", "--", &args.path])
+                .output()
+                .map_err(|e| CoderError::GitError(e.to_string()))?;
+            if !output.status.success() {
+                warn!("File was not written: {}", args.path);
+                retry = true;
+            }
             let response = StatusResponse {
                 status: "ok".to_string(),
                 message: Some("Code written".to_string()),
                 result: None,
+                retry,
             };
             Ok(serde_json::to_value(response)?)
         }
@@ -691,6 +704,7 @@ pub async fn handle_tool_calls(
                 status: "ok".to_string(),
                 message: Some("Issue validated".to_string()),
                 result: Some(serde_json::to_value(sanitized)?),
+                retry: false,
             };
             Ok(serde_json::to_value(response)?)
         }
@@ -721,6 +735,7 @@ pub async fn handle_tool_calls(
                 status: "ok".to_string(),
                 message: Some("Issue pulled".to_string()),
                 result: Some(serde_json::to_value(sanitized)?),
+                retry: false,
             };
             Ok(serde_json::to_value(response)?)
         }
@@ -754,6 +769,7 @@ pub async fn handle_tool_calls(
                 status: "ok".to_string(),
                 message: Some("Pull request created".to_string()),
                 result: Some(serde_json::to_value(sanitized)?),
+                retry: false,
             };
             Ok(serde_json::to_value(response)?)
         }
@@ -786,6 +802,7 @@ pub async fn handle_tool_calls(
                 status: "ok".to_string(),
                 message: Some("Task completed".to_string()),
                 result: None,
+                retry: false,
             };
             Ok(serde_json::to_value(response)?)
         }

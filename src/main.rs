@@ -146,10 +146,12 @@ When you execute a tool, the following output would be provided in JSON format:
 {{
   "status": "ok",
   "message": "tool_message",
-  "result": "tool_result" 
+  "result": "tool_result"
+  "retry": false
 }}
 ```
 
+When retry is set to true, that means you need to re-run the tool with the provided arguments, ensure you send valid JSON.
 When the tool result is empty, it means the tool did not find any issues.
 If it's not empty, review the issue and fix it accordingly.
 
