@@ -130,6 +130,9 @@ When you need to call a tool, don't answer in XML. Instead, provide the tool nam
 WORKSPACE:
 {tree}
 
+CHANGES SCOPE:
+The changes you are allowed to make are limited to playground/bug1 directory.
+
 PROCESS:
 1. Validate issue #{issue} [tool: issue_validate]
 2. Pull issue details [tool: issue_pull] 
