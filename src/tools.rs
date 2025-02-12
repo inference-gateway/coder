@@ -638,7 +638,18 @@ pub async fn handle_tool_calls(
                 &config.scm.repository,
             )
             .await?;
-            Ok(serde_json::to_value(issue)?)
+            #[derive(Debug, Serialize)]
+            struct SanitizedIssue {
+                number: u64,
+                title: String,
+                body: Option<String>,
+            }
+            let sanitized = SanitizedIssue {
+                number: issue.number,
+                title: issue.title,
+                body: issue.body,
+            };
+            Ok(serde_json::to_value(sanitized)?)
         }
         Tools::PullRequest => {
             let args = args.ok_or_else(|| {
@@ -655,7 +666,18 @@ pub async fn handle_tool_calls(
                 &args.body,
             )
             .await?;
-            Ok(serde_json::to_value(pr)?)
+            #[derive(Debug, Serialize)]
+            struct SanitizedPullRequest {
+                number: u64,
+                title: Option<String>,
+                body: Option<String>,
+            }
+            let sanitized = SanitizedPullRequest {
+                number: pr.number,
+                title: pr.title,
+                body: pr.body,
+            };
+            Ok(serde_json::to_value(sanitized)?)
         }
         Tools::CodeLint => {
             execute_language_specific_command(&config.language, CommandType::Lint).await?;

@@ -6,7 +6,7 @@ use conversation::Conversation;
 use inference_gateway_sdk::{
     InferenceGatewayAPI, InferenceGatewayClient, Message, MessageRole, Provider,
 };
-use log::{info, warn};
+use log::{debug, info, warn};
 use std::{env, fs, panic, path::Path, str::FromStr, thread::sleep, time::Duration};
 
 mod cli;
@@ -195,7 +195,7 @@ Focus on producing working solutions with minimal discussion. Do not ask questio
                         let tool = tools::Tools::from_str(tool_call.function.name.as_str())?;
                         let args = tool_call.function.arguments.as_str();
                         let tool_result = tools::handle_tool_calls(&tool, args, &config).await?;
-
+                        debug!("Tool result: {}", tool_result);
                         convo.add_message(Message {
                             role: MessageRole::Tool,
                             content: tool_result.to_string(),
