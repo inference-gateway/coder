@@ -133,7 +133,7 @@ PROCESS:
 2. Get issue details [issue_pull] 
 3. Analyze code and documentation [code_read]
 4. Implement fix [code_write]
-5. Validate changes:
+5. Validate changes, only if you made changes to the code:
     - Lint code [code_lint]
     - Run analysis [code_analyse]
     - Run tests [code_test]
