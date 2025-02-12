@@ -218,12 +218,24 @@ Focus on producing working solutions with minimal discussion. Do not ask questio
                             content: tool_result.to_string(),
                             tool_call_id: Some(tool_call.id),
                         };
-                        let user_message = Message {
+
+                        let tool_result_struct: tools::StatusResponse =
+                            serde_json::from_value(tool_result)?;
+
+                        let mut user_message = Message {
                             role: MessageRole::User,
-                            content: "Let's proceed to the next tool, if retry is not set to true"
-                                .to_string(),
+                            content: "Let's proceed to the next tool".to_string(),
                             ..Default::default()
                         };
+                        if tool_result_struct.retry {
+                            warn!("Tool requires retry. Exiting...");
+                            user_message = Message {
+                                role: MessageRole::User,
+                                content: "Something went wrong can you retry it?".to_string(),
+                                ..Default::default()
+                            };
+                        }
+
                         debug!("Tool message: {:?}", tool_message);
                         debug!("User message: {:?}", user_message);
                         convo.add_message(tool_message);

@@ -558,12 +558,12 @@ pub fn get_tools() -> Vec<Tool> {
     ]
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct StatusResponse {
-    status: String,
-    message: Option<String>,
-    result: Option<serde_json::Value>,
-    retry: bool,
+    pub status: String,
+    pub message: Option<String>,
+    pub result: Option<serde_json::Value>,
+    pub retry: bool,
 }
 
 /// Execute a language-specific command from config
@@ -661,7 +661,7 @@ pub async fn handle_tool_calls(
             code_write(&args.path, &args.content)?;
             let mut retry = false;
             let output = Command::new("git")
-                .args(["diff", "--exit-code", "--", &args.path])
+                .args(["diff", "--exit-code", "--staged", "--", &args.path])
                 .output()
                 .map_err(|e| CoderError::GitError(e.to_string()))?;
             if !output.status.success() {
