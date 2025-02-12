@@ -211,17 +211,21 @@ Focus on producing working solutions with minimal discussion. Do not ask questio
                         let args = tool_call.function.arguments.as_str();
                         let tool_result = tools::handle_tool_calls(&tool, args, &config).await?;
                         debug!("Tool result: {}", tool_result);
-                        convo.add_message(Message {
+                        let tool_message = Message {
                             role: MessageRole::Tool,
                             content: tool_result.to_string(),
                             tool_call_id: Some(tool_call.id),
-                        });
-                        convo.add_message(Message {
+                        };
+                        let user_message = Message {
                             role: MessageRole::User,
-                            content: "Let's proceed to the next tool, how can we fix it?"
+                            content: "Let's proceed to the next tool, if retry is not set to true"
                                 .to_string(),
                             ..Default::default()
-                        });
+                        };
+                        debug!("Tool message: {:?}", tool_message);
+                        debug!("User message: {:?}", user_message);
+                        convo.add_message(tool_message);
+                        convo.add_message(user_message);
                     }
                 }
 
