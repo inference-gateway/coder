@@ -14,8 +14,8 @@ pub struct Config {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct LanguageConfig {
     pub name: String,
-    pub formatters: Vec<String>,
-    pub linters: Vec<String>,
+    pub analyse: Vec<String>,
+    pub linter: Vec<String>,
     pub test_commands: Vec<String>,
     pub docs_urls: Vec<String>,
 }
@@ -44,8 +44,8 @@ impl Default for Config {
         Self {
             language: LanguageConfig {
                 name: "rust".to_string(),
-                formatters: vec!["cargo fmt".to_string()],
-                linters: vec!["cargo clippy".to_string()],
+                linter: vec!["cargo fmt".to_string()],
+                analyse: vec!["cargo clippy".to_string()],
                 test_commands: vec!["cargo test".to_string()],
                 docs_urls: vec!["https://docs.rs".to_string()],
             },

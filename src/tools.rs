@@ -539,8 +539,8 @@ pub async fn execute_language_specific_command(
     command_type: CommandType,
 ) -> Result<(), CoderError> {
     let command = match command_type {
-        CommandType::Lint => config.linters.first(),
-        CommandType::Analyse => config.formatters.first(),
+        CommandType::Lint => config.linter.first(),
+        CommandType::Analyse => config.analyse.first(),
         CommandType::Test => config.test_commands.first(),
     }
     .ok_or_else(|| {
