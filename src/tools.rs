@@ -471,7 +471,7 @@ pub fn get_tools() -> Vec<Tool> {
             r#type: ToolType::Function,
             function: ToolFunction {
                 name: Tools::CodeWrite.to_string(),
-                description: "Write content to a file".to_string(),
+                description: "Write code to a file".to_string(),
                 parameters: json!({
                     "type": "object",
                     "properties": {
