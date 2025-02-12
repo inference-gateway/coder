@@ -140,6 +140,19 @@ PROCESS:
 6. Create {scm} pull request [pull_request]
 7. Call "done" when complete [done]
 
+When you execute a tool, the following output would be provided in JSON format:
+
+```json
+{{
+  "status": "ok",
+  "message": "tool_message",
+  "result": "tool_result" 
+}}
+```
+
+When the tool result is empty, it means the tool did not find any issues.
+If it's not empty, review the issue and fix it accordingly.
+
 Focus on producing working solutions with minimal discussion. Do not ask questions. Provide a complete solution."#,
                 language = config.language.name,
                 scm = config.scm.name,

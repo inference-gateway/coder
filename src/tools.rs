@@ -613,6 +613,13 @@ impl Display for CommandType {
     }
 }
 
+#[derive(Debug, Serialize)]
+struct StatusResponse {
+    status: String,
+    message: Option<String>,
+    result: Option<serde_json::Value>,
+}
+
 pub async fn handle_tool_calls(
     tool: &Tools,
     args: Option<&str>,
@@ -721,15 +728,27 @@ pub async fn handle_tool_calls(
         }
         Tools::CodeLint => {
             execute_language_specific_command(&config.language, CommandType::Lint).await?;
-            Ok(serde_json::Value::Null)
+            Ok(serde_json::to_value(StatusResponse {
+                status: "ok".to_string(),
+                message: Some("Code linted successfully".to_string()),
+                result: None,
+            })?)
         }
         Tools::CodeAnalyse => {
             execute_language_specific_command(&config.language, CommandType::Analyse).await?;
-            Ok(serde_json::Value::Null)
+            Ok(serde_json::to_value(StatusResponse {
+                status: "ok".to_string(),
+                message: Some("Code analysed successfully".to_string()),
+                result: None,
+            })?)
         }
         Tools::CodeTest => {
             execute_language_specific_command(&config.language, CommandType::Test).await?;
-            Ok(serde_json::Value::Null)
+            Ok(serde_json::to_value(StatusResponse {
+                status: "ok".to_string(),
+                message: Some("Code tested successfully".to_string()),
+                result: None,
+            })?)
         }
         Tools::DocsReference => {
             let args = args.ok_or_else(|| {
@@ -737,7 +756,11 @@ pub async fn handle_tool_calls(
             })?;
             let args: DocsReferenceArgs = serde_json::from_str(args)?;
             docs_reference(&args.term).await?;
-            Ok(serde_json::Value::Null)
+            Ok(serde_json::to_value(StatusResponse {
+                status: "ok".to_string(),
+                message: Some("Documentation found".to_string()),
+                result: None,
+            })?)
         }
         Tools::Done => {
             done()?;
