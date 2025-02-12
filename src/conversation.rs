@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::{fmt, time::SystemTime};
 
 use crate::errors::CoderError;
-use tiktoken_rs::get_bpe_from_model;
+use tiktoken_rs::o200k_base;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Conversation {
@@ -47,8 +47,7 @@ impl Conversation {
 
     #[allow(dead_code)]
     pub fn get_current_tokens(&self) -> Result<usize, CoderError> {
-        let bpe = get_bpe_from_model(&self.metadata.model)
-            .map_err(|e| CoderError::TokenizationError(e.to_string()))?;
+        let bpe = o200k_base().map_err(|e| CoderError::TokenizationError(e.to_string()))?;
 
         let mut tokens = 0;
         for msg in &self.messages {
@@ -68,8 +67,7 @@ impl TryInto<Vec<Message>> for Conversation {
 
     fn try_into(self) -> Result<Vec<Message>, Self::Error> {
         if let Some(limit) = self.metadata.max_tokens {
-            let bpe = get_bpe_from_model("gpt-3.5-turbo")
-                .map_err(|e| CoderError::TokenizationError(e.to_string()))?;
+            let bpe = o200k_base().map_err(|e| CoderError::TokenizationError(e.to_string()))?;
             let mut tokens = 0;
             let mut messages = Vec::new();
 
