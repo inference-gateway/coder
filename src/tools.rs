@@ -793,8 +793,8 @@ pub async fn handle_tool_calls(
                 CoderError::MissingArguments("DocsReference requires arguments".to_string())
             })?;
             let args: DocsReferenceArgs = serde_json::from_str(args)?;
-            let response = docs_reference(&args.term).await?;
-            Ok(serde_json::to_value(response)?)
+            docs_reference(&args.term).await?;
+            Ok(serde_json::to_value(())?)
         }
         Tools::Done => {
             done()?;

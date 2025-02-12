@@ -48,7 +48,7 @@ fn init() -> Result<(), CoderError> {
     };
     fs::write(gitignore_path, gitignore_content)?;
 
-    return Ok(());
+    Ok(())
 }
 
 #[tokio::main]
@@ -215,7 +215,6 @@ Focus on producing working solutions with minimal discussion. Do not ask questio
                             role: MessageRole::Tool,
                             content: tool_result.to_string(),
                             tool_call_id: Some(tool_call.id),
-                            ..Default::default()
                         });
                         convo.add_message(Message {
                             role: MessageRole::User,
@@ -322,7 +321,6 @@ WORKFLOW:
                             role: MessageRole::Tool,
                             content: tool_result.to_string(),
                             tool_call_id: Some(tool_call.id),
-                            ..Default::default()
                         });
                     }
                 }
