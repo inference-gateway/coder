@@ -1,21 +1,29 @@
-use std::io;
+use std::collections::VecDeque;
+use std::thread::sleep;
+use std::time::Duration;
 
-fn main() {
-    println!("Enter a number: ");
-
-    let mut input = String::new();
-    io::stdin().read_line(&mut input);
-
-    let num: i32 = input.trim().parse().unwrap();
-
-    let result = divide_by_two(num);
-
-    println!("Half of your number is: {}", result);
+fn process_payment(transaction: &str) {
+    println!("Processing transaction: {}", transaction);
+    // Simulate processing time
+    sleep(Duration::from_secs(1));
 }
 
-fn divide_by_two(n: i32) -> i32 {
-    if n % 2 != 0 {
-        panic!("Cannot divide an odd number by two!");
+fn main() {
+    let mut transactions: VecDeque<String> = VecDeque::from(vec![
+        "Payment 1".to_string(),
+        "Payment 2".to_string(),
+        "Payment 3".to_string(),
+    ]);
+
+    println!("Starting payment processing...");
+
+    while transactions.len() > 0 {
+        let transaction = transactions.front();
+
+        if let Some(tx) = transaction {
+            process_payment(&tx);
+        }
     }
-    n / 2
+
+    println!("All transactions processed!");
 }
