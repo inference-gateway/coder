@@ -246,7 +246,7 @@ pub async fn pull_request(
     Ok(pr)
 }
 
-/// Pull issue from GitHub
+/// Pull issue from SCN
 ///
 /// # Arguments
 ///
