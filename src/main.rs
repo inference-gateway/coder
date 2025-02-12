@@ -214,16 +214,40 @@ Focus on producing working solutions with minimal discussion. Do not ask questio
                     for tool_call in response.tool_calls.unwrap() {
                         let tool = tools::Tools::from_str(tool_call.function.name.as_str())?;
                         let args = tool_call.function.arguments.as_str();
-                        let tool_result = tools::handle_tool_calls(&tool, args, &config).await?;
-                        debug!("Tool result: {}", tool_result);
+                        let tool_result = tools::handle_tool_calls(&tool, args, &config).await;
+                        if tool_result.is_err() {
+                            warn!("Tool failed to execute. Exiting...");
+                            let tool_message = Message {
+                                role: MessageRole::Tool,
+                                content: tool_result.unwrap_err().to_string(),
+                                tool_call_id: Some(tool_call.id),
+                            };
+                            let user_message = Message {
+                                role: MessageRole::User,
+                                content:
+                                    "Something went wrong can you retry it? maybe take a step back."
+                                        .to_string(),
+                                ..Default::default()
+                            };
+                            debug!("Tool message(faliure): {:?}", tool_message);
+                            debug!("User message(faliure): {:?}", user_message);
+                            convo.add_message(tool_message);
+                            convo.add_message(user_message);
+                            continue;
+                        }
+
+                        let result = tool_result?;
+
+                        debug!("Tool result: {}", result);
+
                         let tool_message = Message {
                             role: MessageRole::Tool,
-                            content: tool_result.to_string(),
+                            content: result.to_string(),
                             tool_call_id: Some(tool_call.id),
                         };
 
                         let tool_result_struct: tools::StatusResponse =
-                            serde_json::from_value(tool_result)?;
+                            serde_json::from_value(result)?;
 
                         let mut user_message = Message {
                             role: MessageRole::User,
