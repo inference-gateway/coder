@@ -1,5 +1,5 @@
 use inference_gateway_sdk::{Tool, ToolFunction, ToolType};
-use log::info;
+use log::{info, warn};
 use octocrab::Octocrab;
 use serde::{de::Error, Deserialize, Deserializer, Serialize};
 use serde_json::json;
@@ -297,6 +297,7 @@ pub fn issue_validate(
     }
 
     if issue_title.trim().is_empty() {
+        warn!("Issue title cannot be empty");
         return Err(CoderError::ConfigError(
             "Issue title cannot be empty".to_string(),
         ));
@@ -304,6 +305,7 @@ pub fn issue_validate(
 
     if let Some(template) = &config.scm.issue_template {
         let body = issue_body.ok_or_else(|| {
+            warn!("Issue body is required");
             CoderError::ConfigError(
                 "Issue body is required when template is configured".to_string(),
             )
@@ -317,6 +319,7 @@ pub fn issue_validate(
                 .trim();
 
             if !body.contains(&format!("## {}", section_name)) {
+                warn!("Missing required section: {}", section_name);
                 return Err(CoderError::ConfigError(format!(
                     "Missing required section: {}",
                     section_name
