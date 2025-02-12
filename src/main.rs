@@ -130,17 +130,17 @@ WORKSPACE:
 
 PROCESS:
 1. Validate issue #{issue} [tool: issue_validate]
-2. Get issue details [tool: issue_pull] 
+2. Pull issue details [tool: issue_pull] 
 3. Analyze code and documentation [tool: code_read]
 4. Implement a fix [tool: code_write]
 5. Validate changes, only if you made changes to the code:
     - Lint code [tool: code_lint]
     - Run analysis [tool: code_analyse]
     - Run tests [tool: code_test]
-6. Create {scm} pull request [tool: pull_request]
-7. Call "done" when complete [tool: done]
+6. Create {scm} pull request [pull_request]
+7. Call "done" when complete [done]
 
-Focus on producing working solutions with minimal discussion. Do not ask questions."#,
+Focus on producing working solutions with minimal discussion. Do not ask questions. Provide a complete solution."#,
                 language = config.language.name,
                 scm = config.scm.name,
                 tree = index::build_tree()?,
