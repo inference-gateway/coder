@@ -558,11 +558,18 @@ pub fn get_tools() -> Vec<Tool> {
     ]
 }
 
+#[derive(Debug, Serialize)]
+struct StatusResponse {
+    status: String,
+    message: Option<String>,
+    result: Option<serde_json::Value>,
+}
+
 /// Execute a language-specific command from config
 pub async fn execute_language_specific_command(
     config: &config::LanguageConfig,
     command_type: CommandType,
-) -> Result<(), CoderError> {
+) -> Result<StatusResponse, CoderError> {
     let command = match command_type {
         CommandType::Lint => config.linter.first(),
         CommandType::Analyse => config.analyse.first(),
@@ -593,7 +600,13 @@ pub async fn execute_language_specific_command(
         )));
     }
 
-    Ok(())
+    Ok(StatusResponse {
+        status: "ok".to_string(),
+        message: Some(format!("Command '{}' succeeded", command)),
+        result: Some(serde_json::Value::String(
+            String::from_utf8_lossy(&output.stdout).to_string(),
+        )),
+    })
 }
 
 #[derive(Debug)]
@@ -611,13 +624,6 @@ impl Display for CommandType {
             CommandType::Test => write!(f, "test"),
         }
     }
-}
-
-#[derive(Debug, Serialize)]
-struct StatusResponse {
-    status: String,
-    message: Option<String>,
-    result: Option<serde_json::Value>,
 }
 
 pub async fn handle_tool_calls(
@@ -727,40 +733,27 @@ pub async fn handle_tool_calls(
             Ok(serde_json::to_value(sanitized)?)
         }
         Tools::CodeLint => {
-            execute_language_specific_command(&config.language, CommandType::Lint).await?;
-            Ok(serde_json::to_value(StatusResponse {
-                status: "ok".to_string(),
-                message: Some("Code linted successfully".to_string()),
-                result: None,
-            })?)
+            let response =
+                execute_language_specific_command(&config.language, CommandType::Lint).await?;
+            Ok(serde_json::to_value(response)?)
         }
         Tools::CodeAnalyse => {
-            execute_language_specific_command(&config.language, CommandType::Analyse).await?;
-            Ok(serde_json::to_value(StatusResponse {
-                status: "ok".to_string(),
-                message: Some("Code analysed successfully".to_string()),
-                result: None,
-            })?)
+            let response =
+                execute_language_specific_command(&config.language, CommandType::Analyse).await?;
+            Ok(serde_json::to_value(response)?)
         }
         Tools::CodeTest => {
-            execute_language_specific_command(&config.language, CommandType::Test).await?;
-            Ok(serde_json::to_value(StatusResponse {
-                status: "ok".to_string(),
-                message: Some("Code tested successfully".to_string()),
-                result: None,
-            })?)
+            let response =
+                execute_language_specific_command(&config.language, CommandType::Test).await?;
+            Ok(serde_json::to_value(response)?)
         }
         Tools::DocsReference => {
             let args = args.ok_or_else(|| {
                 CoderError::MissingArguments("DocsReference requires arguments".to_string())
             })?;
             let args: DocsReferenceArgs = serde_json::from_str(args)?;
-            docs_reference(&args.term).await?;
-            Ok(serde_json::to_value(StatusResponse {
-                status: "ok".to_string(),
-                message: Some("Documentation found".to_string()),
-                result: None,
-            })?)
+            let response = docs_reference(&args.term).await?;
+            Ok(serde_json::to_value(response)?)
         }
         Tools::Done => {
             done()?;
