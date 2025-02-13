@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1-rc.10](https://github.com/inference-gateway/coder/compare/0.1.1-rc.9...0.1.1-rc.10) (2025-02-13)
+
+### 👷 CI
+
+* Some cleanups ([6fdb00f](https://github.com/inference-gateway/coder/commit/6fdb00f817207588679376a029bb4590646e8dba))
+* Update docker/build-push-action to version 6 in release workflow ([50e2c81](https://github.com/inference-gateway/coder/commit/50e2c8125973e1327b9e13558621d63b1c6c3ec8))
+
 ## [0.1.1-rc.9](https://github.com/inference-gateway/coder/compare/0.1.1-rc.8...0.1.1-rc.9) (2025-02-13)
 
 ### 👷 CI
