@@ -112,8 +112,10 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
+            arch_platform: linux/amd64
           - os: ubuntu-latest
             target: aarch64-unknown-linux-musl
+            arch_platform: linux/arm64
           - os: macos-latest
             target: x86_64-apple-darwin
           - os: macos-latest
@@ -210,6 +212,7 @@ jobs:
         if: startsWith(matrix.os, 'ubuntu')
         run: |
           docker build \
+            --platform ${{ matrix.arch_platform }} \
             --label "org.opencontainers.image.source=https://github.com/inference-gateway/coder" \
             --label "org.opencontainers.image.description=The AI-Powered Coder" \
             --label "org.opencontainers.image.licenses=MIT" \
