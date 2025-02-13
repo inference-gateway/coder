@@ -331,7 +331,7 @@ checksum = "f46ad14479a25103f283c0f10005961cf086d8dc42205bb44c46ac563475dca6"
 
 [[package]]
 name = "coder"
-version = "0.1.1-rc.3"
+version = "0.1.1-rc.4"
 dependencies = [
  "assert_cmd",
  "assert_fs",
