@@ -219,7 +219,7 @@ jobs:
       - name: Build container
         if: startsWith(matrix.os, 'ubuntu')
         run: |
-          docker build \
+          docker buildx \
             --platform ${{ matrix.arch_platform }} \
             --label "org.opencontainers.image.source=https://github.com/inference-gateway/coder" \
             --label "org.opencontainers.image.description=The AI-Powered Coder" \
