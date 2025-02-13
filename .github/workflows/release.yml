@@ -172,13 +172,13 @@ jobs:
             git \
             musl-tools \
             libssl-dev \
-            && rm -rf /var/lib/apt/lists/* \
+            && sudo rm -rf /var/lib/apt/lists/* \
             && cd /tmp \
             && wget https://musl.cc/x86_64-linux-musl-cross.tgz \
             && wget https://musl.cc/aarch64-linux-musl-cross.tgz \
             && tar -xzf x86_64-linux-musl-cross.tgz \
             && tar -xzf aarch64-linux-musl-cross.tgz \
-            && mv x86_64-linux-musl-cross aarch64-linux-musl-cross /opt/ \
+            && sudo mv x86_64-linux-musl-cross aarch64-linux-musl-cross /opt/ \
             && rm -rf *.tgz
 
       - name: Build binary for ${{ matrix.target }}
