@@ -160,41 +160,39 @@ jobs:
       - name: Add target ${{ matrix.target }}
         run: rustup target add ${{ matrix.target }}
 
-      # Unfortunately, github still don't support managed runners for arm64 :(
-      # It's a sad fact that they only offer it for enterprise customers.
-      # I can run it on my raspberry pi, but it's not ideal
-      # Instead will cross-compile this part for now with musl libc
-      - name: Add tools for cross-compiling with musl libc for linux arm64
-        if: matrix.target == 'aarch64-unknown-linux-musl'
+      - name: Add build tools for musl target instead of glibc
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          apt-get update && apt-get install --no-install-recommends -y \
+            curl \
+            ca-certificates \
+            build-essential \
+            pkg-config \
+            wget \
+            git \
+            musl-tools \
+            libssl-dev \
+            && rm -rf /var/lib/apt/lists/* \
+            && cd /tmp \
+            && wget https://musl.cc/x86_64-linux-musl-cross.tgz \
+            && wget https://musl.cc/aarch64-linux-musl-cross.tgz \
+            && tar -xzf x86_64-linux-musl-cross.tgz \
+            && tar -xzf aarch64-linux-musl-cross.tgz \
+            && mv x86_64-linux-musl-cross aarch64-linux-musl-cross /opt/ \
+            && rm -rf *.tgz
+
+      - name: Build binary for ${{ matrix.target }}
         env:
-          RUSTFLAGS: "-C target-feature=+crt-static -C linker=/opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc"
+          PKG_CONFIG_ALLOW_CROSS: 1
+          RUSTFLAGS: "-C target-feature=+crt-static"
           OPENSSL_DIR: /usr
           OPENSSL_LIB_DIR: /usr/lib
           OPENSSL_INCLUDE_DIR: /usr/include
-          OPENSSL_VENDORED: 1
-          CC_aarch64_unknown_linux_musl: /opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc
-          CXX_aarch64_unknown_linux_musl: /opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-g++
-          PKG_CONFIG_ALLOW_CROSS: 1
-        run: |
-          workspace_dir=$(pwd)
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-          libssl-dev \
-          pkg-config \
-          musl-tools
-          cd && \
-              wget https://musl.cc/aarch64-linux-musl-cross.tgz && \
-              tar -xzf aarch64-linux-musl-cross.tgz && \
-              sudo mv aarch64-linux-musl-cross /opt/ && \
-              rm -rf aarch64-linux-musl-cross.tgz
-          rustup target add aarch64-unknown-linux-musl
-          cd $workspace_dir && cargo build --release --target ${{ matrix.target }}
-
-      - name: Build binary for ${{ matrix.target }}
-        if: matrix.target != 'aarch64-unknown-linux-musl'
-        env:
-          RUSTFLAGS: "-C target-feature=+crt-static"
-          PKG_CONFIG_ALLOW_CROSS: 1
+          OPENSSL_STATIC: 1
+          CC_aarch64_unknown_linux_musl: aarch64-linux-musl-gcc
+          AR_aarch64_unknown_linux_musl: aarch64-linux-musl-ar
+          CC_x86_64_unknown_linux_musl: x86_64-linux-musl-gcc
+          AR_x86_64_unknown_linux_musl: x86_64-linux-musl-ar
         run: |
           cargo build --release --target ${{ matrix.target }}
 
