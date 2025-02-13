@@ -163,7 +163,7 @@ jobs:
       - name: Add build tools for musl target instead of glibc
         if: startsWith(matrix.os, 'ubuntu')
         run: |
-          apt-get update && apt-get install --no-install-recommends -y \
+          sudo apt-get update && sudo apt-get install --no-install-recommends -y \
             curl \
             ca-certificates \
             build-essential \
