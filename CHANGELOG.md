@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1-rc.13](https://github.com/inference-gateway/coder/compare/0.1.1-rc.12...0.1.1-rc.13) (2025-02-13)
+
+### 👷 CI
+
+* Use sudo for apt-get commands in release workflow for musl target ([904f418](https://github.com/inference-gateway/coder/commit/904f418fb8c701e298f92d483060609acd5fa4bd))
+
 ## [0.1.1-rc.12](https://github.com/inference-gateway/coder/compare/0.1.1-rc.11...0.1.1-rc.12) (2025-02-13)
 
 ### 👷 CI
