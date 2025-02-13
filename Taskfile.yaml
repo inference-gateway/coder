@@ -1,0 +1,32 @@
+version: "3"
+
+tasks:
+  build:
+    desc: Build the project
+    cmds:
+      - cargo build
+
+  run:
+    desc: Run the project with arguments
+    cmds:
+      - cargo run -- {{.CLI_ARGS}}
+
+  analyse:
+    desc: Analyse the project
+    cmds:
+      - cargo clippy
+
+  gateway:
+    desc: Run the project as a server
+    cmds:
+      - docker run --rm -it -p 8080:8080 --env-file .env ghcr.io/inference-gateway/inference-gateway:v0.1.15
+
+  test:
+    desc: Run the tests
+    cmds:
+      - cargo test
+
+  install:
+    desc: Install the project
+    cmds:
+      - cargo install --path .

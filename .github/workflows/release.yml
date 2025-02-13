@@ -1,0 +1,226 @@
+---
+name: Release
+
+on:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  github_release:
+    name: GitHub Release
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    outputs:
+      new_release_version: ${{ steps.semantic.outputs.new_release_version }}
+      new_release_published: ${{ steps.semantic.outputs.new_release_published }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Configure Git signing
+        run: |
+          echo "${{ secrets.BOT_GPG_PRIVATE_KEY }}" | gpg --import
+          git config --global user.signingkey ${{ secrets.BOT_GPG_KEY_ID }}
+          git config --global commit.gpgsign true
+          git config --global commit.signoff true
+          git config --global user.name 'GitHub Actions Bot'
+          git config --global user.email 'eden.reich@gmail.com'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+
+      - name: Install semantic release and plugins
+        run: |
+          npm install -g semantic-release@v24.2.1 \
+            conventional-changelog-cli \
+            conventional-changelog-conventionalcommits \
+            @semantic-release/changelog \
+            @semantic-release/exec \
+            @semantic-release/git \
+            @semantic-release/github
+
+      - name: Create a release if needed
+        id: semantic
+        env:
+          CI: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_AUTHOR_NAME: "GitHub Actions Bot"
+          GIT_AUTHOR_EMAIL: "eden.reich@gmail.com"
+          GIT_COMMITTER_NAME: "GitHub Actions Bot"
+          GIT_COMMITTER_EMAIL: "eden.reich@gmail.com"
+        run: |
+          # Create first release if not exists using gh cli - Initial Release Version 0.1.0
+          # This is an HACK because semantic release doesn't support versions under 1.0.0
+          # But if we already have a release then it respects it and start to increment from there
+          if ! gh release view 0.1.0 >/dev/null 2>&1; then
+            gh release create 0.1.0 --title "Initial Release" --notes "Initial Release" --target main
+            exit 0
+          fi
+
+          # Run semantic-release in dry-run first to capture version
+          DRY_OUTPUT=$(semantic-release --dry-run 2>&1 || true)
+
+          # Check if there are no changes
+          if $(echo "$DRY_OUTPUT" | grep -q "no new version is released"); then
+            echo "No new release needed"
+            echo "new_release_published=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Extract version from dry run output
+          VERSION=$(echo "$DRY_OUTPUT" | grep -o "The next release version is [0-9]\+\.[0-9]\+\.[0-9]\+\(-rc\.[0-9]\+\)\?" | cut -d ' ' -f6)
+          if [ -z "$VERSION" ]; then
+            echo "Error: Could not determine version"
+            exit 1
+          fi
+
+          echo "new_release_version=$VERSION" >> $GITHUB_OUTPUT
+
+          # Run actual release
+          if semantic-release; then
+            echo "Successfully released version $VERSION"
+            echo "new_release_published=true" >> $GITHUB_OUTPUT
+          else
+            echo "Release failed"
+            exit 1
+          fi
+
+  build_artifacts:
+    name: Build and Upload Artifacts
+    needs: github_release
+    if: needs.github_release.outputs.new_release_published == 'true'
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-musl
+          - os: macos-latest
+            target: x86_64-apple-darwin
+          - os: macos-latest
+            target: aarch64-apple-darwin
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Update Cargo.toml version
+        run: |
+          echo "Updating to version ${{ needs.github_release.outputs.new_release_version }}"
+          if [[ "$RUNNER_OS" == "macOS" ]]; then
+            sed -i '' "s/^version = .*/version = \"${{ needs.github_release.outputs.new_release_version }}\"/" Cargo.toml
+          else
+            sed -i "s/^version = .*/version = \"${{ needs.github_release.outputs.new_release_version }}\"/" Cargo.toml
+          fi
+
+      - name: Install Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Add target ${{ matrix.target }}
+        run: rustup target add ${{ matrix.target }}
+
+      # Unfortunately, github still don't support managed runners for arm64 :(
+      # It's a sad fact that they only offer it for enterprise customers.
+      # I can run it on my raspberry pi, but it's not ideal
+      # Instead will cross-compile this part for now with musl libc
+      - name: Add tools for cross-compiling with musl libc for linux arm64
+        if: matrix.target == 'aarch64-unknown-linux-musl'
+        env:
+          RUSTFLAGS: "-C target-feature=+crt-static -C linker=/opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc"
+          OPENSSL_DIR: /usr
+          OPENSSL_LIB_DIR: /usr/lib
+          OPENSSL_INCLUDE_DIR: /usr/include
+          OPENSSL_VENDORED: 1
+          CC_aarch64_unknown_linux_musl: /opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc
+          CXX_aarch64_unknown_linux_musl: /opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-g++
+          PKG_CONFIG_ALLOW_CROSS: 1
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+          libssl-dev \
+          pkg-config \
+          musl-tools
+          rustup target add \
+              aarch64-unknown-linux-musl
+          cd && \
+              wget https://musl.cc/aarch64-linux-musl-cross.tgz && \
+              tar -xzf aarch64-linux-musl-cross.tgz && \
+              sudo mv aarch64-linux-musl-cross /opt/ && \
+              rm -rf aarch64-linux-musl-cross.tgz
+          cargo build --release --target ${{ matrix.target }}
+
+      - name: Build binary for ${{ matrix.target }}
+        if: matrix.target != 'aarch64-unknown-linux-musl'
+        env:
+          RUSTFLAGS: "-C target-feature=+crt-static"
+          # CARGO_PROFILE_RELEASE_BUILD_OVERRIDE_DEBUG: true
+          PKG_CONFIG_ALLOW_CROSS: 1
+        run: |
+          cargo build --release --target ${{ matrix.target }}
+
+      - name: Rename binary to the published name
+        run: |
+          mv target/${{ matrix.target }}/release/coder target/${{ matrix.target }}/release/coder_${{ matrix.target }}
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: target/${{ matrix.target }}/release/coder_${{ matrix.target }}
+          tag_name: ${{ needs.github_release.outputs.new_release_version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build container
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          docker build \
+            --label "org.opencontainers.image.source=https://github.com/inference-gateway/coder" \
+            --label "org.opencontainers.image.description=The AI-Powered Coder" \
+            --label "org.opencontainers.image.licenses=MIT" \
+            -t ghcr.io/${{ github.repository_owner }}/coder:latest \
+            -t ghcr.io/${{ github.repository_owner }}/coder:${{ needs.github_release.outputs.new_release_version }} \
+            -f Dockerfile --build-arg=TARGET_ARCH=${{ matrix.target }} .
+
+      - name: Push container to GHCR
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.repository_owner }}" --password-stdin
+          docker push ghcr.io/${{ github.repository_owner }}/coder:latest
+          docker push ghcr.io/${{ github.repository_owner }}/coder:${{ needs.github_release.outputs.new_release_version }}
