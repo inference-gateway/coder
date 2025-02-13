@@ -171,21 +171,20 @@ jobs:
           CC_aarch64_unknown_linux_musl: /opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc
           CXX_aarch64_unknown_linux_musl: /opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-g++
           PKG_CONFIG_ALLOW_CROSS: 1
-        run:
-          - |
-            sudo apt-get update
-            sudo apt-get install -y --no-install-recommends \
-            libssl-dev \
-            pkg-config \
-            musl-tools
-            rustup target add \
-                aarch64-unknown-linux-musl
-            cd && \
-                wget https://musl.cc/aarch64-linux-musl-cross.tgz && \
-                tar -xzf aarch64-linux-musl-cross.tgz && \
-                sudo mv aarch64-linux-musl-cross /opt/ && \
-                rm -rf aarch64-linux-musl-cross.tgz
-          - cargo build --release --target ${{ matrix.target }}
+        run: |
+          workspace_dir=$(pwd)
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+          libssl-dev \
+          pkg-config \
+          musl-tools
+          cd && \
+              wget https://musl.cc/aarch64-linux-musl-cross.tgz && \
+              tar -xzf aarch64-linux-musl-cross.tgz && \
+              sudo mv aarch64-linux-musl-cross /opt/ && \
+              rm -rf aarch64-linux-musl-cross.tgz
+          rustup target add aarch64-unknown-linux-musl
+          cd $workspace_dir && cargo build --release --target ${{ matrix.target }}
 
       - name: Build binary for ${{ matrix.target }}
         if: matrix.target != 'aarch64-unknown-linux-musl'
