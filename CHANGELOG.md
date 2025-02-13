@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1-rc.14](https://github.com/inference-gateway/coder/compare/0.1.1-rc.13...0.1.1-rc.14) (2025-02-13)
+
+### 👷 CI
+
+* Use sudo for cleanup and moving musl cross-compilation tools in release workflow ([3dd974f](https://github.com/inference-gateway/coder/commit/3dd974fb8f33f13baecb79dbd7d145a10532d74d))
+
 ## [0.1.1-rc.13](https://github.com/inference-gateway/coder/compare/0.1.1-rc.12...0.1.1-rc.13) (2025-02-13)
 
 ### 👷 CI
