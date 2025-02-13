@@ -194,6 +194,7 @@ jobs:
           CC_x86_64_unknown_linux_musl: x86_64-linux-musl-gcc
           AR_x86_64_unknown_linux_musl: x86_64-linux-musl-ar
         run: |
+          export PATH="/root/.cargo/bin:/opt/x86_64-linux-musl-cross/bin:/opt/aarch64-linux-musl-cross/bin:${PATH}"
           cargo build --release --target ${{ matrix.target }}
 
       - name: Rename binary to the published name
