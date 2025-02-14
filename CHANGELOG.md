@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1-rc.15](https://github.com/inference-gateway/coder/compare/0.1.1-rc.14...0.1.1-rc.15) (2025-02-14)
+
+### 👷 CI
+
+* Add Cargo configuration for musl targets with static linking ([6b647e9](https://github.com/inference-gateway/coder/commit/6b647e9c3989dde9b27f2571df0fcc4396d82e95))
+
 ## [0.1.1-rc.14](https://github.com/inference-gateway/coder/compare/0.1.1-rc.13...0.1.1-rc.14) (2025-02-13)
 
 ### 👷 CI
