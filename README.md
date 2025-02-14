@@ -83,7 +83,21 @@ This will index the project files and prepare all the information necessary for 
 coder fix --issue=#1
 ```
 
+### Using Docker
+
+TODO - Add more environment variables
+
+You can also use Docker to run the assistant:
+
+```bash
+docker run -v $(pwd):/app -w /app ghcr.io/inference-gateway/coder:latest init
+docker run -v $(pwd):/app -w /app ghcr.io/inference-gateway/coder:latest index
+docker run -v $(pwd):/app -w /app ghcr.io/inference-gateway/coder:latest fix --issue=#1
+```
+
 ### Configuration
+
+TODO - Add more environment variables
 
 Configuration is stored in .coder/config.yaml file. You can customize the configuration by editing this file.
 
@@ -112,7 +126,8 @@ scm:
   name: github # The SCM you are using (e.g. github, gitlab)
   owner: owner # The owner of the repository
   repository: repo # The repository name
-  issue_template: |- # The issue template, the agent will run a tool to validate the template contain all necessary information before proceeding
+  issue_template:
+    |- # The issue template, the agent will run a tool to validate the template contain all necessary information before proceeding
     ## Description
     ## Steps to Reproduce
     ## Expected Behavior
