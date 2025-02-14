@@ -105,7 +105,7 @@ CODER_SCM_NAME=github # The SCM you are using (e.g. github, gitlab)
 CODER_SCM_TOKEN= # The token you use to authenticate with the SCM
 CODER_SCM_USERNAME= # The username you use to authenticate with the SCM
 CODER_SCM_REPOSITORY= # The repository name
-CODER_AGENT_NAME= # The name of the agent
+CODER_AGENT_MODEL= # The name of the agent
 CODER_AGENT_PROVIDER= # The provider of the agent
 CODER_AGENT_MAX_TOKENS= # The maximum tokens the agent can use per request
 ```

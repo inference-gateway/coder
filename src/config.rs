@@ -67,8 +67,8 @@ impl Default for Config {
                 ),
             },
             agent: AgentConfig {
-                model: "deepseek-r1-distill-llama-70b".to_string(),
                 provider: "groq".to_string(),
+                model: "deepseek-r1-distill-llama-70b".to_string(),
                 max_tokens: Some(4000),
             },
             api: ApiConfig {
@@ -101,8 +101,8 @@ pub fn load(path: &Path) -> Result<Config, CoderError> {
     config.scm.repository = std::env::var("CODER_SCM_REPOSITORY").unwrap_or(config.scm.repository);
 
     // Agent settings
-    config.agent.model = std::env::var("CODER_AGENT_MODEL").unwrap_or(config.agent.model);
     config.agent.provider = std::env::var("CODER_AGENT_PROVIDER").unwrap_or(config.agent.provider);
+    config.agent.model = std::env::var("CODER_AGENT_MODEL").unwrap_or(config.agent.model);
     if let Ok(max_tokens) = std::env::var("CODER_AGENT_MAX_TOKENS") {
         match max_tokens.parse() {
             Ok(max_tokens) => config.agent.max_tokens = Some(max_tokens),
