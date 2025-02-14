@@ -813,11 +813,13 @@ pub async fn handle_tool_calls(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serial_test::serial;
     use std::fs::{self, create_dir_all, File};
     use std::io::Write;
     use tempfile::tempdir;
 
     #[test]
+    #[serial]
     fn test_code_read_success() -> Result<(), Box<dyn std::error::Error>> {
         let yaml_content = r#"
 content:
