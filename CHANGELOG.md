@@ -2,6 +2,57 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1](https://github.com/inference-gateway/coder/compare/0.1.0...0.1.1) (2025-02-14)
+
+### 🐛 Bug Fixes
+
+* Small fix ([fcede59](https://github.com/inference-gateway/coder/commit/fcede59f85a351e4baf6b23a32163c80e4766629))
+
+### 👷 CI
+
+* Add architecture platform support for Docker builds in release workflow ([7fe71aa](https://github.com/inference-gateway/coder/commit/7fe71aa1c5b4fa14c8bde6d8d0df730138e5c5f6))
+* Add Cargo configuration for musl targets with static linking ([6b647e9](https://github.com/inference-gateway/coder/commit/6b647e9c3989dde9b27f2571df0fcc4396d82e95))
+* Add conditional setup for QEMU and Docker Buildx only for Ubuntu ([6d29255](https://github.com/inference-gateway/coder/commit/6d292551d0b9eafeb30b812d383f93c025e70004))
+* Adjust timeouts for cross-compilation jobs in release workflow ([4f5d9c8](https://github.com/inference-gateway/coder/commit/4f5d9c87405ffd081096d392fdbca2bfa1646770))
+* Construct cache key to include with target in release workflow ([f74ac8f](https://github.com/inference-gateway/coder/commit/f74ac8f8d031b62bc747558a08106eb1f7ec8c8f))
+* Improve release process publish binaries and containers for all common platforms ([1c7637b](https://github.com/inference-gateway/coder/commit/1c7637be91bfe2f4704971af0777b9fc2e1d3cdc))
+* Increase timeout for Build and Upload Artifacts job to 25 minutes ([0b328b6](https://github.com/inference-gateway/coder/commit/0b328b6b9b7d1eb8ebf6f2690e50b0d64fcd7671))
+* Ok this setup works if I try to cross compile from macos arm64 to x86 so it supposed to also work the other way from the runner ([c7d05cc](https://github.com/inference-gateway/coder/commit/c7d05cc6f2313f2a6e327fe68e699cd657da43c0))
+* Remove commented-out debug flag from release workflow ([d9c9605](https://github.com/inference-gateway/coder/commit/d9c9605bc8d348849a78538145b0c36303293b2e))
+* Set timeout for Build and Upload Artifacts job to 15 minutes ([5623c32](https://github.com/inference-gateway/coder/commit/5623c321d88ad6d6ac303e577d054cd0f22a0685))
+* Set up QEMU and Docker Buildx for using emulations ([96b9815](https://github.com/inference-gateway/coder/commit/96b981537cc71866197163efc9e5eb21a1439d02))
+* Simplify it cache the current pwd and enter it after download ([919427d](https://github.com/inference-gateway/coder/commit/919427dec879990e705f8da8b6f05cfbeb323856))
+* Some cleanups ([6fdb00f](https://github.com/inference-gateway/coder/commit/6fdb00f817207588679376a029bb4590646e8dba))
+* Try to specify explicitly buildx ([91b4ee9](https://github.com/inference-gateway/coder/commit/91b4ee92f589c1773844956b52ca00ea71227216))
+* Update cross-compilation setup for musl targets and improve build tools installation ([2ea56e4](https://github.com/inference-gateway/coder/commit/2ea56e45db9e06713049d10d7d4f00d9d4cd5996))
+* Update docker/build-push-action to version 6 in release workflow ([50e2c81](https://github.com/inference-gateway/coder/commit/50e2c8125973e1327b9e13558621d63b1c6c3ec8))
+* Update Dockerfile to use Ubuntu base and install necessary dependencies for Rust cross-compilation ([969aab0](https://github.com/inference-gateway/coder/commit/969aab0a1c3b4e8517a4e01b831508cb908e94c8))
+* Update PATH for cross-compilation to include necessary binaries ([a43b632](https://github.com/inference-gateway/coder/commit/a43b632d11eb30e7a10644bfca1cf08689cac6f0))
+* Update release workflow to use docker/build-push-action for building and pushing containers ([091c454](https://github.com/inference-gateway/coder/commit/091c454f1491afc5f1636f45cfdcf9ed968a242c))
+* Update target from x86_64-unknown-linux-gnu to x86_64-unknown-linux-musl in release workflow ([f351ce2](https://github.com/inference-gateway/coder/commit/f351ce27a0a617837032cc2d22c247016950519f))
+* Use sudo for apt-get commands in release workflow for musl target ([904f418](https://github.com/inference-gateway/coder/commit/904f418fb8c701e298f92d483060609acd5fa4bd))
+* Use sudo for cleanup and moving musl cross-compilation tools in release workflow ([3dd974f](https://github.com/inference-gateway/coder/commit/3dd974fb8f33f13baecb79dbd7d145a10532d74d))
+
+### 🔧 Miscellaneous
+
+* **release:** 🔖 0.1.1-rc.1 [skip ci] ([c19ec65](https://github.com/inference-gateway/coder/commit/c19ec657aa74d9cf80938fe36c10fe7f24d0cf0a))
+* **release:** 🔖 0.1.1-rc.10 [skip ci] ([fda3dd3](https://github.com/inference-gateway/coder/commit/fda3dd305d7ee37e0a673289ae4fa7f7767d3605))
+* **release:** 🔖 0.1.1-rc.11 [skip ci] ([71b52d9](https://github.com/inference-gateway/coder/commit/71b52d9b9dc09bf8274c62ee854b81645ce47054))
+* **release:** 🔖 0.1.1-rc.12 [skip ci] ([3064dad](https://github.com/inference-gateway/coder/commit/3064dad729aef94219b5558c9455ca439c0e11de))
+* **release:** 🔖 0.1.1-rc.13 [skip ci] ([0821ce5](https://github.com/inference-gateway/coder/commit/0821ce5cda3318050ea9225215e10be8b6c611ff))
+* **release:** 🔖 0.1.1-rc.14 [skip ci] ([1a840a0](https://github.com/inference-gateway/coder/commit/1a840a07c47181e3d4a886ccd184125791569e19))
+* **release:** 🔖 0.1.1-rc.15 [skip ci] ([eae8ff3](https://github.com/inference-gateway/coder/commit/eae8ff33249740bd752abc67a7b6cf4a59969209))
+* **release:** 🔖 0.1.1-rc.16 [skip ci] ([876c48d](https://github.com/inference-gateway/coder/commit/876c48dbfb1b69d45bc769c81ad817152a54cd58))
+* **release:** 🔖 0.1.1-rc.2 [skip ci] ([d749cac](https://github.com/inference-gateway/coder/commit/d749cac352feb0d78695acd6da562c2ac6d0a92c))
+* **release:** 🔖 0.1.1-rc.3 [skip ci] ([2de1fca](https://github.com/inference-gateway/coder/commit/2de1fcaa425e50730882c2914cb475b78d4b73ae))
+* **release:** 🔖 0.1.1-rc.4 [skip ci] ([3a17396](https://github.com/inference-gateway/coder/commit/3a173960f2b85da8d4299b5b6e8ac7bc4a03b058))
+* **release:** 🔖 0.1.1-rc.5 [skip ci] ([7b4821b](https://github.com/inference-gateway/coder/commit/7b4821ba6a9d488227d30beaa6bf81707f83b8c1))
+* **release:** 🔖 0.1.1-rc.6 [skip ci] ([2370f0f](https://github.com/inference-gateway/coder/commit/2370f0f95cab7ebfa17b38114db5feaded673a77))
+* **release:** 🔖 0.1.1-rc.7 [skip ci] ([33948a3](https://github.com/inference-gateway/coder/commit/33948a35c69315f9709c3d70a89a9339455d5cdd))
+* **release:** 🔖 0.1.1-rc.8 [skip ci] ([31598f4](https://github.com/inference-gateway/coder/commit/31598f414828479efc323046cccff3fd6a8d1dda))
+* **release:** 🔖 0.1.1-rc.9 [skip ci] ([df458d9](https://github.com/inference-gateway/coder/commit/df458d9b14dff528f7d45306b2d14dd299a591fb))
+* Use a separate command for cargo to ensure workspace directory is restored ([22234d6](https://github.com/inference-gateway/coder/commit/22234d6a89d89bcc153bdb00c3632f6fe2873dc0))
+
 ## [0.1.1-rc.16](https://github.com/inference-gateway/coder/compare/0.1.1-rc.15...0.1.1-rc.16) (2025-02-14)
 
 ### 👷 CI
