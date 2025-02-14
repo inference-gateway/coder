@@ -1,0 +1,51 @@
+version: "3.8"
+
+services:
+  coder:
+    image: ghcr.io/inference-gateway/coder:v0.1.1
+    working_dir: /app
+    volumes:
+      - repository:/app
+    env_file:
+      - .env
+    args:
+      - --issue=${CODER_ISSUE}
+    depends_on:
+      repository-cloner:
+        condition: service_completed_successfully
+      gateway:
+        condition: service_healthy
+
+  inference-gateway:
+    image: ghcr.io/inference-gateway/inferece-gateway:v0.1.15
+    ports:
+      - "8000:8000"
+    working_dir: /app
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  repository-cloner:
+    image: alpine/git:latest
+    working_dir: /app
+    volumes:
+      - repository:/app
+    env_file:
+      - .env
+    environment:
+      GITHUB_TOKEN: ${CODER_SCM_TOKEN}
+      # GITLAB_TOKEN: ${CODER_SCM_TOKEN}
+    command:
+      - git
+    args:
+      - clone
+      - https://github.com/${CODER_SCM_USERNAME}/${CODER_SCM_REPOSITORY}.git .
+      # - https://gitlab.com/${CODER_SCM_USERNAME}/${CODER_SCM_REPOSITORY}.git .
+
+volumes:
+  repository:
