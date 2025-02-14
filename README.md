@@ -86,21 +86,36 @@ coder fix --issue=#1
 
 ### Using Docker
 
-TODO - Add more environment variables
-
 You can also use Docker to run the assistant:
 
 ```bash
-docker run -v $(pwd):/app -w /app ghcr.io/inference-gateway/coder:latest init
-docker run -v $(pwd):/app -w /app ghcr.io/inference-gateway/coder:latest index
-docker run -v $(pwd):/app -w /app ghcr.io/inference-gateway/coder:latest fix --issue=#1
+cp .env.coder.example .env
+docker run -v $(pwd):/app -w /app --env-file .env ghcr.io/inference-gateway/coder:latest init
+docker run -v $(pwd):/app -w /app --env-file .env ghcr.io/inference-gateway/coder:latest index
+docker run -v $(pwd):/app -w /app --env-file .env ghcr.io/inference-gateway/coder:latest fix --issue=#1
 ```
 
 ### Configuration
 
-TODO - Add more environment variables
+Via Environment Variables:
 
-Configuration is stored in .coder/config.yaml file. You can customize the configuration by editing this file.
+```
+CODER_INFERENCE_GATEWAY_URL=http://localhost:8080
+CODER_SCM_NAME=github # The SCM you are using (e.g. github, gitlab)
+CODER_SCM_TOKEN= # The token you use to authenticate with the SCM
+CODER_SCM_USERNAME= # The username you use to authenticate with the SCM
+CODER_SCM_REPOSITORY= # The repository name
+CODER_AGENT_MODEL= # The name of the agent
+CODER_AGENT_PROVIDER= # The provider of the agent
+CODER_AGENT_MAX_TOKENS= # The maximum tokens the agent can use per request
+CODER_LANGUAGE_NAME= # The main language of the project
+CODER_LANGUAGE_ANALYSE= # The command you use for static analysis
+CODER_LANGUAGE_LINTER= # The command you use for linting
+CODER_LANGUAGE_TEST_COMMAND= # The command you use for testing
+CODER_LANGUAGE_DOCS_URL= # The URL for the documentations so the agent can reference them
+```
+
+Or using the file `.coder/config.yaml` - you can customize the configuration by editing this file.
 
 Running:
 
