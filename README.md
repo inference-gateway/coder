@@ -28,7 +28,7 @@ Coder is an AI-powered assistant that automatically reviews issues and creates p
 
 ### Why Coder?
 
-Unlike many tools that are either bloated open-source UIs loaded with dependencies or costly, proprietary solutions, Coder is simple, free, and runs directly from your terminal - giving you true freedom. You can also automate it in remote environments like Kubernetes to parallelize tasks, control resources, and scale on demand. With a lightweight footprint and zero extra dependencies, Coder seamlessly integrates on Kubernetes, Docker, or locally, adapts to your project structure, and supports configurable AI models.
+Unlike many tools that are either open-source UIs bloated and loaded with dependencies or costly, proprietary solutions, Coder is simple, free, and runs directly from your terminal - giving you true freedom. You can also automate it in remote environments like Kubernetes to parallelize tasks, control resources, and scale on demand. With a lightweight footprint and zero extra dependencies, Coder seamlessly integrates on Kubernetes, Docker, or locally, adapts to your project structure, and supports configurable AI models.
 
 Coder understands project structure rather than just a specific code snippet or a file. It can analyze the project and suggest fixes based on the context of the project. It can also fetch the latest data when activated, thanks to RAG-enabled reasoning. It supports the latest reasoning LLMs (DeepSeek-r1) for code analysis and improvement, and it can be configured to use only the AI models with tool-use support.
 
