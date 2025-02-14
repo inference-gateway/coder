@@ -123,3 +123,111 @@ pub fn load(path: &Path) -> Result<Config, CoderError> {
 
     Ok(config)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::env;
+    use tempfile::NamedTempFile;
+
+    fn create_test_config_file(content: &str) -> NamedTempFile {
+        let file = NamedTempFile::new().unwrap();
+        fs::write(file.path(), content).unwrap();
+        file
+    }
+
+    #[test]
+    fn test_default_config() {
+        let config = Config::default();
+        assert_eq!(config.language.name, "rust");
+        assert_eq!(config.language.linter, "cargo fmt");
+        assert_eq!(config.language.analyse, "cargo clippy");
+        assert_eq!(config.language.test_command, "cargo test");
+        assert_eq!(config.language.docs_url, "https://docs.rs");
+
+        assert_eq!(config.agent.provider, "groq");
+        assert_eq!(config.agent.model, "deepseek-r1-distill-llama-70b");
+        assert_eq!(config.agent.max_tokens, Some(4000));
+
+        assert_eq!(config.api.endpoint, "http://localhost:8080");
+    }
+
+    #[test]
+    fn test_load_config_with_env_vars() {
+        let config_content = r#"---
+language:
+  name: "rust"
+  analyse: "cargo clippy"
+  linter: "cargo fmt"
+  test_command: "cargo test"
+  docs_url: "https://docs.rs"
+scm:
+  name: "github"
+  owner: "test"
+  repository: "test"
+agent:
+  model: "default-model"
+  provider: "default-provider"
+  max_tokens: 1000
+api:
+  endpoint: "http://localhost:8080"
+"#;
+        let config_file = create_test_config_file(config_content);
+
+        env::set_var("CODER_LANGUAGE_NAME", "python");
+        env::set_var("CODER_SCM_NAME", "gitlab");
+        env::set_var("CODER_AGENT_MODEL", "new-model");
+        env::set_var("CODER_AGENT_MAX_TOKENS", "2000");
+
+        let config = load(config_file.path()).unwrap();
+
+        assert_eq!(config.language.name, "python");
+        assert_eq!(config.scm.name, "gitlab");
+        assert_eq!(config.agent.model, "new-model");
+        assert_eq!(config.agent.max_tokens, Some(2000));
+
+        env::remove_var("CODER_LANGUAGE_NAME");
+        env::remove_var("CODER_SCM_NAME");
+        env::remove_var("CODER_AGENT_MODEL");
+        env::remove_var("CODER_AGENT_MAX_TOKENS");
+    }
+
+    #[test]
+    fn test_invalid_config_file() {
+        let invalid_content = "invalid: yaml: content";
+        let config_file = create_test_config_file(invalid_content);
+
+        let result = load(config_file.path());
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_invalid_max_tokens() {
+        let config_content = r#"---
+language:
+  name: "rust"
+  analyse: "cargo clippy"
+  linter: "cargo fmt"
+  test_command: "cargo test"
+  docs_url: "https://docs.rs"
+scm:
+  name: "github"
+  owner: "test"
+  repository: "test"
+agent:
+  model: "default-model"
+  provider: "default-provider"
+  max_tokens: 1000
+api:
+  endpoint: "http://localhost:8080"
+"#;
+        let config_file = create_test_config_file(config_content);
+
+        env::set_var("CODER_AGENT_MAX_TOKENS", "not_a_number");
+
+        let config = load(config_file.path()).unwrap();
+        assert_eq!(config.agent.max_tokens, Some(1000));
+
+        env::remove_var("CODER_AGENT_MAX_TOKENS");
+    }
+}
