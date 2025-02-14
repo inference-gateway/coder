@@ -8,8 +8,10 @@ services:
       - repository:/app
     env_file:
       - .env
-    args:
-      - --issue=${CODER_ISSUE}
+    command: |
+      coder init && 
+      coder index && 
+      coder fix --issue=${CODER_ISSUE}
     depends_on:
       repository-cloner:
         condition: service_completed_successfully
