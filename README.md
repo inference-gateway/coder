@@ -130,29 +130,25 @@ Will result in the following available configurations:
 # AI Coder Configuration
 language:
   name: rust # The language of the project
-  analyse: # The command you use for static analysis
-    - cargo clippy
-  linter: # The command you use for linting
-    - cargo fmt
-  test_commands: # The command you use for testing
-    - cargo test
-  docs_urls: # The URL for the documentations so the agent can reference them
-    - https://docs.rs
+  analyse: cargo clippy # The command you use for static analysis
+  linter: cargo fmt # The command you use for linting
+  test_command: cargo test # The command you use for testing
+  docs_url: https://docs.rs # The URL for the documentations so the agent can reference them
 scm:
   name: github # The SCM you are using (e.g. github, gitlab)
   owner: owner # The owner of the repository
   repository: repo # The repository name
-  issue_template:
-    |- # The issue template, the agent will run a tool to validate the template contain all necessary information before proceeding
+  # Extra validation for issue templates if you want reliable Pull Requests generation - it's better to have a good issue template
+  issue_template: |-
     ## Description
     ## Steps to Reproduce
     ## Expected Behavior
     ## Actual Behavior
     ## Environment
 agent:
-  model: deepseek-r1-distill-llama-70b
-  provider: groq
-  max_tokens: 4000
+  model: deepseek-r1-distill-llama-70b # The name of the LLM
+  provider: groq # The provider of the LLM
+  max_tokens: 4000 # The maximum tokens the agent can use per request
 api:
   endpoint: http://localhost:8080 # The endpoint of the deployed Inferece-Gateway API
 ```
