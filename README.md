@@ -15,6 +15,7 @@ Table of content:
 - [Key Features](#key-features)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Using Docker](#using-docker)
 - [Configuration](#configuration)
 - [Development](#development)
   - [Prerequisites](#prerequisites)
