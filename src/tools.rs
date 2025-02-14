@@ -196,8 +196,8 @@ pub async fn pull_request(
         );
     }
 
-    let github_token = std::env::var("GITHUB_TOKEN")
-        .map_err(|_| CoderError::ConfigError("GITHUB_TOKEN not set".to_string()))?;
+    let github_token = std::env::var("CODER_SCM_TOKEN")
+        .map_err(|_| CoderError::ConfigError("CODER_SCM_TOKEN not set".to_string()))?;
 
     let octocrab = Octocrab::builder()
         .personal_token(github_token)
@@ -271,7 +271,7 @@ pub async fn issue_pull(
     }
 
     let octocrab = Octocrab::builder()
-        .personal_token(std::env::var("GITHUB_TOKEN").unwrap())
+        .personal_token(std::env::var("CODER_SCM_TOKEN").unwrap())
         .build()
         .map_err(CoderError::GitHubError)?;
 

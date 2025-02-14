@@ -76,7 +76,9 @@ async fn main() -> Result<(), CoderError> {
 
     let config = config::load(&config_path)?;
 
-    debug!("Config: {:?}", config);
+    debug!("Config: {:#?}", config);
+
+    todo!("Handle the rest of the commands");
 
     let model = &config.agent.model;
     let provider = Provider::try_from(config.agent.provider.as_str())?;

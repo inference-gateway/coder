@@ -1,3 +1,4 @@
+use log::error;
 use serde::{Deserialize, Serialize};
 use std::{fs, path::Path};
 
@@ -51,9 +52,9 @@ impl Default for Config {
                 docs_urls: vec!["https://docs.rs".to_string()],
             },
             scm: ScmConfig {
-                name: "github".to_string(),
-                owner: "owner".to_string(),
-                repository: "repo".to_string(),
+                name: "".to_string(),
+                owner: "".to_string(),
+                repository: "".to_string(),
                 issue_template: Some(
                     [
                         "## Description",
@@ -84,9 +85,32 @@ pub fn default_config() -> String {
     }
 }
 
-// Load config with proper error handling
+// Load config from a file with environment variables if exists
 pub fn load(path: &Path) -> Result<Config, CoderError> {
     let config_content = fs::read_to_string(path)?;
-    let config: Config = serde_yaml::from_str(&config_content)?;
+    let mut config: Config = serde_yaml::from_str(&config_content)?;
+
+    // API settings
+    config.api.endpoint =
+        std::env::var("CODER_INFERENCE_GATEWAY_URL").unwrap_or_else(|_| config.api.endpoint);
+
+    // SCM settings
+    // CODER_SCM_TOKEN is not stored on disk
+    config.scm.name = std::env::var("CODER_SCM_NAME").unwrap_or_else(|_| config.scm.name);
+    config.scm.owner = std::env::var("CODER_SCM_USERNAME").unwrap_or_else(|_| config.scm.owner);
+    config.scm.repository =
+        std::env::var("CODER_SCM_REPOSITORY").unwrap_or_else(|_| config.scm.repository);
+
+    // Agent settings
+    config.agent.model = std::env::var("CODER_AGENT_MODEL").unwrap_or_else(|_| config.agent.model);
+    config.agent.provider =
+        std::env::var("CODER_AGENT_PROVIDER").unwrap_or_else(|_| config.agent.provider);
+    if let Ok(max_tokens) = std::env::var("CODER_AGENT_MAX_TOKENS") {
+        match max_tokens.parse() {
+            Ok(max_tokens) => config.agent.max_tokens = Some(max_tokens),
+            Err(_) => error!("Invalid CODER_AGENT_MAX_TOKENS value"),
+        }
+    }
+
     Ok(config)
 }
