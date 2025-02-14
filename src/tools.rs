@@ -572,16 +572,17 @@ pub async fn execute_language_specific_command(
     command_type: CommandType,
 ) -> Result<StatusResponse, CoderError> {
     let command = match command_type {
-        CommandType::Lint => config.linter.first(),
-        CommandType::Analyse => config.analyse.first(),
-        CommandType::Test => config.test_commands.first(),
-    }
-    .ok_or_else(|| {
-        CoderError::ConfigError(format!(
+        CommandType::Lint => &config.linter,
+        CommandType::Analyse => &config.analyse,
+        CommandType::Test => &config.test_command,
+    };
+
+    if command.trim().is_empty() {
+        return Err(CoderError::ConfigError(format!(
             "No {} command configured for language {}",
             command_type, config.name
-        ))
-    })?;
+        )));
+    }
 
     let parts: Vec<&str> = command.split_whitespace().collect();
     if parts.is_empty() {

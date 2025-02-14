@@ -15,10 +15,10 @@ pub struct Config {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct LanguageConfig {
     pub name: String,
-    pub analyse: Vec<String>,
-    pub linter: Vec<String>,
-    pub test_commands: Vec<String>,
-    pub docs_urls: Vec<String>,
+    pub analyse: String,
+    pub linter: String,
+    pub test_command: String,
+    pub docs_url: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -46,10 +46,10 @@ impl Default for Config {
         Self {
             language: LanguageConfig {
                 name: "rust".to_string(),
-                linter: vec!["cargo fmt".to_string()],
-                analyse: vec!["cargo clippy".to_string()],
-                test_commands: vec!["cargo test".to_string()],
-                docs_urls: vec!["https://docs.rs".to_string()],
+                linter: "cargo fmt".to_string(),
+                analyse: "cargo clippy".to_string(),
+                test_command: "cargo test".to_string(),
+                docs_url: "https://docs.rs".to_string(),
             },
             scm: ScmConfig {
                 name: "".to_string(),
@@ -89,6 +89,17 @@ pub fn default_config() -> String {
 pub fn load(path: &Path) -> Result<Config, CoderError> {
     let config_content = fs::read_to_string(path)?;
     let mut config: Config = serde_yaml::from_str(&config_content)?;
+
+    // Language settings
+    config.language.name = std::env::var("CODER_LANGUAGE_NAME").unwrap_or(config.language.name);
+    config.language.analyse =
+        std::env::var("CODER_LANGUAGE_ANALYSE").unwrap_or(config.language.analyse);
+    config.language.linter =
+        std::env::var("CODER_LANGUAGE_LINTER").unwrap_or(config.language.linter);
+    config.language.test_command =
+        std::env::var("CODER_LANGUAGE_TEST_COMMAND").unwrap_or(config.language.test_command);
+    config.language.docs_url =
+        std::env::var("CODER_LANGUAGE_DOCS_URL").unwrap_or(config.language.docs_url);
 
     // API settings
     config.api.endpoint =
