@@ -127,6 +127,7 @@ pub fn load(path: &Path) -> Result<Config, CoderError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serial_test::serial;
     use std::env;
     use tempfile::NamedTempFile;
 
@@ -153,6 +154,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_load_config_with_env_vars() {
         let config_content = r#"---
 language:
@@ -202,25 +204,26 @@ api:
     }
 
     #[test]
+    #[serial]
     fn test_invalid_max_tokens() {
         let config_content = r#"---
-language:
-  name: "rust"
-  analyse: "cargo clippy"
-  linter: "cargo fmt"
-  test_command: "cargo test"
-  docs_url: "https://docs.rs"
-scm:
-  name: "github"
-  owner: "test"
-  repository: "test"
-agent:
-  model: "default-model"
-  provider: "default-provider"
-  max_tokens: 1000
-api:
-  endpoint: "http://localhost:8080"
-"#;
+    language:
+      name: "rust"
+      analyse: "cargo clippy"
+      linter: "cargo fmt"
+      test_command: "cargo test"
+      docs_url: "https://docs.rs"
+    scm:
+      name: "github"
+      owner: "test"
+      repository: "test"
+    agent:
+      model: "default-model"
+      provider: "default-provider"
+      max_tokens: 1000
+    api:
+      endpoint: "http://localhost:8080"
+    "#;
         let config_file = create_test_config_file(config_content);
 
         env::set_var("CODER_AGENT_MAX_TOKENS", "not_a_number");
