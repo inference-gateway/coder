@@ -86,14 +86,13 @@ coder fix --issue=#1
 
 ### Using Docker
 
-TODO - Add more environment variables
-
 You can also use Docker to run the assistant:
 
 ```bash
-docker run -v $(pwd):/app -w /app ghcr.io/inference-gateway/coder:latest init
-docker run -v $(pwd):/app -w /app ghcr.io/inference-gateway/coder:latest index
-docker run -v $(pwd):/app -w /app ghcr.io/inference-gateway/coder:latest fix --issue=#1
+cp .env.coder.example .env
+docker run -v $(pwd):/app -w /app --env-file .env ghcr.io/inference-gateway/coder:latest init
+docker run -v $(pwd):/app -w /app --env-file .env ghcr.io/inference-gateway/coder:latest index
+docker run -v $(pwd):/app -w /app --env-file .env ghcr.io/inference-gateway/coder:latest fix --issue=#1
 ```
 
 ### Configuration
