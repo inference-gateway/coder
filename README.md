@@ -111,7 +111,7 @@ CODER_AGENT_PROVIDER= # The provider of the agent
 CODER_AGENT_MAX_TOKENS= # The maximum tokens the agent can use per request
 ```
 
-Configuration is stored in .coder/config.yaml file. You can customize the configuration by editing this file.
+Or using the file `.coder/config.yaml` - you can customize the configuration by editing this file.
 
 Running:
 
