@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1-rc.16](https://github.com/inference-gateway/coder/compare/0.1.1-rc.15...0.1.1-rc.16) (2025-02-14)
+
+### 👷 CI
+
+* Adjust timeouts for cross-compilation jobs in release workflow ([4f5d9c8](https://github.com/inference-gateway/coder/commit/4f5d9c87405ffd081096d392fdbca2bfa1646770))
+
 ## [0.1.1-rc.15](https://github.com/inference-gateway/coder/compare/0.1.1-rc.14...0.1.1-rc.15) (2025-02-14)
 
 ### 👷 CI
