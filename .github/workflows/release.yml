@@ -103,7 +103,6 @@ jobs:
     name: Build and Upload Artifacts
     needs: github_release
     if: needs.github_release.outputs.new_release_published == 'true'
-    timeout-minutes: 25
     permissions:
       contents: write
       packages: write
@@ -114,13 +113,17 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-musl
             arch_platform: linux/amd64
+            timeout: 10
           - os: ubuntu-latest
             target: aarch64-unknown-linux-musl
             arch_platform: linux/arm64
+            timeout: 40 # Cross-compilation takes longer
           - os: macos-latest
             target: x86_64-apple-darwin
+            timeout: 10
           - os: macos-latest
             target: aarch64-apple-darwin
+            timeout: 10
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -182,6 +185,7 @@ jobs:
             && rm -rf *.tgz
 
       - name: Build binary for ${{ matrix.target }}
+        timeout-minutes: ${{ matrix.timeout }}
         env:
           PKG_CONFIG_ALLOW_CROSS: 1
           RUSTFLAGS: "-C target-feature=+crt-static"
