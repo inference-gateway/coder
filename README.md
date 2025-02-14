@@ -87,10 +87,43 @@ coder fix --issue=#1
 
 Configuration is stored in .coder/config.yaml file. You can customize the configuration by editing this file.
 
-Creating a new configuration file:
+Running:
 
 ```bash
 coder init
+```
+
+Will result in the following available configurations:
+
+```yaml
+---
+# AI Coder Configuration
+language:
+  name: rust # The language of the project
+  analyse: # The command you use for static analysis
+    - cargo clippy
+  linter: # The command you use for linting
+    - cargo fmt
+  test_commands: # The command you use for testing
+    - cargo test
+  docs_urls: # The URL for the documentations so the agent can reference them
+    - https://docs.rs
+scm:
+  name: github # The SCM you are using (e.g. github, gitlab)
+  owner: owner # The owner of the repository
+  repository: repo # The repository name
+  issue_template: |- # The issue template, the agent will run a tool to validate the template contain all necessary information before proceeding
+    ## Description
+    ## Steps to Reproduce
+    ## Expected Behavior
+    ## Actual Behavior
+    ## Environment
+agent:
+  model: deepseek-r1-distill-llama-70b
+  provider: groq
+  max_tokens: 4000
+api:
+  endpoint: http://localhost:8080 # The endpoint of the deployed Inferece-Gateway API
 ```
 
 ### Development
