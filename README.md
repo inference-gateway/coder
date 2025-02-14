@@ -98,7 +98,18 @@ docker run -v $(pwd):/app -w /app ghcr.io/inference-gateway/coder:latest fix --i
 
 ### Configuration
 
-TODO - Add more environment variables
+Via Environment Variables:
+
+```
+CODER_INFERENCE_GATEWAY_URL=http://localhost:8080
+CODER_SCM_NAME=github # The SCM you are using (e.g. github, gitlab)
+CODER_SCM_TOKEN= # The token you use to authenticate with the SCM
+CODER_SCM_USERNAME= # The username you use to authenticate with the SCM
+CODER_SCM_REPOSITORY= # The repository name
+CODER_AGENT_NAME= # The name of the agent
+CODER_AGENT_PROVIDER= # The provider of the agent
+CODER_AGENT_MAX_TOKENS= # The maximum tokens the agent can use per request
+```
 
 Configuration is stored in .coder/config.yaml file. You can customize the configuration by editing this file.
 
