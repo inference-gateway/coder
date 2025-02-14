@@ -108,6 +108,11 @@ CODER_SCM_REPOSITORY= # The repository name
 CODER_AGENT_MODEL= # The name of the agent
 CODER_AGENT_PROVIDER= # The provider of the agent
 CODER_AGENT_MAX_TOKENS= # The maximum tokens the agent can use per request
+CODER_LANGUAGE_NAME= # The main language of the project
+CODER_LANGUAGE_ANALYSE= # The command you use for static analysis
+CODER_LANGUAGE_LINTER= # The command you use for linting
+CODER_LANGUAGE_TEST_COMMAND= # The command you use for testing
+CODER_LANGUAGE_DOCS_URL= # The URL for the documentations so the agent can reference them
 ```
 
 Or using the file `.coder/config.yaml` - you can customize the configuration by editing this file.
