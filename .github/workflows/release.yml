@@ -111,19 +111,26 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
+            target: x86_64-unknown-linux-musl
+            arch_platform: linux/amd64
+            timeout: 10
           - os: ubuntu-latest
             target: aarch64-unknown-linux-musl
+            arch_platform: linux/arm64
+            timeout: 40 # Cross-compilation takes longer
           - os: macos-latest
             target: x86_64-apple-darwin
+            timeout: 10
           - os: macos-latest
             target: aarch64-apple-darwin
+            timeout: 10
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
+          persist-credentials: false
 
       - name: Update Cargo.toml version
         run: |
@@ -149,50 +156,49 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-cargo-
+            ${{ runner.os }}-${{ matrix.target }}-cargo
 
       - name: Add target ${{ matrix.target }}
         run: rustup target add ${{ matrix.target }}
 
-      # Unfortunately, github still don't support managed runners for arm64 :(
-      # It's a sad fact that they only offer it for enterprise customers.
-      # I can run it on my raspberry pi, but it's not ideal
-      # Instead will cross-compile this part for now with musl libc
-      - name: Add tools for cross-compiling with musl libc for linux arm64
-        if: matrix.target == 'aarch64-unknown-linux-musl'
+      - name: Add build tools for musl target instead of glibc
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update && sudo apt-get install --no-install-recommends -y \
+            curl \
+            ca-certificates \
+            build-essential \
+            pkg-config \
+            wget \
+            git \
+            musl-tools \
+            libssl-dev \
+            && sudo rm -rf /var/lib/apt/lists/* \
+            && cd /tmp \
+            && wget https://musl.cc/x86_64-linux-musl-cross.tgz \
+            && wget https://musl.cc/aarch64-linux-musl-cross.tgz \
+            && tar -xzf x86_64-linux-musl-cross.tgz \
+            && tar -xzf aarch64-linux-musl-cross.tgz \
+            && sudo mv x86_64-linux-musl-cross aarch64-linux-musl-cross /opt/ \
+            && rm -rf *.tgz
+
+      - name: Build binary for ${{ matrix.target }}
+        timeout-minutes: ${{ matrix.timeout }}
         env:
-          RUSTFLAGS: "-C target-feature=+crt-static -C linker=/opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc"
+          PKG_CONFIG_ALLOW_CROSS: 1
+          RUSTFLAGS: "-C target-feature=+crt-static"
           OPENSSL_DIR: /usr
           OPENSSL_LIB_DIR: /usr/lib
           OPENSSL_INCLUDE_DIR: /usr/include
-          OPENSSL_VENDORED: 1
-          CC_aarch64_unknown_linux_musl: /opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc
-          CXX_aarch64_unknown_linux_musl: /opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-g++
-          PKG_CONFIG_ALLOW_CROSS: 1
+          OPENSSL_STATIC: 1
+          CC_aarch64_unknown_linux_musl: aarch64-linux-musl-gcc
+          AR_aarch64_unknown_linux_musl: aarch64-linux-musl-ar
+          CC_x86_64_unknown_linux_musl: x86_64-linux-musl-gcc
+          AR_x86_64_unknown_linux_musl: x86_64-linux-musl-ar
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-          libssl-dev \
-          pkg-config \
-          musl-tools
-          rustup target add \
-              aarch64-unknown-linux-musl
-          cd && \
-              wget https://musl.cc/aarch64-linux-musl-cross.tgz && \
-              tar -xzf aarch64-linux-musl-cross.tgz && \
-              sudo mv aarch64-linux-musl-cross /opt/ && \
-              rm -rf aarch64-linux-musl-cross.tgz
-          cargo build --release --target ${{ matrix.target }}
-
-      - name: Build binary for ${{ matrix.target }}
-        if: matrix.target != 'aarch64-unknown-linux-musl'
-        env:
-          RUSTFLAGS: "-C target-feature=+crt-static"
-          # CARGO_PROFILE_RELEASE_BUILD_OVERRIDE_DEBUG: true
-          PKG_CONFIG_ALLOW_CROSS: 1
-        run: |
+          export PATH="/root/.cargo/bin:/opt/x86_64-linux-musl-cross/bin:/opt/aarch64-linux-musl-cross/bin:${PATH}"
           cargo build --release --target ${{ matrix.target }}
 
       - name: Rename binary to the published name
@@ -207,20 +213,37 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build container
+      - name: Set up QEMU
         if: startsWith(matrix.os, 'ubuntu')
-        run: |
-          docker build \
-            --label "org.opencontainers.image.source=https://github.com/inference-gateway/coder" \
-            --label "org.opencontainers.image.description=The AI-Powered Coder" \
-            --label "org.opencontainers.image.licenses=MIT" \
-            -t ghcr.io/${{ github.repository_owner }}/coder:latest \
-            -t ghcr.io/${{ github.repository_owner }}/coder:${{ needs.github_release.outputs.new_release_version }} \
-            -f Dockerfile --build-arg=TARGET_ARCH=${{ matrix.target }} .
+        uses: docker/setup-qemu-action@v3
 
-      - name: Push container to GHCR
+      - name: Set up Docker Buildx
         if: startsWith(matrix.os, 'ubuntu')
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.repository_owner }}" --password-stdin
-          docker push ghcr.io/${{ github.repository_owner }}/coder:latest
-          docker push ghcr.io/${{ github.repository_owner }}/coder:${{ needs.github_release.outputs.new_release_version }}
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        if: startsWith(matrix.os, 'ubuntu')
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push container
+        if: startsWith(matrix.os, 'ubuntu')
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: ${{ matrix.arch_platform }}
+          push: true
+          cache-from: type=gha,scope=${{ github.workflow }}-${{ matrix.target }}
+          cache-to: type=gha,mode=max,scope=${{ github.workflow }}-${{ matrix.target }}
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/coder:latest
+            ghcr.io/${{ github.repository_owner }}/coder:${{ needs.github_release.outputs.new_release_version }}
+          build-args: |
+            TARGET_ARCH=${{ matrix.target }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/inference-gateway/coder
+            org.opencontainers.image.description=The AI-Powered Coder
+            org.opencontainers.image.licenses=MIT
