@@ -92,19 +92,17 @@ pub fn load(path: &Path) -> Result<Config, CoderError> {
 
     // API settings
     config.api.endpoint =
-        std::env::var("CODER_INFERENCE_GATEWAY_URL").unwrap_or_else(|_| config.api.endpoint);
+        std::env::var("CODER_INFERENCE_GATEWAY_URL").unwrap_or(config.api.endpoint);
 
     // SCM settings
     // CODER_SCM_TOKEN is not stored on disk
-    config.scm.name = std::env::var("CODER_SCM_NAME").unwrap_or_else(|_| config.scm.name);
-    config.scm.owner = std::env::var("CODER_SCM_USERNAME").unwrap_or_else(|_| config.scm.owner);
-    config.scm.repository =
-        std::env::var("CODER_SCM_REPOSITORY").unwrap_or_else(|_| config.scm.repository);
+    config.scm.name = std::env::var("CODER_SCM_NAME").unwrap_or(config.scm.name);
+    config.scm.owner = std::env::var("CODER_SCM_USERNAME").unwrap_or(config.scm.owner);
+    config.scm.repository = std::env::var("CODER_SCM_REPOSITORY").unwrap_or(config.scm.repository);
 
     // Agent settings
-    config.agent.model = std::env::var("CODER_AGENT_MODEL").unwrap_or_else(|_| config.agent.model);
-    config.agent.provider =
-        std::env::var("CODER_AGENT_PROVIDER").unwrap_or_else(|_| config.agent.provider);
+    config.agent.model = std::env::var("CODER_AGENT_MODEL").unwrap_or(config.agent.model);
+    config.agent.provider = std::env::var("CODER_AGENT_PROVIDER").unwrap_or(config.agent.provider);
     if let Ok(max_tokens) = std::env::var("CODER_AGENT_MAX_TOKENS") {
         match max_tokens.parse() {
             Ok(max_tokens) => config.agent.max_tokens = Some(max_tokens),
