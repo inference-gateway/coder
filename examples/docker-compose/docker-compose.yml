@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   coder:
-    image: ghcr.io/inference-gateway/coder:v0.1.1
+    image: ghcr.io/inference-gateway/coder:0.1.2
     working_dir: /app
     volumes:
       - repository:/app
