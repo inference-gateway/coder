@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.2](https://github.com/inference-gateway/coder/compare/0.1.1...0.1.2) (2025-02-14)
+
+### 📚 Documentation
+
+* Add Docker section to table of contents in README.md ([67195c1](https://github.com/inference-gateway/coder/commit/67195c1528c19967ef8c99507bb5ea1fc0213d0a))
+* Add Docker usage instructions and update configuration section in README.md ([102e371](https://github.com/inference-gateway/coder/commit/102e371fb15e6f7d6a7a4cc28611f376a7f444c4))
+* Add example configuration for AI Coder in README.md ([1725372](https://github.com/inference-gateway/coder/commit/1725372119214c50e30ae58006a2797b844ebeba))
+* Correct container weight description in README.md ([ce68686](https://github.com/inference-gateway/coder/commit/ce68686860bb69c3151a3bacd01e1369b970b644))
+* Simplify configuration section in README.md for clarity and consistency ([8b834ba](https://github.com/inference-gateway/coder/commit/8b834baee410ce0d0cfb1ccb9160f14cf8a9c4c9))
+
+### 🔧 Miscellaneous
+
+* Add environment variables ([#20](https://github.com/inference-gateway/coder/issues/20)) ([ef292f1](https://github.com/inference-gateway/coder/commit/ef292f1f33d06eb0cc3fdcf8d2daa56d0c61929a))
+* Add version information to CLI command ([#21](https://github.com/inference-gateway/coder/issues/21)) ([f86f0cc](https://github.com/inference-gateway/coder/commit/f86f0cc5bc38db1534ae1435cf4418da5af6ce77))
+
+### ✅ Miscellaneous
+
+* Add serial test attribute to ensure test execution order ([c6ac947](https://github.com/inference-gateway/coder/commit/c6ac947f08a61732e6e29bf812e8083247d9566f))
+
 ## [0.1.1](https://github.com/inference-gateway/coder/compare/0.1.0...0.1.1) (2025-02-14)
 
 ### 🐛 Bug Fixes
