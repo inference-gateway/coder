@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.3](https://github.com/inference-gateway/coder/compare/0.1.2...0.1.3) (2025-02-15)
+
+### 🐛 Bug Fixes
+
+* **docker-compose:** Clean up entrypoint and update service names in docker-compose.yml ([8c3fa07](https://github.com/inference-gateway/coder/commit/8c3fa070698ffc36a96033c12c0a7116f00aa38a))
+* **docker:** Replace distroless final base image with Alpine and update user permissions ([123c932](https://github.com/inference-gateway/coder/commit/123c932afd5fbf416d583dbc37b42e2ac99e3893))
+
+### 📚 Documentation
+
+* Create example for docker compose ([#22](https://github.com/inference-gateway/coder/issues/22)) ([f3466c9](https://github.com/inference-gateway/coder/commit/f3466c9ca96f5fd2c50643be0ac36aff99e4e497))
+
+### 🔧 Miscellaneous
+
+* **docker-compose:** Resort the services - put the important ones at the top ([a6338c0](https://github.com/inference-gateway/coder/commit/a6338c0205e884955a8b801f5ff663ee02469a80))
+* **docker-compose:** Update inference gateway URL and adjust user permissions in docker-compose ([e356343](https://github.com/inference-gateway/coder/commit/e356343add4dc19c3b2f6f869e3b2579630174e1))
+* **docker:** Add TODOs for base image replacement and rethink distroless choice ([91b9fe3](https://github.com/inference-gateway/coder/commit/91b9fe346fab2bf06974c49d24f65e0ca9b1d7bf))
+
 ## [0.1.2](https://github.com/inference-gateway/coder/compare/0.1.1...0.1.2) (2025-02-14)
 
 ### 📚 Documentation
