@@ -36,3 +36,14 @@ Inspect the logs and notice that the services will be up and running in the foll
 1. The `inference-gateway` service will start.
 2. At the same time the `repository-cloner` service will start - it will pull the repository from SCM.
 3. Finally the coder will use the same mount volume of the repository-cloner and start working on the issue.
+
+### Troubleshooting
+
+If you see the error `repository-cloner-1  | fatal: destination path '.' already exists and is not an empty directory.`
+
+That means the repository is already cloned, so you need to remove the volume and start again:
+
+```bash
+docker compose down
+docker volume prune -a
+```
