@@ -11,8 +11,8 @@ futures-util = "0.3.31"
 ignore = "0.4.23"
 inference-gateway-sdk = "0.9.0"
 log = "0.4.25"
-octocrab = "0.43.0"
-openssl = { version = "0.10.70", features = ["vendored"] }
+octocrab = { version = "0.43.0", default-features = false, features = ["default-client", "rustls", "rustls-ring"] }
+openssl = { version = "0.10.71", features = ["vendored"] }
 serde = "1.0.217"
 serde_json = "1.0.138"
 serde_yaml = "0.9.34"
