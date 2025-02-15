@@ -1,6 +1,7 @@
 services:
   coder:
     image: ghcr.io/inference-gateway/coder:0.1.2
+    user: 1000:1000
     working_dir: /app
     volumes:
       - repository:/app
@@ -8,8 +9,8 @@ services:
       - .env
     entrypoint: ""
     command: |
-      /coder init && 
-      /coder index && 
+      /coder init &&
+      /coder index &&
       /coder fix --issue=${CODER_ISSUE}
     depends_on:
       repository-cloner:
@@ -54,8 +55,10 @@ services:
       - -c
       - |
         git clone https://github.com/${CODER_SCM_USERNAME}/${CODER_SCM_REPOSITORY}.git .
+        chown -R 1000:1000 /app
       # - |
       #   git clone -n https://gitlab.com/${CODER_SCM_USERNAME}/${CODER_SCM_REPOSITORY}.git .
+      #   chown -R 1000:1000 /app
 
 volumes:
   repository:
