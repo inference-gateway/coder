@@ -47,6 +47,8 @@ COPY . .
 RUN rustup target add ${TARGET_ARCH} \
     && cargo build --release --no-default-features --target ${TARGET_ARCH}
 
+# TODO - need to replace this with a different base image where I could add basic user's tools
+# Probably debian-slim is a good candidate
 FROM gcr.io/distroless/static:nonroot
 ARG TARGET_ARCH
 COPY --from=build /app/target/${TARGET_ARCH}/release/coder /coder

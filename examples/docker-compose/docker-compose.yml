@@ -1,6 +1,6 @@
 services:
   coder:
-    image: ghcr.io/inference-gateway/coder:0.1.2
+    image: ghcr.io/inference-gateway/coder:0.1.2 # TODO - need to rethink if distroless is the right choice
     user: 1000:1000
     working_dir: /app
     volumes:
