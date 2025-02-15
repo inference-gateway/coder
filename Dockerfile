@@ -1,6 +1,6 @@
 
 # Possible args:
-# ARG TARGET_ARCH=aarch64-unknown-linux-musl
+ARG TARGET_ARCH=aarch64-unknown-linux-musl
 # ARG TARGET_ARCH=x86_64-unknown-linux-musl
 
 FROM ubuntu:24.04 AS build
@@ -47,10 +47,14 @@ COPY . .
 RUN rustup target add ${TARGET_ARCH} \
     && cargo build --release --no-default-features --target ${TARGET_ARCH}
 
-# TODO - need to replace this with a different base image where I could add basic user's tools
-# Probably debian-slim is a good candidate
-FROM gcr.io/distroless/static:nonroot
+FROM alpine:3.21.3
 ARG TARGET_ARCH
-COPY --from=build /app/target/${TARGET_ARCH}/release/coder /coder
-USER nonroot:nonroot
-ENTRYPOINT [ "/coder" ]
+
+COPY --from=build /app/target/${TARGET_ARCH}/release/coder /usr/local/bin/coder
+
+RUN apk add --no-cache ca-certificates \
+    && addgroup -S -g 1001 coder \
+    && adduser -S -G coder -u 1001 -h /home/coder -s /sbin/nologin -g "Coder user" coder
+
+USER coder
+ENTRYPOINT ["coder"]

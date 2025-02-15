@@ -49,7 +49,7 @@ Coder understands project structure rather than just a specific code snippet or 
 - 🌐 Cross-platform support
 - 🚀 Runs on ☸️ Kubernetes, 🐳 Docker, and 💻 local environments
 - 🤖 Automate remote tasks with Kubernetes: parallelize, scale, and control resources on demand
-- 📦 Lightweight footprint - binary weight ~ 11MB container weight ~ 17MB
+- 📦 Lightweight footprint - binary weight ~ 11MB container weight ~ 24MB
 - 🚀 Easy to deploy
 
 ### Installation
