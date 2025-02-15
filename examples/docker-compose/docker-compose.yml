@@ -1,6 +1,6 @@
 services:
   coder:
-    image: ghcr.io/inference-gateway/coder:0.1.2 # TODO - need to rethink if distroless is the right choice
+    image: ghcr.io/inference-gateway/coder:0.1.3
     user: 1000:1000
     working_dir: /app
     volumes:
@@ -9,9 +9,12 @@ services:
       - .env
     entrypoint: ""
     command: |
-      /coder init &&
-      /coder index &&
-      /coder fix --issue=${CODER_ISSUE}
+      apk add cargo
+      cargo install rustfmt
+      cargo install clippy
+      coder init &&
+      coder index &&
+      coder fix --issue=${CODER_ISSUE}
     depends_on:
       repository-cloner:
         condition: service_completed_successfully
