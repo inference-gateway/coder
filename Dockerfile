@@ -52,7 +52,10 @@ ARG TARGET_ARCH
 
 COPY --from=build /app/target/${TARGET_ARCH}/release/coder /usr/local/bin/coder
 
-RUN apk add --no-cache ca-certificates \
+RUN apk add --no-cache \
+    ca-certificates \
+    git \
+    curl \
     && addgroup -S -g 1001 coder \
     && adduser -S -G coder -u 1001 -h /home/coder -s /sbin/nologin -g "Coder user" coder
 
