@@ -17,6 +17,11 @@ services:
       inference-gateway-health-checker:
         condition: service_healthy
 
+  inference-gateway:
+    image: ghcr.io/inference-gateway/inference-gateway:v0.1.15
+    env_file:
+      - .env
+
   inference-gateway-health-checker:
     image: curlimages/curl:latest
     depends_on:
@@ -33,11 +38,6 @@ services:
       timeout: 5s
       retries: 3
       start_period: 5s
-
-  inference-gateway:
-    image: ghcr.io/inference-gateway/inference-gateway:v0.1.15
-    env_file:
-      - .env
 
   repository-cloner:
     image: alpine/git:latest
