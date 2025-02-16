@@ -24,7 +24,11 @@ RUN apk add --update --no-cache \
     openssl-dev \
     pkgconfig \
     && rm -rf /var/cache/apk/* \
-    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
+    && rustup install stable \
+    && rustup default stable
+
+WORKDIR /app
 
 COPY Cargo.toml Cargo.lock ./
 COPY . .
@@ -32,15 +36,14 @@ COPY . .
 RUN rustup target add ${TARGET_ARCH} \
     && cargo build --release --no-default-features --target ${TARGET_ARCH}
 
-WORKDIR /app
-
 FROM alpine:3.21.3 AS common
-RUN apk add --no-cache \
+RUN apk add --update --no-cache \
     ca-certificates \
     git \
     curl \
+    libgcc \
     && addgroup -S -g 1001 coder \
-    && adduser -S -G coder -u 1001 -h /home/coder -s /sbin/nologin -g "Coder user" coder \
+    && adduser -S -G coder -u 1001 -h /home/coder -s /bin/sh -g "Coder user" coder \
     && rm -rf \
     /var/cache/apk/* \
     /tmp/* \
@@ -48,9 +51,19 @@ RUN apk add --no-cache \
 
 FROM common AS rust
 ARG TARGET_ARCH
-ENV PATH="/home/coder/.cargo/bin:${PATH}"
+ENV PATH="/home/coder/.cargo/bin:${PATH}" \
+    RUSTUP_HOME="/home/coder/.rustup" \
+    CARGO_HOME="/home/coder/.cargo"
+RUN apk add --update --no-cache \
+    rustup && \
+    rustup-init -y \
+    --no-modify-path \
+    --profile minimal \
+    --default-toolchain stable \
+    --target ${TARGET_ARCH} \
+    --component rustfmt clippy \
+    && chown -R coder:coder /home/coder/.cargo /home/coder/.rustup
 COPY --from=build --chown=coder:coder /app/target/${TARGET_ARCH}/release/coder /usr/local/bin/coder
-COPY --from=build --chown=coder:coder /root/.cargo/bin/ /home/coder/.cargo/bin/
 USER coder
 WORKDIR /home/coder
 ENTRYPOINT [ "coder" ]
