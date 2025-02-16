@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.2](https://github.com/inference-gateway/coder/compare/0.1.4-rc.1...0.1.4-rc.2) (2025-02-16)
+
+### ♻️ Improvements
+
+* Update Dockerfile and CI workflow to use clang and llvm for cross-compilation ([c0cf8d3](https://github.com/inference-gateway/coder/commit/c0cf8d3fa99a87f09758232f7b99c094f95e3abb))
+
+### 👷 CI
+
+* Increase timeout for B&P Containers job to 65 minutes ([c90a1f4](https://github.com/inference-gateway/coder/commit/c90a1f46005328045e6020237969608bf3cc04de))
+* Make the Build and Push job name shorter ([a41ed31](https://github.com/inference-gateway/coder/commit/a41ed31b16c3848082859127c1f1f955442120d8))
+* Reduce timeout for B&P Containers job from 65 to 15 minutes ([f610944](https://github.com/inference-gateway/coder/commit/f6109443895e59249226061aa62ea5645b99677c))
+* Update Ubuntu version in release workflow to 24.04 and add arm64 runner ([41e2c5f](https://github.com/inference-gateway/coder/commit/41e2c5fa2baa3eb4042697cd036a302d07fa3f84))
+
 ## [0.1.4-rc.1](https://github.com/inference-gateway/coder/compare/0.1.3...0.1.4-rc.1) (2025-02-16)
 
 ### ♻️ Improvements
