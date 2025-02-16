@@ -164,9 +164,10 @@ jobs:
             curl \
             ca-certificates \
             build-essential \
+            clang \
+            llvm \
             pkg-config \
             wget \
-            git \
             musl-tools \
             libssl-dev \
             && sudo rm -rf /var/lib/apt/lists/* \
@@ -179,21 +180,17 @@ jobs:
             && rm -rf *.tgz
 
       - name: Build binary for ${{ matrix.target }}
-        timeout-minutes: ${{ matrix.timeout }}
         env:
           PKG_CONFIG_ALLOW_CROSS: 1
-          RUSTFLAGS: "-C target-feature=+crt-static"
+          RUSTFLAGS: "-C target-feature=+crt-static -C linker=clang"
+          CC: clang
+          AR: llvm-ar
           OPENSSL_DIR: /usr
           OPENSSL_LIB_DIR: /usr/lib
           OPENSSL_INCLUDE_DIR: /usr/include
           OPENSSL_STATIC: 1
-          CC_aarch64_unknown_linux_musl: aarch64-linux-musl-gcc
-          AR_aarch64_unknown_linux_musl: aarch64-linux-musl-ar
-          CC_x86_64_unknown_linux_musl: x86_64-linux-musl-gcc
-          AR_x86_64_unknown_linux_musl: x86_64-linux-musl-ar
         run: |
-          export PATH="/root/.cargo/bin:/opt/x86_64-linux-musl-cross/bin:/opt/aarch64-linux-musl-cross/bin:${PATH}"
-          cargo build --release --target ${{ matrix.target }}
+          cargo build --release --no-default-features --target ${{ matrix.target }}
 
       - name: Rename binary to the published name
         run: |
