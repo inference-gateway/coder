@@ -110,9 +110,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             target: x86_64-unknown-linux-musl
-          - os: ubuntu-latest
+          - os: ubuntu-24.04-arm64
             target: aarch64-unknown-linux-musl
           - os: macos-latest
             target: x86_64-apple-darwin
@@ -215,19 +215,19 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             target: x86_64-unknown-linux-musl
             arch_platform: linux/amd64
             variant: minimal
-          - os: ubuntu-latest
+          - os: ubuntu-24.04-arm64
             target: aarch64-unknown-linux-musl
             arch_platform: linux/arm64
             variant: minimal
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             target: x86_64-unknown-linux-musl
             arch_platform: linux/amd64
             variant: rust
-          - os: ubuntu-latest
+          - os: ubuntu-24.04-arm64
             target: aarch64-unknown-linux-musl
             arch_platform: linux/arm64
             variant: rust
