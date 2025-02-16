@@ -205,7 +205,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build_container:
-    name: Build and Push Docker Containers
+    name: B&P Containers
     needs: github_release
     if: needs.github_release.outputs.new_release_published == 'true'
     timeout-minutes: 45
