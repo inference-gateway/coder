@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.1](https://github.com/inference-gateway/coder/compare/0.1.3...0.1.4-rc.1) (2025-02-16)
+
+### ♻️ Improvements
+
+* **docker:** Simplify Dockerfile and update build process with Alpine base image ([ccf6275](https://github.com/inference-gateway/coder/commit/ccf627589983850cd1937ba33266b742fff41afa))
+
+### 🐛 Bug Fixes
+
+* **docker-compose:** Update coder service image version to 0.1.3 with alpine base image ([c2d26b0](https://github.com/inference-gateway/coder/commit/c2d26b0af2a1c29fbcb616baa0162d5efc2e2662))
+* **docker:** Add git and curl to the container image for enhanced functionality ([b21b49b](https://github.com/inference-gateway/coder/commit/b21b49bf98497fe52729bb6f834d9bf1cd44596f))
+
+### 👷 CI
+
+* Enhance GitHub Actions workflow for building and pushing Docker containers with Rust tools support and minimal ones ([3a50346](https://github.com/inference-gateway/coder/commit/3a5034662619017c5bb7a3fa9419b23ae4081320))
+
 ## [0.1.3](https://github.com/inference-gateway/coder/compare/0.1.2...0.1.3) (2025-02-15)
 
 ### 🐛 Bug Fixes
