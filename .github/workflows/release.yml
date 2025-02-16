@@ -208,7 +208,7 @@ jobs:
     name: B&P Containers
     needs: github_release
     if: needs.github_release.outputs.new_release_published == 'true'
-    timeout-minutes: 45
+    timeout-minutes: 65 # TODO - setup a self hosted runner instead of cross-compiling with emulators, it's crazy why github doesn't offer those runners
     permissions:
       packages: write
     strategy:
