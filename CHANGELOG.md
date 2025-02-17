@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.4](https://github.com/inference-gateway/coder/compare/0.1.4-rc.3...0.1.4-rc.4) (2025-02-17)
+
+### 👷 CI
+
+* Update release workflow to handle macOS builds separately ([d242dce](https://github.com/inference-gateway/coder/commit/d242dce5f5032754271e85fa9f487a4efe7b8037))
+* Update release workflow to include ubuntu-22.04-arm64 in self-hosted jobs ([74429be](https://github.com/inference-gateway/coder/commit/74429be18ee3401e6e23920c70c985d388ff9a7e))
+
 ## [0.1.4-rc.3](https://github.com/inference-gateway/coder/compare/0.1.4-rc.2...0.1.4-rc.3) (2025-02-17)
 
 ### 👷 CI
