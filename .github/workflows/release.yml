@@ -99,31 +99,140 @@ jobs:
             exit 1
           fi
 
-  build_artifacts:
-    name: Build and Upload Artifacts
+  # build_binaries:
+  #   name: Build static binaries
+  #   needs: github_release
+  #   if: needs.github_release.outputs.new_release_published == 'true'
+  #   timeout-minutes: 15
+  #   permissions:
+  #     contents: write
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       include:
+  #         - os: ubuntu-24.04
+  #           target: x86_64-unknown-linux-musl
+  #         - os:
+  #             - self-hosted
+  #             - ubuntu-22.04-arm64
+  #           target: aarch64-unknown-linux-musl
+  #         - os: macos-latest
+  #           target: x86_64-apple-darwin
+  #         - os: macos-latest
+  #           target: aarch64-apple-darwin
+  #   runs-on: ${{ matrix.os }}
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
+  #       with:
+  #         ref: ${{ github.ref }}
+  #         persist-credentials: false
+
+  #     - name: Update Cargo.toml version
+  #       run: |
+  #         echo "Updating to version ${{ needs.github_release.outputs.new_release_version }}"
+  #         if [[ "$RUNNER_OS" == "macOS" ]]; then
+  #           sed -i '' "s/^version = .*/version = \"${{ needs.github_release.outputs.new_release_version }}\"/" Cargo.toml
+  #         else
+  #           sed -i "s/^version = .*/version = \"${{ needs.github_release.outputs.new_release_version }}\"/" Cargo.toml
+  #         fi
+
+  #     - name: Install Rust
+  #       uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
+  #       with:
+  #         toolchain: stable
+  #         override: true
+
+  #     - name: Cache Rust dependencies
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: |
+  #           ~/.cargo/bin/
+  #           ~/.cargo/registry/index/
+  #           ~/.cargo/registry/cache/
+  #           ~/.cargo/git/db/
+  #           target/
+  #         key: ${{ runner.os }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-${{ matrix.target }}-cargo
+
+  #     - name: Add target ${{ matrix.target }}
+  #       run: rustup target add ${{ matrix.target }}
+
+  #     - name: Add build tools for musl target instead of glibc
+  #       if: ${{ !startsWith(matrix.os, 'macos') }}
+  #       run: |
+  #         sudo apt-get update && sudo apt-get install --no-install-recommends -y \
+  #           curl \
+  #           ca-certificates \
+  #           build-essential \
+  #           clang \
+  #           llvm \
+  #           pkg-config \
+  #           wget \
+  #           musl-tools \
+  #           libssl-dev \
+  #           && sudo rm -rf /var/lib/apt/lists/* \
+  #           && cd /tmp \
+  #           && wget https://musl.cc/x86_64-linux-musl-cross.tgz \
+  #           && wget https://musl.cc/aarch64-linux-musl-cross.tgz \
+  #           && tar -xzf x86_64-linux-musl-cross.tgz \
+  #           && tar -xzf aarch64-linux-musl-cross.tgz \
+  #           && sudo mv x86_64-linux-musl-cross aarch64-linux-musl-cross /opt/ \
+  #           && rm -rf *.tgz
+
+  #     - name: Build binary for ${{ matrix.target }}
+  #       if: ${{ !startsWith(matrix.os, 'macos') }}
+  #       env:
+  #         PKG_CONFIG_ALLOW_CROSS: 1
+  #         RUSTFLAGS: "-C target-feature=+crt-static -C linker=clang"
+  #         CC: clang
+  #         AR: llvm-ar
+  #         OPENSSL_DIR: /usr
+  #         OPENSSL_LIB_DIR: /usr/lib
+  #         OPENSSL_INCLUDE_DIR: /usr/include
+  #         OPENSSL_STATIC: 1
+  #       run: |
+  #         cargo build --release --no-default-features --target ${{ matrix.target }}
+
+  #     - name: Build binary for ${{ matrix.target }}
+  #       if: ${{ startsWith(matrix.os, 'macos') }}
+  #       env:
+  #         RUSTFLAGS: "-C target-feature=+crt-static"
+  #       run: |
+  #         cargo build --release --no-default-features --target ${{ matrix.target }}
+
+  #     - name: Rename binary to the published name
+  #       run: |
+  #         mv target/${{ matrix.target }}/release/coder target/${{ matrix.target }}/release/coder_${{ matrix.target }}
+
+  #     - name: Upload to GitHub Release
+  #       uses: softprops/action-gh-release@v2
+  #       with:
+  #         files: target/${{ matrix.target }}/release/coder_${{ matrix.target }}
+  #         tag_name: ${{ needs.github_release.outputs.new_release_version }}
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build_containers:
+    name: B&P Containers
     needs: github_release
     if: needs.github_release.outputs.new_release_published == 'true'
+    timeout-minutes: 15
     permissions:
-      contents: write
       packages: write
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             target: x86_64-unknown-linux-musl
             arch_platform: linux/amd64
-            timeout: 10
-          - os: ubuntu-latest
+          - os:
+              - self-hosted
+              - ubuntu-22.04-arm64
             target: aarch64-unknown-linux-musl
             arch_platform: linux/arm64
-            timeout: 40 # Cross-compilation takes longer
-          - os: macos-latest
-            target: x86_64-apple-darwin
-            timeout: 10
-          - os: macos-latest
-            target: aarch64-apple-darwin
-            timeout: 10
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -141,109 +250,104 @@ jobs:
             sed -i "s/^version = .*/version = \"${{ needs.github_release.outputs.new_release_version }}\"/" Cargo.toml
           fi
 
-      - name: Install Rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
-        with:
-          toolchain: stable
-          override: true
-
-      - name: Cache Rust dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.target }}-cargo
-
-      - name: Add target ${{ matrix.target }}
-        run: rustup target add ${{ matrix.target }}
-
-      - name: Add build tools for musl target instead of glibc
-        if: startsWith(matrix.os, 'ubuntu')
-        run: |
-          sudo apt-get update && sudo apt-get install --no-install-recommends -y \
-            curl \
-            ca-certificates \
-            build-essential \
-            pkg-config \
-            wget \
-            git \
-            musl-tools \
-            libssl-dev \
-            && sudo rm -rf /var/lib/apt/lists/* \
-            && cd /tmp \
-            && wget https://musl.cc/x86_64-linux-musl-cross.tgz \
-            && wget https://musl.cc/aarch64-linux-musl-cross.tgz \
-            && tar -xzf x86_64-linux-musl-cross.tgz \
-            && tar -xzf aarch64-linux-musl-cross.tgz \
-            && sudo mv x86_64-linux-musl-cross aarch64-linux-musl-cross /opt/ \
-            && rm -rf *.tgz
-
-      - name: Build binary for ${{ matrix.target }}
-        timeout-minutes: ${{ matrix.timeout }}
-        env:
-          PKG_CONFIG_ALLOW_CROSS: 1
-          RUSTFLAGS: "-C target-feature=+crt-static"
-          OPENSSL_DIR: /usr
-          OPENSSL_LIB_DIR: /usr/lib
-          OPENSSL_INCLUDE_DIR: /usr/include
-          OPENSSL_STATIC: 1
-          CC_aarch64_unknown_linux_musl: aarch64-linux-musl-gcc
-          AR_aarch64_unknown_linux_musl: aarch64-linux-musl-ar
-          CC_x86_64_unknown_linux_musl: x86_64-linux-musl-gcc
-          AR_x86_64_unknown_linux_musl: x86_64-linux-musl-ar
-        run: |
-          export PATH="/root/.cargo/bin:/opt/x86_64-linux-musl-cross/bin:/opt/aarch64-linux-musl-cross/bin:${PATH}"
-          cargo build --release --target ${{ matrix.target }}
-
-      - name: Rename binary to the published name
-        run: |
-          mv target/${{ matrix.target }}/release/coder target/${{ matrix.target }}/release/coder_${{ matrix.target }}
-
-      - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: target/${{ matrix.target }}/release/coder_${{ matrix.target }}
-          tag_name: ${{ needs.github_release.outputs.new_release_version }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up QEMU
-        if: startsWith(matrix.os, 'ubuntu')
-        uses: docker/setup-qemu-action@v3
+      # - name: Set up QEMU
+      #   uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
-        if: startsWith(matrix.os, 'ubuntu')
         uses: docker/setup-buildx-action@v3
 
       - name: Login to GitHub Container Registry
-        if: startsWith(matrix.os, 'ubuntu')
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push container
-        if: startsWith(matrix.os, 'ubuntu')
+      - name: B&P Minimal Container
         uses: docker/build-push-action@v6
         with:
           context: .
           platforms: ${{ matrix.arch_platform }}
           push: true
-          cache-from: type=gha,scope=${{ github.workflow }}-${{ matrix.target }}
-          cache-to: type=gha,mode=max,scope=${{ github.workflow }}-${{ matrix.target }}
+          cache-from: type=gha,scope=minimal-${{ matrix.target }}
+          cache-to: type=gha,mode=max,scope=minimal-${{ matrix.target }}
           tags: |
             ghcr.io/${{ github.repository_owner }}/coder:latest
-            ghcr.io/${{ github.repository_owner }}/coder:${{ needs.github_release.outputs.new_release_version }}
+            ghcr.io/${{ github.repository_owner }}/coder:minimal
+            ghcr.io/${{ github.repository_owner }}/coder:minimal-${{ needs.github_release.outputs.new_release_version }}
           build-args: |
             TARGET_ARCH=${{ matrix.target }}
           labels: |
             org.opencontainers.image.source=https://github.com/inference-gateway/coder
             org.opencontainers.image.description=The AI-Powered Coder
             org.opencontainers.image.licenses=MIT
+
+  # build_containers_with_tools:
+  #   name: B&P Language specific Containers
+  #   needs: github_release
+  #   if: needs.github_release.outputs.new_release_published == 'true'
+  #   timeout-minutes: 15
+  #   permissions:
+  #     packages: write
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       include:
+  #         - os: ubuntu-24.04
+  #           target: x86_64-unknown-linux-musl
+  #           arch_platform: linux/amd64
+  #           language: rust
+  #         - os:
+  #             - self-hosted
+  #             - ubuntu-22.04-arm64
+  #           target: aarch64-unknown-linux-musl
+  #           arch_platform: linux/arm64
+  #           language: rust
+  #   runs-on: ${{ matrix.os }}
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
+  #       with:
+  #         ref: ${{ github.ref }}
+  #         persist-credentials: false
+
+  #     - name: Update Cargo.toml version
+  #       run: |
+  #         echo "Updating to version ${{ needs.github_release.outputs.new_release_version }}"
+  #         if [[ "$RUNNER_OS" == "macOS" ]]; then
+  #           sed -i '' "s/^version = .*/version = \"${{ needs.github_release.outputs.new_release_version }}\"/" Cargo.toml
+  #         else
+  #           sed -i "s/^version = .*/version = \"${{ needs.github_release.outputs.new_release_version }}\"/" Cargo.toml
+  #         fi
+
+  #     - name: Set up QEMU
+  #       uses: docker/setup-qemu-action@v3
+
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v3
+
+  #     - name: Login to GitHub Container Registry
+  #       uses: docker/login-action@v3
+  #       with:
+  #         registry: ghcr.io
+  #         username: ${{ github.repository_owner }}
+  #         password: ${{ secrets.GITHUB_TOKEN }}
+
+  #     - name: B&P ${{ matrix.language }} Container
+  #       uses: docker/build-push-action@v6
+  #       with:
+  #         context: .
+  #         platforms: ${{ matrix.arch_platform }}
+  #         push: true
+  #         cache-from: type=gha,scope=rust-${{ matrix.target }}
+  #         cache-to: type=gha,mode=max,scope=rust-${{ matrix.target }}
+  #         tags: |
+  #           ghcr.io/${{ github.repository_owner }}/coder:${{ matrix.language }}
+  #           ghcr.io/${{ github.repository_owner }}/coder:${{ matrix.language }}-${{ needs.github_release.outputs.new_release_version }}
+  #         build-args: |
+  #           TARGET_ARCH=${{ matrix.target }}
+  #         labels: |
+  #           org.opencontainers.image.source=https://github.com/inference-gateway/coder
+  #           org.opencontainers.image.description=The AI-Powered Coder
+  #           org.opencontainers.image.licenses=MIT
+  #         target: ${{ matrix.language }}

@@ -2,6 +2,63 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.6](https://github.com/inference-gateway/coder/compare/0.1.4-rc.5...0.1.4-rc.6) (2025-02-17)
+
+### 👷 CI
+
+* Comment out QEMU setup step in release workflow ([4a09c1a](https://github.com/inference-gateway/coder/commit/4a09c1a2d5c3a7d441c65d2ba7bff8ecc184a0ce))
+* Comment out temporarily build_binaries job in release workflow to speed things up ([4d00ad3](https://github.com/inference-gateway/coder/commit/4d00ad3ecd9644b57a2218030681c99a87b3c416))
+* Remove conditional check for minimal variant in B&P Minimal Container job ([ca6f85f](https://github.com/inference-gateway/coder/commit/ca6f85fc5ba7d85c13f113c15709b832ded25615))
+* Rename build_container job to build_containers and update commented job name ([1bdf885](https://github.com/inference-gateway/coder/commit/1bdf885cd539045a0cdf816d5672b021bb575c3b))
+* Split language specific containers with tools to a separate job and comment it out ([fd20e5b](https://github.com/inference-gateway/coder/commit/fd20e5b0c5e6781706222b59bd99c268ea441a35))
+
+## [0.1.4-rc.5](https://github.com/inference-gateway/coder/compare/0.1.4-rc.4...0.1.4-rc.5) (2025-02-17)
+
+### 👷 CI
+
+* Comment out Build and Push Rust Container job in release workflow ([8e8af76](https://github.com/inference-gateway/coder/commit/8e8af765f3d6506891a4482eafbef0bd557e419b))
+
+## [0.1.4-rc.4](https://github.com/inference-gateway/coder/compare/0.1.4-rc.3...0.1.4-rc.4) (2025-02-17)
+
+### 👷 CI
+
+* Update release workflow to handle macOS builds separately ([d242dce](https://github.com/inference-gateway/coder/commit/d242dce5f5032754271e85fa9f487a4efe7b8037))
+* Update release workflow to include ubuntu-22.04-arm64 in self-hosted jobs ([74429be](https://github.com/inference-gateway/coder/commit/74429be18ee3401e6e23920c70c985d388ff9a7e))
+
+## [0.1.4-rc.3](https://github.com/inference-gateway/coder/compare/0.1.4-rc.2...0.1.4-rc.3) (2025-02-17)
+
+### 👷 CI
+
+* Change ARM64 jobs to use self-hosted runners in release workflow ([274d375](https://github.com/inference-gateway/coder/commit/274d375bdb2d888de200706001e50986600e4919))
+
+## [0.1.4-rc.2](https://github.com/inference-gateway/coder/compare/0.1.4-rc.1...0.1.4-rc.2) (2025-02-16)
+
+### ♻️ Improvements
+
+* Update Dockerfile and CI workflow to use clang and llvm for cross-compilation ([c0cf8d3](https://github.com/inference-gateway/coder/commit/c0cf8d3fa99a87f09758232f7b99c094f95e3abb))
+
+### 👷 CI
+
+* Increase timeout for B&P Containers job to 65 minutes ([c90a1f4](https://github.com/inference-gateway/coder/commit/c90a1f46005328045e6020237969608bf3cc04de))
+* Make the Build and Push job name shorter ([a41ed31](https://github.com/inference-gateway/coder/commit/a41ed31b16c3848082859127c1f1f955442120d8))
+* Reduce timeout for B&P Containers job from 65 to 15 minutes ([f610944](https://github.com/inference-gateway/coder/commit/f6109443895e59249226061aa62ea5645b99677c))
+* Update Ubuntu version in release workflow to 24.04 and add arm64 runner ([41e2c5f](https://github.com/inference-gateway/coder/commit/41e2c5fa2baa3eb4042697cd036a302d07fa3f84))
+
+## [0.1.4-rc.1](https://github.com/inference-gateway/coder/compare/0.1.3...0.1.4-rc.1) (2025-02-16)
+
+### ♻️ Improvements
+
+* **docker:** Simplify Dockerfile and update build process with Alpine base image ([ccf6275](https://github.com/inference-gateway/coder/commit/ccf627589983850cd1937ba33266b742fff41afa))
+
+### 🐛 Bug Fixes
+
+* **docker-compose:** Update coder service image version to 0.1.3 with alpine base image ([c2d26b0](https://github.com/inference-gateway/coder/commit/c2d26b0af2a1c29fbcb616baa0162d5efc2e2662))
+* **docker:** Add git and curl to the container image for enhanced functionality ([b21b49b](https://github.com/inference-gateway/coder/commit/b21b49bf98497fe52729bb6f834d9bf1cd44596f))
+
+### 👷 CI
+
+* Enhance GitHub Actions workflow for building and pushing Docker containers with Rust tools support and minimal ones ([3a50346](https://github.com/inference-gateway/coder/commit/3a5034662619017c5bb7a3fa9419b23ae4081320))
+
 ## [0.1.3](https://github.com/inference-gateway/coder/compare/0.1.2...0.1.3) (2025-02-15)
 
 ### 🐛 Bug Fixes

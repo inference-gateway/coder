@@ -1,17 +1,12 @@
 services:
   coder:
-    image: ghcr.io/inference-gateway/coder:0.1.3
-    user: 1000:1000
+    image: coder:latest
     working_dir: /app
     volumes:
       - repository:/app
     env_file:
       - .env
-    entrypoint: ""
     command: |
-      apk add cargo
-      cargo install rustfmt
-      cargo install clippy
       coder init &&
       coder index &&
       coder fix --issue=${CODER_ISSUE}
