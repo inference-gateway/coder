@@ -296,22 +296,22 @@ jobs:
             org.opencontainers.image.licenses=MIT
           target: minimal
 
-      - name: B&P Rust Container
-        if: matrix.variant == 'rust'
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          platforms: ${{ matrix.arch_platform }}
-          push: true
-          cache-from: type=gha,scope=rust-${{ matrix.target }}
-          cache-to: type=gha,mode=max,scope=rust-${{ matrix.target }}
-          tags: |
-            ghcr.io/${{ github.repository_owner }}/coder:rust
-            ghcr.io/${{ github.repository_owner }}/coder:rust-${{ needs.github_release.outputs.new_release_version }}
-          build-args: |
-            TARGET_ARCH=${{ matrix.target }}
-          labels: |
-            org.opencontainers.image.source=https://github.com/inference-gateway/coder
-            org.opencontainers.image.description=The AI-Powered Coder
-            org.opencontainers.image.licenses=MIT
-          target: rust
+      # - name: B&P Rust Container
+      #   if: matrix.variant == 'rust'
+      #   uses: docker/build-push-action@v6
+      #   with:
+      #     context: .
+      #     platforms: ${{ matrix.arch_platform }}
+      #     push: true
+      #     cache-from: type=gha,scope=rust-${{ matrix.target }}
+      #     cache-to: type=gha,mode=max,scope=rust-${{ matrix.target }}
+      #     tags: |
+      #       ghcr.io/${{ github.repository_owner }}/coder:rust
+      #       ghcr.io/${{ github.repository_owner }}/coder:rust-${{ needs.github_release.outputs.new_release_version }}
+      #     build-args: |
+      #       TARGET_ARCH=${{ matrix.target }}
+      #     labels: |
+      #       org.opencontainers.image.source=https://github.com/inference-gateway/coder
+      #       org.opencontainers.image.description=The AI-Powered Coder
+      #       org.opencontainers.image.licenses=MIT
+      #     target: rust
