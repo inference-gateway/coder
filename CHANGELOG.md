@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.6](https://github.com/inference-gateway/coder/compare/0.1.4-rc.5...0.1.4-rc.6) (2025-02-17)
+
+### 👷 CI
+
+* Comment out QEMU setup step in release workflow ([4a09c1a](https://github.com/inference-gateway/coder/commit/4a09c1a2d5c3a7d441c65d2ba7bff8ecc184a0ce))
+* Comment out temporarily build_binaries job in release workflow to speed things up ([4d00ad3](https://github.com/inference-gateway/coder/commit/4d00ad3ecd9644b57a2218030681c99a87b3c416))
+* Remove conditional check for minimal variant in B&P Minimal Container job ([ca6f85f](https://github.com/inference-gateway/coder/commit/ca6f85fc5ba7d85c13f113c15709b832ded25615))
+* Rename build_container job to build_containers and update commented job name ([1bdf885](https://github.com/inference-gateway/coder/commit/1bdf885cd539045a0cdf816d5672b021bb575c3b))
+* Split language specific containers with tools to a separate job and comment it out ([fd20e5b](https://github.com/inference-gateway/coder/commit/fd20e5b0c5e6781706222b59bd99c268ea441a35))
+
 ## [0.1.4-rc.5](https://github.com/inference-gateway/coder/compare/0.1.4-rc.4...0.1.4-rc.5) (2025-02-17)
 
 ### 👷 CI
