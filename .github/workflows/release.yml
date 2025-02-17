@@ -264,7 +264,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: B&P Minimal Container
-        if: matrix.variant == 'minimal'
         uses: docker/build-push-action@v6
         with:
           context: .
