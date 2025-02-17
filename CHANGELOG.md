@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.3](https://github.com/inference-gateway/coder/compare/0.1.4-rc.2...0.1.4-rc.3) (2025-02-17)
+
+### 👷 CI
+
+* Change ARM64 jobs to use self-hosted runners in release workflow ([274d375](https://github.com/inference-gateway/coder/commit/274d375bdb2d888de200706001e50986600e4919))
+
 ## [0.1.4-rc.2](https://github.com/inference-gateway/coder/compare/0.1.4-rc.1...0.1.4-rc.2) (2025-02-16)
 
 ### ♻️ Improvements
