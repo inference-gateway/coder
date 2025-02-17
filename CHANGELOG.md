@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.5](https://github.com/inference-gateway/coder/compare/0.1.4-rc.4...0.1.4-rc.5) (2025-02-17)
+
+### 👷 CI
+
+* Comment out Build and Push Rust Container job in release workflow ([8e8af76](https://github.com/inference-gateway/coder/commit/8e8af765f3d6506891a4482eafbef0bd557e419b))
+
 ## [0.1.4-rc.4](https://github.com/inference-gateway/coder/compare/0.1.4-rc.3...0.1.4-rc.4) (2025-02-17)
 
 ### 👷 CI
