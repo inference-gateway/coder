@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.10](https://github.com/inference-gateway/coder/compare/0.1.4-rc.9...0.1.4-rc.10) (2025-02-19)
+
+### 👷 CI
+
+* Optimize Dockerfile by removing redundant apk update commands ([3756ab1](https://github.com/inference-gateway/coder/commit/3756ab1cb406fb901662bfad70a121660e9eaa0b))
+
 ## [0.1.4-rc.9](https://github.com/inference-gateway/coder/compare/0.1.4-rc.8...0.1.4-rc.9) (2025-02-19)
 
 ### 👷 CI
