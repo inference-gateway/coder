@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.8](https://github.com/inference-gateway/coder/compare/0.1.4-rc.7...0.1.4-rc.8) (2025-02-19)
+
+### 👷 CI
+
+* Increase timeout for B&P Containers job in release workflow ([8568c67](https://github.com/inference-gateway/coder/commit/8568c6744340b52f46543298a973c04e0f945e26))
+
 ## [0.1.4-rc.7](https://github.com/inference-gateway/coder/compare/0.1.4-rc.6...0.1.4-rc.7) (2025-02-19)
 
 ### 👷 CI
