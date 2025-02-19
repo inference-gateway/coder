@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.15](https://github.com/inference-gateway/coder/compare/0.1.4-rc.14...0.1.4-rc.15) (2025-02-19)
+
+### 👷 CI
+
+* Update release workflow to use a different action also for kaniko, maybe this one is better maintained ([829616f](https://github.com/inference-gateway/coder/commit/829616fe0619a66f13b5dbeb7db5bf48d63373b3))
+
 ## [0.1.4-rc.14](https://github.com/inference-gateway/coder/compare/0.1.4-rc.13...0.1.4-rc.14) (2025-02-19)
 
 ### 👷 CI
