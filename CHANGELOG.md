@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.22](https://github.com/inference-gateway/coder/compare/0.1.4-rc.21...0.1.4-rc.22) (2025-02-19)
+
+### 👷 CI
+
+* Test something - kaniko suppose to fetch the repo and build ([7e65385](https://github.com/inference-gateway/coder/commit/7e653852461f7de06485efb3d28a6cb8f7fd5b86))
+
 ## [0.1.4-rc.21](https://github.com/inference-gateway/coder/compare/0.1.4-rc.20...0.1.4-rc.21) (2025-02-19)
 
 ### 👷 CI
