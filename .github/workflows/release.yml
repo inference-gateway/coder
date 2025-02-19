@@ -228,17 +228,12 @@ jobs:
         include:
           - os: ubuntu-24.04
             target: x86_64-unknown-linux-musl
-            arch_platform: linux/amd64
           # - os:
           #     - self-hosted
           #     - k8s
           #     - ubuntu-22.04-arm64
           #   target: aarch64-unknown-linux-musl
-          #   arch_platform: linux/arm64
     runs-on: ${{ matrix.os }}
-    container:
-      image: gcr.io/kaniko-project/executor:v1.23.2
-      options: --platform=${{ matrix.arch_platform }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -251,26 +246,24 @@ jobs:
           echo "Updating to version ${{ needs.github_release.outputs.new_release_version }}"
           sed -i "s/^version = .*/version = \"${{ needs.github_release.outputs.new_release_version }}\"/" Cargo.toml
 
-      - name: Configure GHCR auth
-        run: |
-          mkdir -p /kaniko/.docker
-          echo "{\"auths\":{\"ghcr.io\":{\"auth\":\"$(echo -n "${{ github.repository_owner }}:${{ secrets.GITHUB_TOKEN }}" | base64)\"}}}" > /kaniko/.docker/config.json
-
-      - name: Build and Push
-        run: |
-          /kaniko/executor \
-            --context ${{ github.workspace }} \
-            --dockerfile ${{ github.workspace }}/Dockerfile \
-            --destination ghcr.io/${{ github.repository_owner }}/coder:latest \
-            --destination ghcr.io/${{ github.repository_owner }}/coder:minimal \
-            --destination ghcr.io/${{ github.repository_owner }}/coder:minimal-${{ needs.github_release.outputs.new_release_version }} \
-            --build-arg TARGET_ARCH=${{ matrix.target }} \
-            --label org.opencontainers.image.source=https://github.com/inference-gateway/coder \
-            --label org.opencontainers.image.description="The AI-Powered Coder" \
-            --label org.opencontainers.image.licenses=MIT \
-            --cache=true \
-            --cache-repo ghcr.io/${{ github.repository_owner }}/coder/cache \
-            --target minimal
+      - name: Build and push
+        uses: aevea/action-kaniko@master
+        with:
+          image: coder
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ghcr.io
+          build_args: TARGET_ARCH=${{ matrix.target }}
+          cache: true
+          cache_registry: ghcr.io/${{ github.repository_owner }}/coder/cache
+          extra_args: |
+            --target=minimal
+            --destination=ghcr.io/${{ github.repository_owner }}/coder:latest
+            --destination=ghcr.io/${{ github.repository_owner }}/coder:minimal
+            --destination=ghcr.io/${{ github.repository_owner }}/coder:minimal-${{ needs.github_release.outputs.new_release_version }}
+            --label=org.opencontainers.image.source=https://github.com/inference-gateway/coder
+            --label=org.opencontainers.image.description="The AI-Powered Coder"
+            --label=org.opencontainers.image.licenses=MIT
 
   # build_containers_with_tools:
   #   name: B&P Language specific Containers
