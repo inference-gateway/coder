@@ -278,8 +278,7 @@ jobs:
             --destination=ghcr.io/${{ github.repository_owner }}/coder:minimal-${{ needs.github_release.outputs.new_release_version }} \
             --build-arg=TARGET_ARCH=${{ matrix.target }} \
             --cache=true \
-            --cache-repo=ghcr.io/${{ github.repository_owner }}/coder/cache \
-            --verbosity=info
+            --cache-repo=ghcr.io/${{ github.repository_owner }}/coder/cache
 
   # build_containers_with_tools:
   #   name: B&P Language specific Containers
