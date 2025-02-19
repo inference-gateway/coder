@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.17](https://github.com/inference-gateway/coder/compare/0.1.4-rc.16...0.1.4-rc.17) (2025-02-19)
+
+### 👷 CI
+
+* Update release workflow to use Ubuntu 24.04 container and adjust matrix configuration ([20ffe22](https://github.com/inference-gateway/coder/commit/20ffe2257497873935f8e685515cb0ec54f869dd))
+
 ## [0.1.4-rc.16](https://github.com/inference-gateway/coder/compare/0.1.4-rc.15...0.1.4-rc.16) (2025-02-19)
 
 ### 👷 CI
