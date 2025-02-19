@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.18](https://github.com/inference-gateway/coder/compare/0.1.4-rc.17...0.1.4-rc.18) (2025-02-19)
+
+### 👷 CI
+
+* Small fix - update container syntax in release workflow to use proper image format ([5c44837](https://github.com/inference-gateway/coder/commit/5c448376d45b35f080345c5ac26dcafc665aa407))
+
 ## [0.1.4-rc.17](https://github.com/inference-gateway/coder/compare/0.1.4-rc.16...0.1.4-rc.17) (2025-02-19)
 
 ### 👷 CI
