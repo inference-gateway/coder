@@ -246,12 +246,14 @@ jobs:
           echo "Updating to version ${{ needs.github_release.outputs.new_release_version }}"
           sed -i "s/^version = .*/version = \"${{ needs.github_release.outputs.new_release_version }}\"/" Cargo.toml
 
-      - uses: docker/metadata-action@v5
+      - name: Fetch metadata for container build
+        uses: docker/metadata-action@v5
         id: metadata
         with:
           images: ghcr.io/${{ github.repository }}
 
-      - uses: docker/login-action@v3
+      - name: Authenticate with GHCR
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -269,10 +271,6 @@ jobs:
           target: minimal
           build-args: |
             TARGET_ARCH=${{ matrix.target }}
-          labels: |
-            org.opencontainers.image.source=https://github.com/inference-gateway/coder
-            org.opencontainers.image.description=The AI-Powered Coder
-            org.opencontainers.image.licenses=MIT
           cache: true
           cache-repository: ghcr.io/${{ github.repository_owner }}/coder/cache
 
