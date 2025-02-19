@@ -219,7 +219,7 @@ jobs:
     name: B&P Containers
     needs: github_release
     if: needs.github_release.outputs.new_release_published == 'true'
-    timeout-minutes: 15
+    timeout-minutes: 30
     permissions:
       packages: write
     strategy:
