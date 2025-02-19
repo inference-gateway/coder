@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.24](https://github.com/inference-gateway/coder/compare/0.1.4-rc.23...0.1.4-rc.24) (2025-02-19)
+
+### 👷 CI
+
+* Clean up release workflow by removing commented-out steps and simplifying context for Kaniko build - always take the latest of the ref ([9d50606](https://github.com/inference-gateway/coder/commit/9d5060645016547e9019097341e5634661c41a54))
+* Refactor Kaniko build step and Dockerfile for improved environment variable usage and caching ([c3c5296](https://github.com/inference-gateway/coder/commit/c3c5296cdba356ef8661fe072d34811fc0946337))
+
 ## [0.1.4-rc.23](https://github.com/inference-gateway/coder/compare/0.1.4-rc.22...0.1.4-rc.23) (2025-02-19)
 
 ### 👷 CI
