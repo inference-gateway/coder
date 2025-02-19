@@ -233,7 +233,7 @@ jobs:
               - k8s
             target: aarch64-unknown-linux-musl
     container:
-      image: ubuntu:24.04
+      image: gcr.io/kaniko-project/executor:v1.23.2
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
