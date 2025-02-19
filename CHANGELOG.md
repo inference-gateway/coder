@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.11](https://github.com/inference-gateway/coder/compare/0.1.4-rc.10...0.1.4-rc.11) (2025-02-19)
+
+### 👷 CI
+
+* Comment out temporarily the other runner, just to see if it works as expected ([a01a790](https://github.com/inference-gateway/coder/commit/a01a790fa3152e29cfd67075bd3ac01439ebd077))
+* Update release workflow to use Kaniko for building and pushing OCI images ([6a2b930](https://github.com/inference-gateway/coder/commit/6a2b930918b30b353f552e63c75c8424d5e2cef6))
+
 ## [0.1.4-rc.10](https://github.com/inference-gateway/coder/compare/0.1.4-rc.9...0.1.4-rc.10) (2025-02-19)
 
 ### 👷 CI
