@@ -237,22 +237,22 @@ jobs:
       options: --entrypoint=""
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref }}
-          persist-credentials: false
+      # - name: Checkout repository
+      #   uses: actions/checkout@v4
+      #   with:
+      #     ref: ${{ github.ref }}
+      #     persist-credentials: false
 
-      - name: Update Cargo.toml version
-        run: |
-          echo "Updating to version ${{ needs.github_release.outputs.new_release_version }}"
-          sed -i "s/^version = .*/version = \"${{ needs.github_release.outputs.new_release_version }}\"/" Cargo.toml
+      # - name: Update Cargo.toml version
+      #   run: |
+      #     echo "Updating to version ${{ needs.github_release.outputs.new_release_version }}"
+      #     sed -i "s/^version = .*/version = \"${{ needs.github_release.outputs.new_release_version }}\"/" Cargo.toml
 
-      - name: Fetch metadata for container build
-        uses: docker/metadata-action@v5
-        id: metadata
-        with:
-          images: ghcr.io/${{ github.repository }}
+      # - name: Fetch metadata for container build
+      #   uses: docker/metadata-action@v5
+      #   id: metadata
+      #   with:
+      #     images: ghcr.io/${{ github.repository }}
 
       - name: Authenticate with GHCR
         run: |
@@ -270,7 +270,7 @@ jobs:
       - name: Build and push
         run: |
           /kaniko/executor \
-            --context="${{ github.workspace }}" \
+            --context="${{ github.repositoryUrl }}#${{ github.ref }}#${{ github.sha }}" \
             --dockerfile="${{ github.workspace }}/Dockerfile" \
             --target=minimal \
             --destination=ghcr.io/${{ github.repository_owner }}/coder:latest \
