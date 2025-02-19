@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.14](https://github.com/inference-gateway/coder/compare/0.1.4-rc.13...0.1.4-rc.14) (2025-02-19)
+
+### 👷 CI
+
+* Fix syntax for build-arg in release workflow ([0dd8dbf](https://github.com/inference-gateway/coder/commit/0dd8dbf095386cd2da1374af0e3e2b13348965b9))
+
 ## [0.1.4-rc.13](https://github.com/inference-gateway/coder/compare/0.1.4-rc.12...0.1.4-rc.13) (2025-02-19)
 
 ### 👷 CI
