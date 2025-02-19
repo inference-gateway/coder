@@ -261,12 +261,12 @@ jobs:
             --context="${{ github.repositoryUrl }}#${{ github.ref }}" \
             --dockerfile=Dockerfile \
             --target=minimal \
-            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/{{ env.REPOSITORY_NAME }}:latest \
-            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/{{ env.REPOSITORY_NAME }}:minimal \
-            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/{{ env.REPOSITORY_NAME }}:minimal-${{ env.VERSION }} \
+            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:latest \
+            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:minimal \
+            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:minimal-${{ env.VERSION }} \
             --build-arg=TARGET_ARCH=${{ matrix.target }} \
             --cache=true \
-            --cache-repo=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/{{ env.REPOSITORY_NAME }}/cache
+            --cache-repo=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}/cache
 
   # build_containers_with_tools:
   #   name: B&P Language specific Containers
