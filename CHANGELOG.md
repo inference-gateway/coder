@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.16](https://github.com/inference-gateway/coder/compare/0.1.4-rc.15...0.1.4-rc.16) (2025-02-19)
+
+### 👷 CI
+
+* Test the same job in Kubernetes ([ac38ae3](https://github.com/inference-gateway/coder/commit/ac38ae3e1cfe8e903be8da82e88599cf38d86dea))
+
+### 🔧 Miscellaneous
+
+* **cleanup:** Cleanup, those labels are redundant because they now fetched from action metadata directly from github repo ([1c2415f](https://github.com/inference-gateway/coder/commit/1c2415fca8ce03b30b1cbf2909147839fdd0f417))
+
 ## [0.1.4-rc.15](https://github.com/inference-gateway/coder/compare/0.1.4-rc.14...0.1.4-rc.15) (2025-02-19)
 
 ### 👷 CI
