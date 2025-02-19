@@ -6,9 +6,9 @@ ENV ZSH_CUSTOM=/home/vscode/.oh-my-zsh/custom \
 RUN apt-get update && \
     # Install nodejs and npm
     curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && \
+    apt-get install -y nodejs && \
      # Install Task
     curl -s https://taskfile.dev/install.sh | sh -s -- -b /usr/local/bin ${TASK_VERSION} && \
-    apt-get install -y nodejs && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
