@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.9](https://github.com/inference-gateway/coder/compare/0.1.4-rc.8...0.1.4-rc.9) (2025-02-19)
+
+### 👷 CI
+
+* Update Dockerfile to use rust:alpine as base image and streamline build process ([8f02226](https://github.com/inference-gateway/coder/commit/8f022262d03d8e677f451e239056314e26b6cd5c))
+
 ## [0.1.4-rc.8](https://github.com/inference-gateway/coder/compare/0.1.4-rc.7...0.1.4-rc.8) (2025-02-19)
 
 ### 👷 CI

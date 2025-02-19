@@ -1,6 +1,6 @@
 [package]
 name = "coder"
-version = "0.1.4-rc.8"
+version = "0.1.4-rc.9"
 edition = "2021"
 
 [dependencies]
