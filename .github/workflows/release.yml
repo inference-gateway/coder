@@ -271,7 +271,7 @@ jobs:
         run: |
           /kaniko/executor \
             --context="${{ github.repositoryUrl }}#${{ github.ref }}#${{ github.sha }}" \
-            --dockerfile="${{ github.workspace }}/Dockerfile" \
+            --dockerfile=Dockerfile \
             --target=minimal \
             --destination=ghcr.io/${{ github.repository_owner }}/coder:latest \
             --destination=ghcr.io/${{ github.repository_owner }}/coder:minimal \
