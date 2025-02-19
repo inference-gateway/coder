@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.25](https://github.com/inference-gateway/coder/compare/0.1.4-rc.24...0.1.4-rc.25) (2025-02-19)
+
+### 👷 CI
+
+* Small fix - forgot the $ sign ([420e3e4](https://github.com/inference-gateway/coder/commit/420e3e4108ac73a06da79a15edc17e2630b2fabe))
+
 ## [0.1.4-rc.24](https://github.com/inference-gateway/coder/compare/0.1.4-rc.23...0.1.4-rc.24) (2025-02-19)
 
 ### 👷 CI
