@@ -251,17 +251,22 @@ jobs:
           EOF
 
       - name: Build and push
+        env:
+          REPOSITORY_NAME: coder
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+          CONTAINER_REGISTRY: ghcr.io
+          VERSION: ${{ needs.github_release.outputs.new_release_version }}
         run: |
           /kaniko/executor \
             --context="${{ github.repositoryUrl }}#${{ github.ref }}" \
             --dockerfile=Dockerfile \
             --target=minimal \
-            --destination=ghcr.io/${{ github.repository_owner }}/coder:latest \
-            --destination=ghcr.io/${{ github.repository_owner }}/coder:minimal \
-            --destination=ghcr.io/${{ github.repository_owner }}/coder:minimal-${{ needs.github_release.outputs.new_release_version }} \
+            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/{{ env.REPOSITORY_NAME }}:latest \
+            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/{{ env.REPOSITORY_NAME }}:minimal \
+            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/{{ env.REPOSITORY_NAME }}:minimal-${{ env.VERSION }} \
             --build-arg=TARGET_ARCH=${{ matrix.target }} \
             --cache=true \
-            --cache-repo=ghcr.io/${{ github.repository_owner }}/coder/cache
+            --cache-repo=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/{{ env.REPOSITORY_NAME }}/cache
 
   # build_containers_with_tools:
   #   name: B&P Language specific Containers

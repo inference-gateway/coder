@@ -26,12 +26,22 @@ RUN apk add --no-cache \
     /tmp/* \
     /var/tmp/*
 
+# Setup rust target
 WORKDIR /app
+RUN rustup target add ${TARGET_ARCH}
 
+# Cache dependencies
 COPY Cargo.toml Cargo.lock ./
-COPY . .
+COPY src ./src
+RUN cargo build --release --no-default-features --target ${TARGET_ARCH} && \
+    rm -rf target/${TARGET_ARCH}/release/.fingerprint/coder-* \
+           target/${TARGET_ARCH}/release/deps/coder-* \
+           target/${TARGET_ARCH}/release/coder*
 
-RUN rustup target add ${TARGET_ARCH} && \
+# Build the actual binary
+COPY . .
+RUN --mount=type=cache,target=/root/.cargo/registry \
+    --mount=type=cache,target=/root/.cargo/git \
     cargo build --release --no-default-features --target ${TARGET_ARCH}
 
 FROM alpine:3.21.3 AS common
