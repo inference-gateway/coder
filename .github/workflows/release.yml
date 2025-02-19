@@ -232,7 +232,8 @@ jobs:
               - self-hosted
               - k8s
             target: aarch64-unknown-linux-musl
-    container: ubuntu:24.04
+    container:
+      image: ubuntu:24.04
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -253,11 +254,17 @@ jobs:
           images: ghcr.io/${{ github.repository }}
 
       - name: Authenticate with GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p /kaniko/.docker
+          cat << EOF > /kaniko/.docker/config.json
+          {
+            "auths": {
+              "ghcr.io": {
+                "auth": "$(echo -n ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} | base64)"
+              }
+            }
+          }
+          EOF
 
       - name: Build and push
         uses: int128/kaniko-action@v1
