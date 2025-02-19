@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.19](https://github.com/inference-gateway/coder/compare/0.1.4-rc.18...0.1.4-rc.19) (2025-02-19)
+
+### 👷 CI
+
+* Reduce the reliance on docker ([1a1ee02](https://github.com/inference-gateway/coder/commit/1a1ee029516eefdda4b6d39d233483b9b4df0d56))
+
 ## [0.1.4-rc.18](https://github.com/inference-gateway/coder/compare/0.1.4-rc.17...0.1.4-rc.18) (2025-02-19)
 
 ### 👷 CI
