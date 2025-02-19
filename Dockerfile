@@ -1,6 +1,6 @@
 
 # Possible args:
-ARG TARGET_ARCH=aarch64-unknown-linux-musl
+# ARG TARGET_ARCH=aarch64-unknown-linux-musl
 # ARG TARGET_ARCH=x86_64-unknown-linux-musl
 
 FROM rust:alpine3.21 AS build

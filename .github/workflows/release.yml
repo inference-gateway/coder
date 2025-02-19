@@ -257,7 +257,7 @@ jobs:
           cache_registry: ghcr.io/${{ github.repository_owner }}/coder/cache
           extra_args: |
             --target=minimal
-            --build-arg TARGET_ARCH=${{ matrix.target }}
+            --build-arg=TARGET_ARCH=${{ matrix.target }}
             --destination=ghcr.io/${{ github.repository_owner }}/coder:latest
             --destination=ghcr.io/${{ github.repository_owner }}/coder:minimal
             --destination=ghcr.io/${{ github.repository_owner }}/coder:minimal-${{ needs.github_release.outputs.new_release_version }}
