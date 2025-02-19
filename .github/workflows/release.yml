@@ -228,11 +228,11 @@ jobs:
         include:
           - os: ubuntu-24.04
             target: x86_64-unknown-linux-musl
-          # - os:
-          #     - self-hosted
-          #     - k8s
-          #     - ubuntu-22.04-arm64
-          #   target: aarch64-unknown-linux-musl
+          - os:
+              - self-hosted
+              - k8s
+              - ubuntu-22.04-arm64
+            target: aarch64-unknown-linux-musl
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
