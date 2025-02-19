@@ -3,7 +3,7 @@
 ARG TARGET_ARCH=aarch64-unknown-linux-musl
 # ARG TARGET_ARCH=x86_64-unknown-linux-musl
 
-FROM alpine:3.21.3 AS build
+FROM rust:alpine3.21 AS build
 ARG TARGET_ARCH
 ENV CC=clang \
     AR=llvm-ar \
@@ -13,45 +13,39 @@ ENV CC=clang \
     PKG_CONFIG_ALLOW_CROSS=1
 
 RUN apk add --update --no-cache \
-        make \
-        perl \
-        file \
-        musl-dev \
-        clang \
-        llvm \
-        gcc \
-        openssl-dev \
-        pkgconfig \
-        rustup \
+    make \
+    perl \
+    file \
+    musl-dev \
+    clang \
+    llvm \
+    openssl-dev \
+    pkgconfig \
     && rm -rf \
-        /var/cache/apk/* \
-        /tmp/* \
-        /var/tmp/* \
-    && rustup-init -y \
-        --no-modify-path \
-        --profile minimal \
-        --default-toolchain stable \
-        --target ${TARGET_ARCH}
+    /var/cache/apk/* \
+    /tmp/* \
+    /var/tmp/*
 
 WORKDIR /app
 
 COPY Cargo.toml Cargo.lock ./
 COPY . .
 
-RUN cargo build --release --no-default-features --target ${TARGET_ARCH}
+RUN rustup target add ${TARGET_ARCH} && \
+    cargo build --release --no-default-features --target ${TARGET_ARCH}
 
 FROM alpine:3.21.3 AS common
 RUN apk add --update --no-cache \
-        ca-certificates \
-        git \
-        curl \
-        libgcc \
+    ca-certificates \
+    git \
+    curl \
+    libgcc \
     && addgroup -S -g 1001 coder \
     && adduser -S -G coder -u 1001 -h /home/coder -s /bin/sh -g "Coder user" coder \
     && rm -rf \
-        /var/cache/apk/* \
-        /tmp/* \
-        /var/tmp/*
+    /var/cache/apk/* \
+    /tmp/* \
+    /var/tmp/*
 
 FROM common AS rust
 ARG TARGET_ARCH
@@ -61,11 +55,11 @@ ENV PATH="/home/coder/.cargo/bin:${PATH}" \
 RUN apk add --update --no-cache \
     rustup && \
     rustup-init -y \
-        --no-modify-path \
-        --profile minimal \
-        --default-toolchain stable \
-        --target ${TARGET_ARCH} \
-        --component rustfmt clippy \
+    --no-modify-path \
+    --profile minimal \
+    --default-toolchain stable \
+    --target ${TARGET_ARCH} \
+    --component rustfmt clippy \
     && chown -R coder:coder /home/coder/.cargo /home/coder/.rustup
 COPY --from=build --chown=coder:coder /app/target/${TARGET_ARCH}/release/coder /usr/local/bin/coder
 USER coder
