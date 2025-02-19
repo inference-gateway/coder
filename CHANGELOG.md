@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.20](https://github.com/inference-gateway/coder/compare/0.1.4-rc.19...0.1.4-rc.20) (2025-02-19)
+
+### 👷 CI
+
+* Update container image in release workflow to use Kaniko executor ([d10ac77](https://github.com/inference-gateway/coder/commit/d10ac77fb4f62e04cfcda03aa98b69bea71bbf01))
+* Use directly the container image kaniko and execute the kaniko binary to build an OCI and push it to the container registry ([68e6474](https://github.com/inference-gateway/coder/commit/68e64745475a57fa85e44699470a1ea7b1310086))
+
 ## [0.1.4-rc.19](https://github.com/inference-gateway/coder/compare/0.1.4-rc.18...0.1.4-rc.19) (2025-02-19)
 
 ### 👷 CI
