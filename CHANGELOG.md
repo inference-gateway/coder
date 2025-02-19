@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.21](https://github.com/inference-gateway/coder/compare/0.1.4-rc.20...0.1.4-rc.21) (2025-02-19)
+
+### 👷 CI
+
+* Remove explicit verbosity, use default ([5028cff](https://github.com/inference-gateway/coder/commit/5028cffb5049826ef1a873297a80c166e614ae73))
+* Update Kaniko executor image to use debug version for troubleshooting ([fee3e2d](https://github.com/inference-gateway/coder/commit/fee3e2db285a48f3deb87ee3a46ef36726ca2daf))
+
 ## [0.1.4-rc.20](https://github.com/inference-gateway/coder/compare/0.1.4-rc.19...0.1.4-rc.20) (2025-02-19)
 
 ### 👷 CI
