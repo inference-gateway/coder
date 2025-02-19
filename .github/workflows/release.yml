@@ -246,24 +246,35 @@ jobs:
           echo "Updating to version ${{ needs.github_release.outputs.new_release_version }}"
           sed -i "s/^version = .*/version = \"${{ needs.github_release.outputs.new_release_version }}\"/" Cargo.toml
 
-      - name: Build and push
-        uses: aevea/action-kaniko@master
+      - uses: docker/metadata-action@v5
+        id: metadata
         with:
-          image: coder
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          images: ghcr.io/${{ github.repository }}
+
+      - uses: docker/login-action@v3
+        with:
           registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: int128/kaniko-action@v1
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/coder:latest
+            ghcr.io/${{ github.repository_owner }}/coder:minimal
+            ghcr.io/${{ github.repository_owner }}/coder:minimal-${{ needs.github_release.outputs.new_release_version }}
+          target: minimal
+          build-args: |
+            TARGET_ARCH=${{ matrix.target }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/inference-gateway/coder
+            org.opencontainers.image.description=The AI-Powered Coder
+            org.opencontainers.image.licenses=MIT
           cache: true
-          cache_registry: ghcr.io/${{ github.repository_owner }}/coder/cache
-          extra_args: |
-            --target=minimal
-            --build-arg=TARGET_ARCH=${{ matrix.target }}
-            --destination=ghcr.io/${{ github.repository_owner }}/coder:latest
-            --destination=ghcr.io/${{ github.repository_owner }}/coder:minimal
-            --destination=ghcr.io/${{ github.repository_owner }}/coder:minimal-${{ needs.github_release.outputs.new_release_version }}
-            --label=org.opencontainers.image.source=https://github.com/inference-gateway/coder
-            --label=org.opencontainers.image.description="The AI-Powered Coder"
-            --label=org.opencontainers.image.licenses=MIT
+          cache-repository: ghcr.io/${{ github.repository_owner }}/coder/cache
 
   # build_containers_with_tools:
   #   name: B&P Language specific Containers
