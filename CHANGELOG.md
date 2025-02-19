@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.13](https://github.com/inference-gateway/coder/compare/0.1.4-rc.12...0.1.4-rc.13) (2025-02-19)
+
+### 👷 CI
+
+* Fix it was targeting the wrong architecture, the option build-args doesn't seems to be available in this Github Action ([b236b67](https://github.com/inference-gateway/coder/commit/b236b6757f17fb368e463deb4b394c2b55b94e3d))
+
+### 🔧 Miscellaneous
+
+* Add GitHub Actions extension to devcontainer configuration ([68eb13b](https://github.com/inference-gateway/coder/commit/68eb13bf3ca6f05128585ac4ab4285404df64d17))
+
 ## [0.1.4-rc.12](https://github.com/inference-gateway/coder/compare/0.1.4-rc.11...0.1.4-rc.12) (2025-02-19)
 
 ### 👷 CI
