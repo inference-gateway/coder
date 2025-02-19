@@ -233,7 +233,7 @@ jobs:
               - k8s
             target: aarch64-unknown-linux-musl
     container:
-      image: gcr.io/kaniko-project/executor:v1.23.2
+      image: gcr.io/kaniko-project/executor:v1.23.2-debug
       options: --entrypoint=""
     runs-on: ${{ matrix.os }}
     steps:
