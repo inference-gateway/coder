@@ -12,7 +12,7 @@ ENV CC=clang \
     PATH="/root/.cargo/bin:${PATH}" \
     PKG_CONFIG_ALLOW_CROSS=1
 
-RUN apk add --update --no-cache \
+RUN apk add --no-cache \
     make \
     perl \
     file \
@@ -35,7 +35,7 @@ RUN rustup target add ${TARGET_ARCH} && \
     cargo build --release --no-default-features --target ${TARGET_ARCH}
 
 FROM alpine:3.21.3 AS common
-RUN apk add --update --no-cache \
+RUN apk add --no-cache \
     ca-certificates \
     git \
     curl \
@@ -52,7 +52,7 @@ ARG TARGET_ARCH
 ENV PATH="/home/coder/.cargo/bin:${PATH}" \
     RUSTUP_HOME="/home/coder/.rustup" \
     CARGO_HOME="/home/coder/.cargo"
-RUN apk add --update --no-cache \
+RUN apk add --no-cache \
     rustup && \
     rustup-init -y \
     --no-modify-path \
