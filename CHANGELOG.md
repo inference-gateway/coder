@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.7](https://github.com/inference-gateway/coder/compare/0.1.4-rc.6...0.1.4-rc.7) (2025-02-19)
+
+### 👷 CI
+
+* Add k8s to the list of OS options in release workflow ([3422a9f](https://github.com/inference-gateway/coder/commit/3422a9fcb82382aa578395006e443a6aa57a5fe6))
+
 ## [0.1.4-rc.6](https://github.com/inference-gateway/coder/compare/0.1.4-rc.5...0.1.4-rc.6) (2025-02-17)
 
 ### 👷 CI
