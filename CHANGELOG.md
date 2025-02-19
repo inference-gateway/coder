@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.23](https://github.com/inference-gateway/coder/compare/0.1.4-rc.22...0.1.4-rc.23) (2025-02-19)
+
+### 👷 CI
+
+* Simplify Dockerfile path in Kaniko executor configuration - it's at the root of the repo ([9739fc2](https://github.com/inference-gateway/coder/commit/9739fc2773a34e3279ff71c0cd1ea8a1247df610))
+
 ## [0.1.4-rc.22](https://github.com/inference-gateway/coder/compare/0.1.4-rc.21...0.1.4-rc.22) (2025-02-19)
 
 ### 👷 CI
