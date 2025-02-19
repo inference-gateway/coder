@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.12](https://github.com/inference-gateway/coder/compare/0.1.4-rc.11...0.1.4-rc.12) (2025-02-19)
+
+### 👷 CI
+
+* Update release workflow to use Kaniko action for building and pushing images ([0a9787b](https://github.com/inference-gateway/coder/commit/0a9787bbdb5f1bc3ff50ee071d791a2b9bd3cd21))
+
+### 🔧 Miscellaneous
+
+* Resort dev containers dependencies ([af95d59](https://github.com/inference-gateway/coder/commit/af95d592f219eae690f065723f2e56f0a8039c5b))
+
 ## [0.1.4-rc.11](https://github.com/inference-gateway/coder/compare/0.1.4-rc.10...0.1.4-rc.11) (2025-02-19)
 
 ### 👷 CI
