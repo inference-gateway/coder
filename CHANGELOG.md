@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.29](https://github.com/inference-gateway/coder/compare/0.1.4-rc.28...0.1.4-rc.29) (2025-02-20)
+
+### 👷 CI
+
+* Comment out metadata fetching step in release workflow ([9ee3a7a](https://github.com/inference-gateway/coder/commit/9ee3a7a851ce20d1acfb0a5f7d385a345029974c))
+
 ## [0.1.4-rc.28](https://github.com/inference-gateway/coder/compare/0.1.4-rc.27...0.1.4-rc.28) (2025-02-20)
 
 ### 👷 CI
