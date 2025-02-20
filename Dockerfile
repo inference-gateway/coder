@@ -3,7 +3,16 @@
 # ARG TARGET_ARCH=aarch64-unknown-linux-musl
 # ARG TARGET_ARCH=x86_64-unknown-linux-musl
 
-FROM rust:alpine3.21 AS build
+FROM rust:alpine3.21 AS chef
+RUN apk --no-cache add musl-dev && \
+    cargo install cargo-chef
+WORKDIR /app
+
+FROM chef AS planner
+COPY . .
+RUN cargo chef prepare --recipe-path recipe.json
+
+FROM chef AS builder
 ARG TARGET_ARCH
 ENV CC=clang \
     AR=llvm-ar \
@@ -26,25 +35,23 @@ RUN apk add --no-cache \
     /tmp/* \
     /var/tmp/*
 
-# Setup rust target
-WORKDIR /app
+# First build dependencies
+COPY --from=planner /app/recipe.json recipe.json
 RUN rustup target add ${TARGET_ARCH}
+RUN cargo chef cook --release --target ${TARGET_ARCH} --recipe-path recipe.json
 
-# Cache dependencies
-COPY Cargo.toml Cargo.lock ./
-COPY src ./src
-RUN cargo build --release --no-default-features --target ${TARGET_ARCH} && \
-    rm -rf target/${TARGET_ARCH}/release/.fingerprint/coder-* \
-           target/${TARGET_ARCH}/release/deps/coder-* \
-           target/${TARGET_ARCH}/release/coder*
-
-# Build the actual binary
+# Then build application
 COPY . .
-RUN --mount=type=cache,target=/root/.cargo/registry \
-    --mount=type=cache,target=/root/.cargo/git \
-    cargo build --release --no-default-features --target ${TARGET_ARCH}
+RUN cargo build --release --target ${TARGET_ARCH}
 
-FROM alpine:3.21.3 AS common
+FROM gcr.io/distroless/static:nonroot AS minimal
+ARG TARGET_ARCH
+COPY --from=builder /app/target/${TARGET_ARCH}/release/coder /coder
+USER nonroot:nonroot
+ENTRYPOINT [ "/coder" ]
+
+FROM alpine:3.21.3 AS coder
+ARG TARGET_ARCH
 RUN apk add --no-cache \
     ca-certificates \
     git \
@@ -56,9 +63,9 @@ RUN apk add --no-cache \
     /var/cache/apk/* \
     /tmp/* \
     /var/tmp/*
+COPY --from=builder --chown=coder:coder /app/target/${TARGET_ARCH}/release/coder /usr/local/bin/coder
 
-FROM common AS rust
-ARG TARGET_ARCH
+FROM coder AS rust
 ENV PATH="/home/coder/.cargo/bin:${PATH}" \
     RUSTUP_HOME="/home/coder/.rustup" \
     CARGO_HOME="/home/coder/.cargo"
@@ -71,13 +78,26 @@ RUN apk add --no-cache \
     --target ${TARGET_ARCH} \
     --component rustfmt clippy \
     && chown -R coder:coder /home/coder/.cargo /home/coder/.rustup
-COPY --from=build --chown=coder:coder /app/target/${TARGET_ARCH}/release/coder /usr/local/bin/coder
 USER coder
 WORKDIR /home/coder
 ENTRYPOINT [ "coder" ]
 
-FROM gcr.io/distroless/static:nonroot AS minimal
-ARG TARGET_ARCH
-COPY --from=build /app/target/${TARGET_ARCH}/release/coder /coder
-USER nonroot:nonroot
-ENTRYPOINT [ "/coder" ]
+FROM coder AS python
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+RUN apk add --no-cache \
+    python3 \
+    py3-pip \
+    py3-flake8 \
+    py3-pytest \
+    py3-mypy \
+    py3-isort \
+    py3-pylint \
+    py3-setuptools \
+    py3-wheel \
+    && pip install --no-cache-dir --break-system-packages \
+    black \
+    && rm -rf /var/cache/apk/* /tmp/* /var/tmp/*
+USER coder
+WORKDIR /home/coder
+ENTRYPOINT [ "coder" ]
