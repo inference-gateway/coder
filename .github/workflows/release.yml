@@ -250,11 +250,11 @@ jobs:
           }
           EOF
 
-      - name: Fetch metadata for container build
-        uses: docker/metadata-action@v5
-        id: metadata
-        with:
-          images: ghcr.io/${{ github.repository }}
+      # - name: Fetch metadata for container build
+      #   uses: docker/metadata-action@v5
+      #   id: metadata
+      #   with:
+      #     images: ghcr.io/${{ github.repository }}
 
       - name: Build and push
         env:
