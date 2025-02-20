@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.27](https://github.com/inference-gateway/coder/compare/0.1.4-rc.26...0.1.4-rc.27) (2025-02-20)
+
+### 👷 CI
+
+* Ok doesn't seems to like it ([bab6254](https://github.com/inference-gateway/coder/commit/bab62548407fb69c58c3910a7de3719a9dedc360))
+
 ## [0.1.4-rc.26](https://github.com/inference-gateway/coder/compare/0.1.4-rc.25...0.1.4-rc.26) (2025-02-20)
 
 ### 👷 CI
