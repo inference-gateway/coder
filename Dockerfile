@@ -22,18 +22,18 @@ ENV CC=clang \
     PKG_CONFIG_ALLOW_CROSS=1
 
 RUN apk add --no-cache \
-    make \
-    perl \
-    file \
-    musl-dev \
-    clang \
-    llvm \
-    openssl-dev \
-    pkgconfig \
-    && rm -rf \
-    /var/cache/apk/* \
-    /tmp/* \
-    /var/tmp/*
+        make \
+        perl \
+        file \
+        musl-dev \
+        clang \
+        llvm \
+        openssl-dev \
+        pkgconfig && \
+    rm -rf \
+        /var/cache/apk/* \
+        /tmp/* \
+        /var/tmp/*
 
 # First build dependencies
 COPY --from=planner /app/recipe.json recipe.json
@@ -53,16 +53,16 @@ ENTRYPOINT [ "/coder" ]
 FROM alpine:3.21.3 AS coder
 ARG TARGET_ARCH
 RUN apk add --no-cache \
-    ca-certificates \
-    git \
-    curl \
-    libgcc \
-    && addgroup -S -g 1001 coder \
-    && adduser -S -G coder -u 1001 -h /home/coder -s /bin/sh -g "Coder user" coder \
-    && rm -rf \
-    /var/cache/apk/* \
-    /tmp/* \
-    /var/tmp/*
+        ca-certificates \
+        git \
+        curl \
+        libgcc && \
+    addgroup -S -g 1001 coder && \
+    adduser -S -G coder -u 1001 -h /home/coder -s /bin/sh -g "Coder user" coder && \
+    rm -rf \
+        /var/cache/apk/* \
+        /tmp/* \
+        /var/tmp/*
 COPY --from=builder --chown=coder:coder /app/target/${TARGET_ARCH}/release/coder /usr/local/bin/coder
 
 FROM coder AS rust
@@ -70,14 +70,16 @@ ENV PATH="/home/coder/.cargo/bin:${PATH}" \
     RUSTUP_HOME="/home/coder/.rustup" \
     CARGO_HOME="/home/coder/.cargo"
 RUN apk add --no-cache \
-    rustup && \
+        rustup && \
     rustup-init -y \
-    --no-modify-path \
-    --profile minimal \
-    --default-toolchain stable \
-    --target ${TARGET_ARCH} \
-    --component rustfmt clippy \
-    && chown -R coder:coder /home/coder/.cargo /home/coder/.rustup
+        --no-modify-path \
+        --profile minimal \
+        --default-toolchain stable \
+        --target ${TARGET_ARCH} \
+        --component rustfmt clippy && \
+    chown -R coder:coder \
+        /home/coder/.cargo \
+        /home/coder/.rustup
 USER coder
 WORKDIR /home/coder
 ENTRYPOINT [ "coder" ]
@@ -86,18 +88,21 @@ FROM coder AS python
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 RUN apk add --no-cache \
-    python3 \
-    py3-pip \
-    py3-flake8 \
-    py3-pytest \
-    py3-mypy \
-    py3-isort \
-    py3-pylint \
-    py3-setuptools \
-    py3-wheel \
-    && pip install --no-cache-dir --break-system-packages \
-    black \
-    && rm -rf /var/cache/apk/* /tmp/* /var/tmp/*
+        python3 \
+        py3-pip \
+        py3-flake8 \
+        py3-pytest \
+        py3-mypy \
+        py3-isort \
+        py3-pylint \
+        py3-setuptools \
+        py3-wheel && \
+    pip install --no-cache-dir --break-system-packages \
+        black && \
+    rm -rf \
+        /var/cache/apk/* \
+        /tmp/* \
+        /var/tmp/*
 USER coder
 WORKDIR /home/coder
 ENTRYPOINT [ "coder" ]
