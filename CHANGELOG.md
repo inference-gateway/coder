@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.26](https://github.com/inference-gateway/coder/compare/0.1.4-rc.25...0.1.4-rc.26) (2025-02-20)
+
+### 👷 CI
+
+* Add metadata fetching step for container build in release workflow ([ff6cb52](https://github.com/inference-gateway/coder/commit/ff6cb5268920bfc08bc2142cc742eb77e2dd3a44))
+* Enable Ubuntu 24.04 with x86_64 target in release workflow ([206598b](https://github.com/inference-gateway/coder/commit/206598bf22bfecf68dfb74971ab4c724e99a81a1))
+* Increase timeout for B&P Containers job in release workflow ([ada0abd](https://github.com/inference-gateway/coder/commit/ada0abd2a1c6eaf3d9ba76b51f4ba57415b20ee9))
+* Refactor Dockerfile to optimize build process with cargo-chef and add Python based coder environment ([30f17d1](https://github.com/inference-gateway/coder/commit/30f17d185266c91a0fbe44926a78c2fc37067bb2))
+* Update Kaniko executor image to v1.23.2 in release workflow, remove debug ([6dc165c](https://github.com/inference-gateway/coder/commit/6dc165ccdd03879c676738d7199710a88b792ba5))
+
+### 🔧 Miscellaneous
+
+* **dockerfile:** Format Dockerfile for improved readability and consistency ([aa5bf99](https://github.com/inference-gateway/coder/commit/aa5bf99dd500a411c0acb71de34ccd186b9c5801))
+* Ensure proper newline at end of Dockerfile for consistency ([20d85ba](https://github.com/inference-gateway/coder/commit/20d85bad1101577ea463347a210f81104ae89575))
+
 ## [0.1.4-rc.25](https://github.com/inference-gateway/coder/compare/0.1.4-rc.24...0.1.4-rc.25) (2025-02-19)
 
 ### 👷 CI
