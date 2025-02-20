@@ -250,12 +250,6 @@ jobs:
           }
           EOF
 
-      # - name: Fetch metadata for container build
-      #   uses: docker/metadata-action@v5
-      #   id: metadata
-      #   with:
-      #     images: ghcr.io/${{ github.repository }}
-
       - name: Build and push
         env:
           REPOSITORY_NAME: coder
@@ -271,6 +265,16 @@ jobs:
             --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:minimal \
             --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:minimal-${{ env.VERSION }} \
             --build-arg=TARGET_ARCH=${{ matrix.target }} \
+            --label="org.opencontainers.image.created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+            --label="org.opencontainers.image.version=${{ env.VERSION }}" \
+            --label="org.opencontainers.image.revision=${{ github.sha }}" \
+            --label="org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" \
+            --label="org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}" \
+            --label="org.opencontainers.image.documentation=${{ github.server_url }}/${{ github.repository }}/blob/main/README.md" \
+            --label="org.opencontainers.image.title=Coder" \
+            --label="org.opencontainers.image.description=The AI-Powered Coder without tools" \
+            --label="org.opencontainers.image.licenses=MIT" \
+            --label="org.opencontainers.image.vendor=${{ github.repository_owner }}" \
             --cache=true \
             --cache-repo=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}/cache
 
