@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.28](https://github.com/inference-gateway/coder/compare/0.1.4-rc.27...0.1.4-rc.28) (2025-02-20)
+
+### 👷 CI
+
+* Interesting, so I guess it was the debug tag that I need, it contains the tail utility and some other basic ones, will keep it like that then ([7eb50ad](https://github.com/inference-gateway/coder/commit/7eb50ad4bf5ee49fa0f1b9b859d4f75750fb41a1))
+
 ## [0.1.4-rc.27](https://github.com/inference-gateway/coder/compare/0.1.4-rc.26...0.1.4-rc.27) (2025-02-20)
 
 ### 👷 CI
