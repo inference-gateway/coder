@@ -226,8 +226,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # - os: ubuntu-24.04
-          #   target: x86_64-unknown-linux-musl
+          - os: ubuntu-24.04
+            target: x86_64-unknown-linux-musl
           - os:
               - self-hosted
               - k8s
