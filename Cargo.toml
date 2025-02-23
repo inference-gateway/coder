@@ -29,12 +29,12 @@ serial_test = "3.2.0"
 tempfile = "3.17.1"
 
 [build]
-jobs = 4
+jobs = 3
 
 [profile.release]
 lto = true
 opt-level = "z"
-codegen-units = 4
+codegen-units = 0
 panic = "abort"
 
 [profile.dev]
