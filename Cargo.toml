@@ -34,7 +34,7 @@ jobs = 3
 [profile.release]
 lto = true
 opt-level = "z"
-codegen-units = 0
+codegen-units = 1
 panic = "abort"
 
 [profile.dev]
