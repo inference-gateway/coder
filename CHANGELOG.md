@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.30](https://github.com/inference-gateway/coder/compare/0.1.4-rc.29...0.1.4-rc.30) (2025-02-23)
+
+### 👷 CI
+
+* Remove commented out old workflow ([6dd043f](https://github.com/inference-gateway/coder/commit/6dd043f7e0702b40969601a1ff4fb93c8af86089))
+* Remove metadata fetching step and add image labels manually ([7a3aeea](https://github.com/inference-gateway/coder/commit/7a3aeea25dafcc2712374438b4e8bcad65fc66d9))
+
+### 🔧 Miscellaneous
+
+* update dependencies to latest versions ([13a56b8](https://github.com/inference-gateway/coder/commit/13a56b8456ece9de4ea3af3a079ed76e21597e78))
+
 ## [0.1.4-rc.29](https://github.com/inference-gateway/coder/compare/0.1.4-rc.28...0.1.4-rc.29) (2025-02-20)
 
 ### 👷 CI
