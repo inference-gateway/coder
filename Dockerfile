@@ -12,14 +12,13 @@ FROM chef AS planner
 COPY . .
 RUN cargo chef prepare --recipe-path recipe.json
 
-FROM chef AS builder
+FROM chef AS cacher
 ARG TARGET_ARCH
 ENV CC=clang \
     AR=llvm-ar \
-    RUSTFLAGS="-C target-feature=+crt-static -C linker=clang" \
+    RUSTFLAGS="-C target-feature=+crt-static -C linker=clang -C target-cpu=native" \
     CARGO_HOME=/root/.cargo \
-    PATH="/root/.cargo/bin:${PATH}" \
-    PKG_CONFIG_ALLOW_CROSS=1
+    PATH="/root/.cargo/bin:${PATH}"
 
 RUN apk add --no-cache \
         make \
@@ -35,13 +34,14 @@ RUN apk add --no-cache \
         /tmp/* \
         /var/tmp/*
 
-# First build dependencies
 COPY --from=planner /app/recipe.json recipe.json
 RUN rustup target add ${TARGET_ARCH}
 RUN cargo chef cook --release --target ${TARGET_ARCH} --recipe-path recipe.json
 
-# Then build application
+FROM cacher AS builder
+ARG TARGET_ARCH
 COPY . .
+COPY --from=cacher /app/target /app/target
 RUN cargo build --release --target ${TARGET_ARCH}
 
 FROM gcr.io/distroless/static:nonroot AS minimal
