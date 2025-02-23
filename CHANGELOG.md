@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.32](https://github.com/inference-gateway/coder/compare/0.1.4-rc.31...0.1.4-rc.32) (2025-02-23)
+
+### 👷 CI
+
+* Update cache repository path and TTL in release workflow and reduce build jobs to 3 cores ([393aa75](https://github.com/inference-gateway/coder/commit/393aa751727f2d628a525887c38adac9ad9692b7))
+
 ## [0.1.4-rc.31](https://github.com/inference-gateway/coder/compare/0.1.4-rc.30...0.1.4-rc.31) (2025-02-23)
 
 ### 👷 CI
