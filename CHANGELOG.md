@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.33](https://github.com/inference-gateway/coder/compare/0.1.4-rc.32...0.1.4-rc.33) (2025-02-23)
+
+### 👷 CI
+
+* Update codegen units in Cargo.toml for improved optimization ([9c5a5d0](https://github.com/inference-gateway/coder/commit/9c5a5d01b511b2d73cb3b417239290d445e89911))
+
 ## [0.1.4-rc.32](https://github.com/inference-gateway/coder/compare/0.1.4-rc.31...0.1.4-rc.32) (2025-02-23)
 
 ### 👷 CI
