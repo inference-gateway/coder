@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.31](https://github.com/inference-gateway/coder/compare/0.1.4-rc.30...0.1.4-rc.31) (2025-02-23)
+
+### 👷 CI
+
+* Increase timeout for B&P Containers job to 45 minutes - temporarily ([165ea13](https://github.com/inference-gateway/coder/commit/165ea13371f7952bcd3e6ec7aa07c96bb76f14d8))
+* Update Kaniko executor options for resource allocation and adjust Rust codegen units ([2878a6d](https://github.com/inference-gateway/coder/commit/2878a6dba5643ba71163aeab39cf08293c3feb56))
+
 ## [0.1.4-rc.30](https://github.com/inference-gateway/coder/compare/0.1.4-rc.29...0.1.4-rc.30) (2025-02-23)
 
 ### 👷 CI
