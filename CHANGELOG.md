@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.34](https://github.com/inference-gateway/coder/compare/0.1.4-rc.33...0.1.4-rc.34) (2025-02-24)
+
+### ♻️ Improvements
+
+* Ensure caching in a separate layer ([04f3efb](https://github.com/inference-gateway/coder/commit/04f3efbb40040cf1faca92f8f1102bd1d4dc135d))
+
 ## [0.1.4-rc.33](https://github.com/inference-gateway/coder/compare/0.1.4-rc.32...0.1.4-rc.33) (2025-02-23)
 
 ### 👷 CI
