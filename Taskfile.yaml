@@ -30,3 +30,22 @@ tasks:
     desc: Install the project
     cmds:
       - cargo install --path .
+
+  release:
+    desc: Run the release container command locally
+    cmds:
+      - |
+        docker run --rm \
+          --cpu-shares=4096 \
+          --memory=6g \
+          --cpus=4 \
+          -v $(pwd):/workspace \
+          -v $(pwd)/cache:/kaniko/cache \
+          -w /workspace \
+          gcr.io/kaniko-project/executor:v1.23.2-debug \
+          --dockerfile=./Dockerfile \
+          --target=minimal \
+          --build-arg=TARGET_ARCH=aarch64-unknown-linux-musl \
+          --no-push \
+          --no-push-cache \
+          --tar-path=/app
