@@ -4,6 +4,7 @@
 # ARG TARGET_ARCH=x86_64-unknown-linux-musl
 
 FROM rust:alpine3.21 AS chef
+ARG TARGET_ARCH
 RUN apk add \
         make \
         perl \
