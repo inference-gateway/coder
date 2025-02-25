@@ -58,12 +58,13 @@ tasks:
           --cpu-shares=4096 \
           --memory=6g \
           --cpus=4 \
+          -v $(pwd):/workspace \
           -v $(pwd)/kaniko/artifacts:/workspace/artifacts \
           -v $(pwd)/kaniko/cache:/cache \
           -v $(pwd)/kaniko/.docker:/kaniko/.docker \
           -w /workspace \
           gcr.io/kaniko-project/executor:v1.23.2-debug \
-          --context=git://github.com/inference-gateway/coder.git#refs/heads/rc/optimize-build \
+          --context=. \
           --dockerfile=Dockerfile \
           --target=minimal \
           --build-arg=TARGET_ARCH=aarch64-unknown-linux-musl \
