@@ -42,7 +42,7 @@ FROM cacher AS builder
 ARG TARGET_ARCH
 COPY . .
 COPY --from=cacher /app/target /app/target
-RUN cargo build -vv --release --target ${TARGET_ARCH}
+RUN cargo build -vv --release --jobs $(nproc) --target ${TARGET_ARCH}
 
 FROM gcr.io/distroless/static:nonroot AS minimal
 ARG TARGET_ARCH
