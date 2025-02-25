@@ -4,8 +4,17 @@
 # ARG TARGET_ARCH=x86_64-unknown-linux-musl
 
 FROM rust:alpine3.21 AS chef
-RUN apk --no-cache add musl-dev && \
-    cargo install cargo-chef
+RUN apk add \
+        make \
+        perl \
+        file \
+        musl-dev \
+        clang \
+        llvm \
+        openssl-dev \
+        pkgconfig
+RUN cargo install cargo-chef --locked && \
+    rustup target add ${TARGET_ARCH}
 WORKDIR /app
 
 FROM chef AS planner
@@ -20,22 +29,7 @@ ENV CC=clang \
     CARGO_HOME=/root/.cargo \
     PATH="/root/.cargo/bin:${PATH}"
 
-RUN apk add --no-cache \
-        make \
-        perl \
-        file \
-        musl-dev \
-        clang \
-        llvm \
-        openssl-dev \
-        pkgconfig && \
-    rm -rf \
-        /var/cache/apk/* \
-        /tmp/* \
-        /var/tmp/*
-
 COPY --from=planner /app/recipe.json recipe.json
-RUN rustup target add ${TARGET_ARCH}
 RUN cargo chef cook --release --target ${TARGET_ARCH} --recipe-path recipe.json
 
 FROM cacher AS builder

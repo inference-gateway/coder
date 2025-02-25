@@ -73,4 +73,5 @@ tasks:
           --cache-repo=ghcr.io/{{.ORG_NAME}}/coder-cache \
           --cache-ttl=336h \
           --compressed-caching=true \
-          --snapshot-mode=redo
+          --snapshot-mode=redo \
+          --use-new-run
