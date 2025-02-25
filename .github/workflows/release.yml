@@ -277,4 +277,6 @@ jobs:
             --label="org.opencontainers.image.vendor=${{ github.repository_owner }}" \
             --cache=true \
             --cache-repo=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}/cache-${{ matrix.target }} \
-            --cache-ttl=336h
+            --cache-ttl=336h \
+            --compressed-caching=true \
+            --snapshot-mode=redo

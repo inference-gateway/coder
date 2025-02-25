@@ -50,4 +50,6 @@ tasks:
           --no-push \
           --tar-path=/workspace/my-image.tar \
           --cache-dir=/cache \
-          --cache-ttl=336h
+          --cache-ttl=336h \
+          --compressed-caching=true \
+          --snapshot-mode=redo
