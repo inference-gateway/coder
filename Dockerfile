@@ -55,7 +55,6 @@ RUN apk add --no-cache \
     addgroup -S -g 1001 coder && \
     adduser -S -G coder -u 1001 -h /home/coder -s /bin/sh -g "Coder user" coder && \
     rm -rf \
-        /var/cache/apk/* \
         /tmp/* \
         /var/tmp/*
 COPY --from=builder --chown=coder:coder /app/target/${TARGET_ARCH}/release/coder /usr/local/bin/coder
@@ -95,7 +94,6 @@ RUN apk add --no-cache \
     pip install --no-cache-dir --break-system-packages \
         black && \
     rm -rf \
-        /var/cache/apk/* \
         /tmp/* \
         /var/tmp/*
 USER coder
