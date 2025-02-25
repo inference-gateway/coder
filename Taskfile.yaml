@@ -31,25 +31,46 @@ tasks:
     cmds:
       - cargo install --path .
 
-  release:
+  build-container:
     desc: Run the release container command locally
+    vars:
+      GITHUB_USER:
+        sh: echo edenreich
+      GITHUB_TOKEN:
+        sh: echo ${GITHUB_TOKEN}
+      ORG_NAME:
+        sh: echo inference-gateway
     cmds:
-      - mkdir -p $(pwd)/cache
+      - mkdir -p $(pwd)/kaniko/cache
+      - mkdir -p $(pwd)/kaniko/.docker
+      - |
+        cat << EOF > $(pwd)/kaniko/.docker/config.json
+        {
+          "auths": {
+            "ghcr.io": {
+              "auth": "$(echo -n {{.GITHUB_USER}}:{{.GITHUB_TOKEN}} | base64 -w0)"
+            }
+          }
+        }
+        EOF
       - |
         docker run --rm \
           --cpu-shares=4096 \
           --memory=6g \
           --cpus=4 \
-          -v $(pwd):/workspace \
-          -v $(pwd)/cache:/cache \
+          -v $(pwd)/kaniko/artifacts:/workspace/artifacts \
+          -v $(pwd)/kaniko/cache:/cache \
+          -v $(pwd)/kaniko/.docker:/kaniko/.docker \
           -w /workspace \
           gcr.io/kaniko-project/executor:v1.23.2-debug \
-          --dockerfile=./Dockerfile \
+          --context=git://github.com/inference-gateway/coder.git#refs/heads/rc/optimize-build \
+          --dockerfile=Dockerfile \
           --target=minimal \
           --build-arg=TARGET_ARCH=aarch64-unknown-linux-musl \
           --no-push \
-          --tar-path=/workspace/my-image.tar \
-          --cache-dir=/cache \
+          --tar-path=/workspace/artifacts/my-image.tar \
+          --cache=true \
+          --cache-repo=ghcr.io/{{.ORG_NAME}}/coder-cache \
           --cache-ttl=336h \
           --compressed-caching=true \
           --snapshot-mode=redo
