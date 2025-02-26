@@ -16,6 +16,7 @@ RUN apk add \
         pkgconfig
 RUN cargo install cargo-chef --locked && \
     rustup target add ${TARGET_ARCH}
+RUN mkdir /app
 WORKDIR /app
 
 FROM chef AS planner
