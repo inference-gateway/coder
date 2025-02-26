@@ -33,19 +33,13 @@ ENV CC=clang \
     PATH="/root/.cargo/bin:${PATH}"
 
 COPY --from=planner /app/recipe.json recipe.json
-RUN --mount=type=cache,target=/root/.cargo/registry \
-    --mount=type=cache,target=/root/.cargo/git \
-    --mount=type=cache,target=/app/target \
-    cargo chef cook --release --target ${TARGET_ARCH} --recipe-path recipe.json
+RUN cargo chef cook --release --target ${TARGET_ARCH} --recipe-path recipe.json
 
 FROM cacher AS builder
 ARG TARGET_ARCH
 COPY src ./src
 COPY --from=cacher /app/target /app/target
-RUN --mount=type=cache,target=/root/.cargo/registry \
-    --mount=type=cache,target=/root/.cargo/git \
-    --mount=type=cache,target=/app/target \
-    cargo build --release --jobs $(nproc) --target ${TARGET_ARCH}
+RUN cargo build --release --jobs $(nproc) --target ${TARGET_ARCH}
 
 FROM gcr.io/distroless/static:nonroot AS minimal
 ARG TARGET_ARCH
