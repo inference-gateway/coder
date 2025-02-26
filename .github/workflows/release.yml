@@ -239,7 +239,7 @@ jobs:
       options: --entrypoint="" --cpu-shares=4096 --memory=6g --cpus=4
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Authenticate with GHCR
+      - name: Login to GitHub Container Registry
         run: |
           mkdir -p /kaniko/.docker
           cat << EOF > /kaniko/.docker/config.json
@@ -259,6 +259,7 @@ jobs:
           CONTAINER_REGISTRY: ghcr.io
           VERSION: ${{ needs.github_release.outputs.new_release_version }}
         run: |
+          echo "Available cores: $(nproc)"
           /kaniko/executor \
             --context="${{ github.repositoryUrl }}#${{ github.ref }}" \
             --dockerfile=Dockerfile \
@@ -279,7 +280,11 @@ jobs:
             --cache=true \
             --cache-repo=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}/cache-${{ matrix.target }} \
             --cache-ttl=336h \
-            --compressed-caching=true
+            --compressed-caching=true \
+            --snapshot-mode=redo \
+            --use-new-run \
+            --ignore-path=".git" \
+            --skip-unused-stages \
 
   sign_containers:
     name: Sign Container Images
@@ -303,16 +308,25 @@ jobs:
         with:
           cosign-release: "v2.4.3"
 
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Sign container images with GitHub OIDC
         run: |
-          # Sign minimal image
-          cosign sign --yes \
-            ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:minimal-${VERSION}
+          # Get digests for the images
+          VERSION_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:minimal-${VERSION})
+          LATEST_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:latest)
+          MINIMAL_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:minimal)
 
-          # Sign latest tag
-          cosign sign --yes \
-            ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:latest
+          echo "Signing image digest: $VERSION_DIGEST"
+          echo "Signing image digest: $LATEST_DIGEST"
+          echo "Signing image digest: $MINIMAL_DIGEST"
 
-          # Sign minimal tag
-          cosign sign --yes \
-            ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:minimal
+          # Sign using digests instead of tags
+          cosign sign --yes $VERSION_DIGEST
+          cosign sign --yes $LATEST_DIGEST
+          cosign sign --yes $MINIMAL_DIGEST

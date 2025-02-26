@@ -89,4 +89,8 @@ tasks:
             --cache=true \
             --cache-repo={{.CONTAINER_REGISTRY}}/{{.REPOSITORY_OWNER}}/{{.REPOSITORY_NAME}}/cache-{{.TARGET}}-local \
             --cache-ttl=336h \
-            --compressed-caching=true
+            --compressed-caching=true \
+            --snapshot-mode=redo \
+            --use-new-run \
+            --ignore-path=".git" \
+            --skip-unused-stages \
