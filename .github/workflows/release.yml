@@ -277,5 +277,4 @@ jobs:
             --cache=true \
             --cache-repo=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}/cache-${{ matrix.target }} \
             --cache-ttl=336h \
-            --compressed-caching=true \
-            --snapshot-mode=redo
+            --compressed-caching=true
