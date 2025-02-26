@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.36](https://github.com/inference-gateway/coder/compare/0.1.4-rc.35...0.1.4-rc.36) (2025-02-26)
+
+### 📦 Miscellaneous
+
+* Add optional shell completions feature using clap_complete ([0fcaca0](https://github.com/inference-gateway/coder/commit/0fcaca0d92a1c76f0416645546ddcbfeba34d423))
+* Update uuid dependency to version 1.15.0 ([5d61147](https://github.com/inference-gateway/coder/commit/5d6114772a32f70b6058915be72dc70be3e4607c))
+
 ## [0.1.4-rc.35](https://github.com/inference-gateway/coder/compare/0.1.4-rc.34...0.1.4-rc.35) (2025-02-26)
 
 ### ⚡️ Improvements
