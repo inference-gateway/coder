@@ -278,3 +278,37 @@ jobs:
             --cache-repo=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}/cache-${{ matrix.target }} \
             --cache-ttl=336h \
             --compressed-caching=true
+
+  sign_containers:
+    name: Sign Container Images
+    needs: [github_release, build_containers]
+    if: needs.github_release.outputs.new_release_published == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      packages: write
+      id-token: write # needed for signing the images with GitHub OIDC Token
+      contents: read
+    env:
+      REPOSITORY_NAME: coder
+      REPOSITORY_OWNER: ${{ github.repository_owner }}
+      CONTAINER_REGISTRY: ghcr.io
+      VERSION: ${{ needs.github_release.outputs.new_release_version }}
+    steps:
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.8.1
+        with:
+          cosign-release: "v2.4.3"
+
+      - name: Sign container images with GitHub OIDC
+        run: |
+          # Sign minimal image
+          cosign sign --yes \
+            ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:minimal-${VERSION}
+
+          # Sign latest tag
+          cosign sign --yes \
+            ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:latest
+
+          # Sign minimal tag
+          cosign sign --yes \
+            ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:minimal
