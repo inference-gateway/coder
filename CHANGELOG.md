@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.37](https://github.com/inference-gateway/coder/compare/0.1.4-rc.36...0.1.4-rc.37) (2025-02-26)
+
+### 📦 Miscellaneous
+
+* Add workflow step to sign container images with GitHub OIDC ([a8f6296](https://github.com/inference-gateway/coder/commit/a8f629609bbec47e645db0ac47a6acde1483ebc6))
+* Import CommandFactory for optional completions feature ([05ce42a](https://github.com/inference-gateway/coder/commit/05ce42ae118873bd8ff47d470c145595cbb58ca1))
+* Increase timeout for B&P Containers job in release workflow ([bbee100](https://github.com/inference-gateway/coder/commit/bbee100d993d2aab9353f16ce1b063cf2e26210c))
+* Remove unnecessary image creation label from release workflow - it revalidating the cache on each run ([3abdba0](https://github.com/inference-gateway/coder/commit/3abdba05e967435573662996bf7c7c6ff7601703))
+* Simplify Dockerfile by removing cache mounts from cargo commands ([72a5c91](https://github.com/inference-gateway/coder/commit/72a5c91dc2b47de06f48d1b469a6e4b39082d7aa))
+* Update release workflow and Taskfile for improved cached container build process ([c78b91c](https://github.com/inference-gateway/coder/commit/c78b91c1053e9de07fa6d334c7b30384d9ba7b3b))
+* Use consistent style ([f0aa8e8](https://github.com/inference-gateway/coder/commit/f0aa8e8f8c75949503715b9017786242a075b0cc))
+
 ## [0.1.4-rc.36](https://github.com/inference-gateway/coder/compare/0.1.4-rc.35...0.1.4-rc.36) (2025-02-26)
 
 ### 📦 Miscellaneous

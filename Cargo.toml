@@ -1,6 +1,6 @@
 [package]
 name = "coder"
-version = "0.1.4-rc.36"
+version = "0.1.4-rc.37"
 edition = "2021"
 
 [features]
