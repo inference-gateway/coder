@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.35](https://github.com/inference-gateway/coder/compare/0.1.4-rc.34...0.1.4-rc.35) (2025-02-26)
+
+### ⚡️ Improvements
+
+* Add release task for local Docker container execution so I can test the release ([8a00250](https://github.com/inference-gateway/coder/commit/8a00250416affd07daf5380970a09df3617b5138))
+
+### 🔧 Miscellaneous
+
+* Update dependencies to latest versions and optimize release profile settings ([97b7009](https://github.com/inference-gateway/coder/commit/97b700900a38c8589118e44524c39b4223749aa0))
+
+### 📦 Miscellaneous
+
+* Add missing flags, not sure yet why kaniko is not saving into the local cache ([cca01e2](https://github.com/inference-gateway/coder/commit/cca01e22eefa535785962d63325eb751e8637ff6))
+* Attempt to fix caching ([572d0f9](https://github.com/inference-gateway/coder/commit/572d0f9237e037445ef511fc8d118c1c38275ce7))
+* Create /app directory in Dockerfile for application workspace ([82d6449](https://github.com/inference-gateway/coder/commit/82d64497755b2afd478c0498e04e31ed4adf7e15))
+* Enhance caching strategy in release workflow and Taskfile with compressed caching and snapshot mode ([59857fd](https://github.com/inference-gateway/coder/commit/59857fdd133597b8b86e9aefbe0006da62c39f66))
+* Import TARGET_ARCH argument to the chef layer in the Dockerfile ([24463ec](https://github.com/inference-gateway/coder/commit/24463ec09d37fd5341b9b8edda0fb8c63e616a26))
+* Increase verbosity of cargo build command in Dockerfile ([dcd030c](https://github.com/inference-gateway/coder/commit/dcd030c6857f947125081b209c26cafcbf417e19))
+* Install Dive to better analyse caching layers ([a19249c](https://github.com/inference-gateway/coder/commit/a19249ca0aa98755dd0b31cd0db73a88be0e04d6))
+* Optimize cargo build command to utilize all available jobs for improved performance,  I think it's default behaviour but I'm not entirely sure ([fd4f9f4](https://github.com/inference-gateway/coder/commit/fd4f9f48740a05e0094511847814d8c080b66ff3))
+* Optimize Dockerfile by adding cache mounts for improved build performance ([22d8196](https://github.com/inference-gateway/coder/commit/22d81962209fe3008ec91f55512cd2e6c2b557c8))
+* Remove redundant cache cleanup commands from Dockerfile because --no-cache is already in use ([f05cd51](https://github.com/inference-gateway/coder/commit/f05cd511a514cfe21686e6ab8637979d551f00c9))
+* Remove unnecessary target-specific rustflags for aarch64 ([dd3bc44](https://github.com/inference-gateway/coder/commit/dd3bc44fd00d06430feb047577bb99ffbd65fa5e))
+* Update Kaniko context to local directory for improved build process ([e447ca3](https://github.com/inference-gateway/coder/commit/e447ca3b70717a3d5854b57841b15cfbfb6ef699))
+* Update Zsh configuration to include additional right prompt elements like execution time etc ([bceb4b4](https://github.com/inference-gateway/coder/commit/bceb4b48314d54c7b888bd43fb999edf40e70530))
+
 ## [0.1.4-rc.34](https://github.com/inference-gateway/coder/compare/0.1.4-rc.33...0.1.4-rc.34) (2025-02-24)
 
 ### ♻️ Improvements
