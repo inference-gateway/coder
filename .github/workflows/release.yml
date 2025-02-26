@@ -101,7 +101,8 @@ jobs:
 
   # build_binaries:
   #   name: Build static binaries
-  #   needs: github_release
+  #   needs:
+  #     - github_release
   #   if: needs.github_release.outputs.new_release_published == 'true'
   #   timeout-minutes: 15
   #   permissions:
@@ -217,7 +218,8 @@ jobs:
 
   build_containers:
     name: B&P Containers
-    needs: github_release
+    needs:
+      - github_release
     if: needs.github_release.outputs.new_release_published == 'true'
     timeout-minutes: 65
     permissions:
@@ -281,7 +283,9 @@ jobs:
 
   sign_containers:
     name: Sign Container Images
-    needs: [github_release, build_containers]
+    needs:
+      - github_release
+      - build_containers
     if: needs.github_release.outputs.new_release_published == 'true'
     runs-on: ubuntu-24.04
     permissions:
