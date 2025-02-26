@@ -12,6 +12,7 @@ pub struct Cli {
 #[derive(Subcommand)]
 pub enum Commands {
     /// Generate shell completions
+    #[cfg(feature = "completions")]
     Completions {
         /// The shell to generate completions for
         #[arg(value_enum)]

@@ -3,9 +3,12 @@ name = "coder"
 version = "0.1.4-rc.35"
 edition = "2021"
 
+[features]
+completions = ["clap_complete"]
+
 [dependencies]
 clap = { version = "4.5.31", default-features = false, features = ["default", "derive"] }
-clap_complete = { version = "4.5.46", default-features = false, features = ["default"] }
+clap_complete = { version = "4.5.46", default-features = false, features = ["default"], optional = true }
 env_logger = { version = "0.11.6", default-features = false, features = ["default"] }
 futures-util = { version = "0.3.31", default-features = false, features = ["default"] }
 ignore = { version = "0.4.23", default-features = false }

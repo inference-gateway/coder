@@ -1,6 +1,7 @@
 use crate::cli::{Cli, Commands};
 use crate::errors::CoderError;
-use clap::{CommandFactory, Parser};
+use clap::Parser;
+#[cfg(feature = "completions")]
 use clap_complete::generate;
 use conversation::Conversation;
 use inference_gateway_sdk::{
@@ -82,6 +83,7 @@ async fn main() -> Result<(), CoderError> {
     let provider = Provider::try_from(config.agent.provider.as_str())?;
 
     match cli.command {
+        #[cfg(feature = "completions")]
         Commands::Completions { shell } => {
             generate(shell, &mut Cli::command(), "coder", &mut std::io::stdout());
             return Ok(());
