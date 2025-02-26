@@ -1,5 +1,7 @@
 use crate::cli::{Cli, Commands};
 use crate::errors::CoderError;
+#[cfg(feature = "completions")]
+use clap::CommandFactory;
 use clap::Parser;
 #[cfg(feature = "completions")]
 use clap_complete::generate;
