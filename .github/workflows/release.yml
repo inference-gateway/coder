@@ -144,6 +144,8 @@ jobs:
         with:
           toolchain: stable
           override: true
+          cache: true
+          cache-key: ${{ runner.os }}-${{ matrix.target }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Cache Rust dependencies
         uses: actions/cache@v4.2.1
