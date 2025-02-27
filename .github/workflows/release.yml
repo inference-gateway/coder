@@ -231,10 +231,12 @@ jobs:
           - os: ubuntu-24.04
             target: x86_64-unknown-linux-musl
             image_target: minimal
+            tag_alias: minimal
             description: "The AI-Powered Coder without tools (linux/amd64)"
           - os: ubuntu-24.04
             target: x86_64-unknown-linux-musl
             image_target: coder
+            tag_alias: coder
             description: "The AI-Powered Coder with basic tools (linux/amd64)"
           - os: ubuntu-24.04
             target: x86_64-unknown-linux-musl
@@ -250,10 +252,12 @@ jobs:
           - os: ubuntu-24.04
             target: aarch64-unknown-linux-musl
             image_target: minimal
+            tag_alias: minimal
             description: "The AI-Powered Coder without tools (linux/arm64)"
           - os: ubuntu-24.04
             target: aarch64-unknown-linux-musl
             image_target: coder
+            tag_alias: coder
             description: "The AI-Powered Coder with basic tools (linux/arm64)"
           - os: ubuntu-24.04
             target: aarch64-unknown-linux-musl
