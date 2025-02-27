@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.48](https://github.com/inference-gateway/coder/compare/0.1.4-rc.47...0.1.4-rc.48) (2025-02-27)
+
+### 🔧 Miscellaneous
+
+* Allow specifying a version for installation, default to latest ([ca0c708](https://github.com/inference-gateway/coder/commit/ca0c7085d1e4ad255c3ae367ab0800710bdc889e))
+* Allow to specify the installation version, default to latest ([be84a02](https://github.com/inference-gateway/coder/commit/be84a0219e74f87d639c96df709cd4c2ad39f35f))
+
+### 📦 Miscellaneous
+
+* Add Dockerfile for building release containers from GitHub binaries ([fd53df6](https://github.com/inference-gateway/coder/commit/fd53df6d3434f82db4dc81a261da7b999d7da78e))
+* Add Python environment setup in Dockerfile for additional tooling ([2fdb15a](https://github.com/inference-gateway/coder/commit/2fdb15aaab98b898db16aa2abaab35db8cf74062))
+* Add VERSION build argument to release workflow ([d7e768f](https://github.com/inference-gateway/coder/commit/d7e768f2a66c09debf5228a0351ec3addfaad949))
+* Enhance release workflow to build and push multiple coder images for different language specific environments ([2b19a86](https://github.com/inference-gateway/coder/commit/2b19a862e134db28fd9ffd5f603d49a359570555))
+* Remove commented-out configurations from release workflow ([68e4779](https://github.com/inference-gateway/coder/commit/68e4779dfc7bd2ff02dcc6994cbb5c4074a1591d))
+* Remove some optimization flags, since we're just copying the binary there is no need to trade binary quality over speed, it will be fast enough ([8022d64](https://github.com/inference-gateway/coder/commit/8022d642fbcb08fb3ac8cb59cc917d50a5fdffe9))
+
 ## [0.1.4-rc.47](https://github.com/inference-gateway/coder/compare/0.1.4-rc.46...0.1.4-rc.47) (2025-02-27)
 
 ### 📦 Miscellaneous
