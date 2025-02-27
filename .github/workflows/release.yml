@@ -218,6 +218,7 @@ jobs:
     name: Build Containers
     needs:
       - github_release
+      - build_binaries
     if: needs.github_release.outputs.new_release_published == 'true'
     timeout-minutes: 65
     permissions:
@@ -373,6 +374,7 @@ jobs:
     name: Sign Container Images
     needs:
       - github_release
+      - build_binaries
       - build_containers
     if: needs.github_release.outputs.new_release_published == 'true'
     runs-on: ubuntu-24.04
