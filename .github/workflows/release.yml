@@ -219,7 +219,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build_containers:
-    name: B&P Containers
+    name: Build Containers
     needs:
       - github_release
     if: needs.github_release.outputs.new_release_published == 'true'
