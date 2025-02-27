@@ -4,11 +4,11 @@ services:
     working_dir: /app
     volumes:
       - repository:/app
-    entrypoint: /bin/sh
     env_file:
       - .env
     environment:
       GITHUB_TOKEN: ${CODER_SCM_TOKEN}
+    entrypoint: /bin/sh
     command:
       - -c
       - |
