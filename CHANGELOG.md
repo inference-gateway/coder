@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.53](https://github.com/inference-gateway/coder/compare/0.1.4-rc.52...0.1.4-rc.53) (2025-02-27)
+
+### 📦 Miscellaneous
+
+* Try something - it's seems that they put it in public preview ([6611ad3](https://github.com/inference-gateway/coder/commit/6611ad35efea24baee66d470571512497068cbde))
+
 ## [0.1.4-rc.52](https://github.com/inference-gateway/coder/compare/0.1.4-rc.51...0.1.4-rc.52) (2025-02-27)
 
 ### 📦 Miscellaneous
