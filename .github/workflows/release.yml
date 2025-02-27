@@ -227,10 +227,45 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # linux/amd64 images
           - os: ubuntu-24.04
             target: x86_64-unknown-linux-musl
+            image_target: minimal
+            is_latest: true
+            description: "The AI-Powered Coder without tools (linux/amd64)"
+          - os: ubuntu-24.04
+            target: x86_64-unknown-linux-musl
+            image_target: coder
+            description: "The AI-Powered Coder with basic tools (linux/amd64)"
+          - os: ubuntu-24.04
+            target: x86_64-unknown-linux-musl
+            image_target: coder-rust
+            tag_alias: rust
+            description: "The AI-Powered Coder with Rust development tools (linux/amd64)"
+          - os: ubuntu-24.04
+            target: x86_64-unknown-linux-musl
+            image_target: coder-python
+            tag_alias: python
+            description: "The AI-Powered Coder with Python development tools (linux/amd64)"
+          # linux/arm64 images
           - os: ubuntu-24.04
             target: aarch64-unknown-linux-musl
+            image_target: minimal
+            description: "The AI-Powered Coder without tools (linux/arm64)"
+          - os: ubuntu-24.04
+            target: aarch64-unknown-linux-musl
+            image_target: coder
+            description: "The AI-Powered Coder with basic tools (linux/arm64)"
+          - os: ubuntu-24.04
+            target: aarch64-unknown-linux-musl
+            image_target: coder-rust
+            tag_alias: rust
+            description: "The AI-Powered Coder with Rust development tools (linux/arm64)"
+          - os: ubuntu-24.04
+            target: aarch64-unknown-linux-musl
+            image_target: coder-python
+            tag_alias: python
+            description: "The AI-Powered Coder with Python development tools (linux/arm64)"
     container:
       image: gcr.io/kaniko-project/executor:v1.23.2-debug
       options: --entrypoint=""
@@ -249,7 +284,7 @@ jobs:
           }
           EOF
 
-      - name: Build and push minimal image
+      - name: Build and push image
         env:
           REPOSITORY_NAME: coder
           REPOSITORY_OWNER: ${{ github.repository_owner }}
@@ -259,10 +294,8 @@ jobs:
           /kaniko/executor \
             --context="${{ github.repositoryUrl }}#${{ github.ref }}" \
             --dockerfile=Dockerfile.release \
-            --target=minimal \
-            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:latest \
-            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:minimal \
-            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:minimal-${{ env.VERSION }} \
+            --target=${{ matrix.image_target }} \
+            --destination=${{ env.CONTAINER_REGISTRY }}/${{ github.repository_owner }}/${{ env.REPOSITORY_NAME }}:${{ matrix.tag_alias }}-${{ env.VERSION }} \
             --build-arg=TARGET_ARCH=${{ matrix.target }} \
             --build-arg=VERSION=${{ env.VERSION }} \
             --label="org.opencontainers.image.version=${{ env.VERSION }}" \
@@ -271,104 +304,14 @@ jobs:
             --label="org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}" \
             --label="org.opencontainers.image.documentation=${{ github.server_url }}/${{ github.repository }}/blob/main/README.md" \
             --label="org.opencontainers.image.title=Coder" \
-            --label="org.opencontainers.image.description=The AI-Powered Coder without tools" \
+            --label="org.opencontainers.image.description=${{ matrix.description }}" \
             --label="org.opencontainers.image.licenses=MIT" \
             --label="org.opencontainers.image.vendor=${{ github.repository_owner }}" \
             --cache=true \
-            --cache-repo=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}/cache-${{ matrix.target }} \
+            --cache-repo=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}/cache-${{ matrix.target }}-${{ matrix.image_target }} \
             --cache-ttl=336h \
             --compressed-caching=true \
-            --skip-unused-stages \
-
-      - name: Build and push coder image
-        env:
-          REPOSITORY_NAME: coder
-          REPOSITORY_OWNER: ${{ github.repository_owner }}
-          CONTAINER_REGISTRY: ghcr.io
-          VERSION: ${{ needs.github_release.outputs.new_release_version }}
-        run: |
-          /kaniko/executor \
-            --context="${{ github.repositoryUrl }}#${{ github.ref }}" \
-            --dockerfile=Dockerfile.release \
-            --target=coder \
-            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:coder \
-            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:coder-${{ env.VERSION }} \
-            --build-arg=TARGET_ARCH=${{ matrix.target }} \
-            --build-arg=VERSION=${{ env.VERSION }} \
-            --label="org.opencontainers.image.version=${{ env.VERSION }}" \
-            --label="org.opencontainers.image.revision=${{ github.sha }}" \
-            --label="org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" \
-            --label="org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}" \
-            --label="org.opencontainers.image.documentation=${{ github.server_url }}/${{ github.repository }}/blob/main/README.md" \
-            --label="org.opencontainers.image.title=Coder" \
-            --label="org.opencontainers.image.description=The AI-Powered Coder with basic tools" \
-            --label="org.opencontainers.image.licenses=MIT" \
-            --label="org.opencontainers.image.vendor=${{ github.repository_owner }}" \
-            --cache=true \
-            --cache-repo=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}/cache-${{ matrix.target }} \
-            --cache-ttl=336h \
-            --compressed-caching=true \
-            --skip-unused-stages \
-
-      - name: Build and push coder-rust image
-        env:
-          REPOSITORY_NAME: coder
-          REPOSITORY_OWNER: ${{ github.repository_owner }}
-          CONTAINER_REGISTRY: ghcr.io
-          VERSION: ${{ needs.github_release.outputs.new_release_version }}
-        run: |
-          /kaniko/executor \
-            --context="${{ github.repositoryUrl }}#${{ github.ref }}" \
-            --dockerfile=Dockerfile.release \
-            --target=coder-rust \
-            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:rust \
-            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:rust-${{ env.VERSION }} \
-            --build-arg=TARGET_ARCH=${{ matrix.target }} \
-            --build-arg=VERSION=${{ env.VERSION }} \
-            --label="org.opencontainers.image.version=${{ env.VERSION }}" \
-            --label="org.opencontainers.image.revision=${{ github.sha }}" \
-            --label="org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" \
-            --label="org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}" \
-            --label="org.opencontainers.image.documentation=${{ github.server_url }}/${{ github.repository }}/blob/main/README.md" \
-            --label="org.opencontainers.image.title=Coder" \
-            --label="org.opencontainers.image.description=The AI-Powered Coder with Rust development tools" \
-            --label="org.opencontainers.image.licenses=MIT" \
-            --label="org.opencontainers.image.vendor=${{ github.repository_owner }}" \
-            --cache=true \
-            --cache-repo=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}/cache-${{ matrix.target }} \
-            --cache-ttl=336h \
-            --compressed-caching=true \
-            --skip-unused-stages \
-
-      - name: Build and push coder-python image
-        env:
-          REPOSITORY_NAME: coder
-          REPOSITORY_OWNER: ${{ github.repository_owner }}
-          CONTAINER_REGISTRY: ghcr.io
-          VERSION: ${{ needs.github_release.outputs.new_release_version }}
-        run: |
-          /kaniko/executor \
-            --context="${{ github.repositoryUrl }}#${{ github.ref }}" \
-            --dockerfile=Dockerfile.release \
-            --target=coder-python \
-            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:python \
-            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:python-${{ env.VERSION }} \
-            --build-arg=TARGET_ARCH=${{ matrix.target }} \
-            --build-arg=VERSION=${{ env.VERSION }} \
-            --label="org.opencontainers.image.version=${{ env.VERSION }}" \
-            --label="org.opencontainers.image.revision=${{ github.sha }}" \
-            --label="org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" \
-            --label="org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}" \
-            --label="org.opencontainers.image.documentation=${{ github.server_url }}/${{ github.repository }}/blob/main/README.md" \
-            --label="org.opencontainers.image.title=Coder" \
-            --label="org.opencontainers.image.description=The AI-Powered Coder with Python development tools" \
-            --label="org.opencontainers.image.licenses=MIT" \
-            --label="org.opencontainers.image.vendor=${{ github.repository_owner }}" \
-            --cache=true \
-            --cache-repo=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}/cache-${{ matrix.target }} \
-            --cache-ttl=336h \
-            --compressed-caching=true \
-            --skip-unused-stages \
+            --skip-unused-stages
 
   sign_containers:
     name: Sign Container Images
