@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.43](https://github.com/inference-gateway/coder/compare/0.1.4-rc.42...0.1.4-rc.43) (2025-02-27)
+
+### 📦 Miscellaneous
+
+* Ensure using the latest version of the this action ([8ff0605](https://github.com/inference-gateway/coder/commit/8ff0605eca4668dc04416117ad9cf35d0fbb03ff))
+
 ## [0.1.4-rc.42](https://github.com/inference-gateway/coder/compare/0.1.4-rc.41...0.1.4-rc.42) (2025-02-27)
 
 ### 📦 Miscellaneous
