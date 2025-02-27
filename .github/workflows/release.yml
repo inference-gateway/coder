@@ -263,6 +263,7 @@ jobs:
             --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:minimal \
             --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:minimal-${{ env.VERSION }} \
             --build-arg=TARGET_ARCH=${{ matrix.target }} \
+            --build-arg=VERSION=${{ env.VERSION }} \
             --label="org.opencontainers.image.version=${{ env.VERSION }}" \
             --label="org.opencontainers.image.revision=${{ github.sha }}" \
             --label="org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" \
