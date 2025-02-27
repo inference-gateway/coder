@@ -113,6 +113,8 @@ jobs:
         include:
           - os: ubuntu-24.04
             target: x86_64-unknown-linux-musl
+          - os: ubuntu-24.04
+            target: aarch64-unknown-linux-musl
           # - os:
           #     - self-hosted
           #     - k8s
@@ -164,7 +166,7 @@ jobs:
         run: rustup target add ${{ matrix.target }}
 
       - name: Add build tools for musl target instead of glibc
-        if: ${{ !startsWith(matrix.os, 'macos') }}
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
         run: |
           sudo apt-get update && sudo apt-get install --no-install-recommends -y \
             curl \
@@ -186,15 +188,12 @@ jobs:
             && rm -rf *.tgz
 
       - name: Build binary for ${{ matrix.target }}
-        if: ${{ !startsWith(matrix.os, 'macos') }}
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
         env:
           PKG_CONFIG_ALLOW_CROSS: 1
-          RUSTFLAGS: "-C target-feature=+crt-static -C linker=clang"
-          CC: clang
-          AR: llvm-ar
-          OPENSSL_DIR: /usr
-          OPENSSL_LIB_DIR: /usr/lib
-          OPENSSL_INCLUDE_DIR: /usr/include
+          RUSTFLAGS: "-C target-feature=+crt-static"
+          CC_x86_64_unknown_linux_musl: /opt/x86_64-linux-musl-cross/bin/x86_64-linux-musl-gcc
+          CC_aarch64_unknown_linux_musl: /opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc
           OPENSSL_STATIC: 1
         run: |
           cargo build --release --no-default-features --target ${{ matrix.target }}
