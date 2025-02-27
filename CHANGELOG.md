@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.51](https://github.com/inference-gateway/coder/compare/0.1.4-rc.50...0.1.4-rc.51) (2025-02-27)
+
+### 📦 Miscellaneous
+
+* Add tag aliases for image targets in release workflow ([edf8367](https://github.com/inference-gateway/coder/commit/edf836730a5010f8c721c05067b959acd2195479))
+* Update Dockerfile to set USER just for installing extra dependencies and switch back to coder user ([13d7368](https://github.com/inference-gateway/coder/commit/13d7368ba3129f5eb2455fa1acb95cb9de209b3e))
+
 ## [0.1.4-rc.50](https://github.com/inference-gateway/coder/compare/0.1.4-rc.49...0.1.4-rc.50) (2025-02-27)
 
 ### 📦 Miscellaneous
