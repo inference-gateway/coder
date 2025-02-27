@@ -321,7 +321,7 @@ jobs:
             --label="org.opencontainers.image.licenses=MIT" \
             --label="org.opencontainers.image.vendor=${{ github.repository_owner }}" \
             --cache=true \
-            --cache-repo=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}/cache-${{ matrix.target }}-${{ matrix.image_target }} \
+            --cache-repo=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}/cache-${{ matrix.target }} \
             --cache-ttl=336h \
             --compressed-caching=true \
             --skip-unused-stages
