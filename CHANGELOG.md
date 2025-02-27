@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.42](https://github.com/inference-gateway/coder/compare/0.1.4-rc.41...0.1.4-rc.42) (2025-02-27)
+
+### 📦 Miscellaneous
+
+* Attempt to fix cache conflict ([4583568](https://github.com/inference-gateway/coder/commit/4583568de71b0e767a53f5ca0b96786a72df83e0))
+* Update cache key format in release workflow for consistency ([57a55cc](https://github.com/inference-gateway/coder/commit/57a55ccf07b5cd8dd3b07f174b8c425c0a7f40f1))
+
 ## [0.1.4-rc.41](https://github.com/inference-gateway/coder/compare/0.1.4-rc.40...0.1.4-rc.41) (2025-02-27)
 
 ### 📦 Miscellaneous
