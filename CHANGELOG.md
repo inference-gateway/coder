@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.49](https://github.com/inference-gateway/coder/compare/0.1.4-rc.48...0.1.4-rc.49) (2025-02-27)
+
+### 📦 Miscellaneous
+
+* Add dependency on build_binaries job for container image signing and building ([fa0b9d5](https://github.com/inference-gateway/coder/commit/fa0b9d5e76dacbd76e045cf8c5ed2206e90f20d3))
+
 ## [0.1.4-rc.48](https://github.com/inference-gateway/coder/compare/0.1.4-rc.47...0.1.4-rc.48) (2025-02-27)
 
 ### 🔧 Miscellaneous
