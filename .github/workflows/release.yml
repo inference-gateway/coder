@@ -230,42 +230,50 @@ jobs:
           # linux/amd64 images
           - os: ubuntu-24.04
             target: x86_64-unknown-linux-musl
+            platform: linux/amd64
             image_target: minimal
             tag_alias: minimal
             description: "The AI-Powered Coder without tools (linux/amd64)"
           - os: ubuntu-24.04
             target: x86_64-unknown-linux-musl
+            platform: linux/amd64
             image_target: coder
             tag_alias: coder
             description: "The AI-Powered Coder with basic tools (linux/amd64)"
           - os: ubuntu-24.04
             target: x86_64-unknown-linux-musl
+            platform: linux/amd64
             image_target: coder-rust
             tag_alias: rust
             description: "The AI-Powered Coder with Rust development tools (linux/amd64)"
           - os: ubuntu-24.04
             target: x86_64-unknown-linux-musl
+            platform: linux/amd64
             image_target: coder-python
             tag_alias: python
             description: "The AI-Powered Coder with Python development tools (linux/amd64)"
           # linux/arm64 images
           - os: ubuntu-24.04
             target: aarch64-unknown-linux-musl
+            platform: linux/arm64
             image_target: minimal
             tag_alias: minimal
             description: "The AI-Powered Coder without tools (linux/arm64)"
           - os: ubuntu-24.04
             target: aarch64-unknown-linux-musl
+            platform: linux/arm64
             image_target: coder
             tag_alias: coder
             description: "The AI-Powered Coder with basic tools (linux/arm64)"
           - os: ubuntu-24.04
             target: aarch64-unknown-linux-musl
+            platform: linux/arm64
             image_target: coder-rust
             tag_alias: rust
             description: "The AI-Powered Coder with Rust development tools (linux/arm64)"
           - os: ubuntu-24.04
             target: aarch64-unknown-linux-musl
+            platform: linux/arm64
             image_target: coder-python
             tag_alias: python
             description: "The AI-Powered Coder with Python development tools (linux/arm64)"
@@ -298,6 +306,7 @@ jobs:
             --context="${{ github.repositoryUrl }}#${{ github.ref }}" \
             --dockerfile=Dockerfile.release \
             --target=${{ matrix.image_target }} \
+            --custom-platform=${{ matrix.platform }} \
             --destination=${{ env.CONTAINER_REGISTRY }}/${{ github.repository_owner }}/${{ env.REPOSITORY_NAME }}:${{ matrix.tag_alias }}-${{ env.VERSION }} \
             --destination=${{ env.CONTAINER_REGISTRY }}/${{ github.repository_owner }}/${{ env.REPOSITORY_NAME }}:${{ matrix.tag_alias }} \
             --build-arg=TARGET_ARCH=${{ matrix.target }} \
