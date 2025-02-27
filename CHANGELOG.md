@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.44](https://github.com/inference-gateway/coder/compare/0.1.4-rc.43...0.1.4-rc.44) (2025-02-27)
+
+### 📦 Miscellaneous
+
+* I think I found the issue, those cache entries came from this action ([e55c37f](https://github.com/inference-gateway/coder/commit/e55c37f5379a8f344ad996c1e69ac413b98d7493))
+
 ## [0.1.4-rc.43](https://github.com/inference-gateway/coder/compare/0.1.4-rc.42...0.1.4-rc.43) (2025-02-27)
 
 ### 📦 Miscellaneous
