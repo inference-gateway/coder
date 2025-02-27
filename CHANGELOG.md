@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.39](https://github.com/inference-gateway/coder/compare/0.1.4-rc.38...0.1.4-rc.39) (2025-02-27)
+
+### 📦 Miscellaneous
+
+* Add image pulling step before signing container images in release workflow ([d3068ec](https://github.com/inference-gateway/coder/commit/d3068ecd8b119bc734f1a61127bfbe8fd637f72c))
+* Add Rust toolchain setup and update checkout step in CI workflow ([8698c7f](https://github.com/inference-gateway/coder/commit/8698c7faec6b8f4d147e9ea1c7ef77ebd454b726))
+* Update uuid dependency to version 1.15.1 ([3b5cc33](https://github.com/inference-gateway/coder/commit/3b5cc33f2a02cedb6e0dd2836bbb49b9be148307))
+
 ## [0.1.4-rc.38](https://github.com/inference-gateway/coder/compare/0.1.4-rc.37...0.1.4-rc.38) (2025-02-27)
 
 ### 📦 Miscellaneous
