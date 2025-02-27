@@ -248,7 +248,7 @@ jobs:
           }
           EOF
 
-      - name: Build and push
+      - name: Build and push minimal image
         env:
           REPOSITORY_NAME: coder
           REPOSITORY_OWNER: ${{ github.repository_owner }}
@@ -271,6 +271,96 @@ jobs:
             --label="org.opencontainers.image.documentation=${{ github.server_url }}/${{ github.repository }}/blob/main/README.md" \
             --label="org.opencontainers.image.title=Coder" \
             --label="org.opencontainers.image.description=The AI-Powered Coder without tools" \
+            --label="org.opencontainers.image.licenses=MIT" \
+            --label="org.opencontainers.image.vendor=${{ github.repository_owner }}" \
+            --cache=true \
+            --cache-repo=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}/cache-${{ matrix.target }} \
+            --cache-ttl=336h \
+            --compressed-caching=true \
+            --skip-unused-stages \
+
+      - name: Build and push coder image
+        env:
+          REPOSITORY_NAME: coder
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+          CONTAINER_REGISTRY: ghcr.io
+          VERSION: ${{ needs.github_release.outputs.new_release_version }}
+        run: |
+          /kaniko/executor \
+            --context="${{ github.repositoryUrl }}#${{ github.ref }}" \
+            --dockerfile=Dockerfile.release \
+            --target=coder \
+            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:coder \
+            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:coder-${{ env.VERSION }} \
+            --build-arg=TARGET_ARCH=${{ matrix.target }} \
+            --build-arg=VERSION=${{ env.VERSION }} \
+            --label="org.opencontainers.image.version=${{ env.VERSION }}" \
+            --label="org.opencontainers.image.revision=${{ github.sha }}" \
+            --label="org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" \
+            --label="org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}" \
+            --label="org.opencontainers.image.documentation=${{ github.server_url }}/${{ github.repository }}/blob/main/README.md" \
+            --label="org.opencontainers.image.title=Coder" \
+            --label="org.opencontainers.image.description=The AI-Powered Coder with basic tools" \
+            --label="org.opencontainers.image.licenses=MIT" \
+            --label="org.opencontainers.image.vendor=${{ github.repository_owner }}" \
+            --cache=true \
+            --cache-repo=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}/cache-${{ matrix.target }} \
+            --cache-ttl=336h \
+            --compressed-caching=true \
+            --skip-unused-stages \
+
+      - name: Build and push coder-rust image
+        env:
+          REPOSITORY_NAME: coder
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+          CONTAINER_REGISTRY: ghcr.io
+          VERSION: ${{ needs.github_release.outputs.new_release_version }}
+        run: |
+          /kaniko/executor \
+            --context="${{ github.repositoryUrl }}#${{ github.ref }}" \
+            --dockerfile=Dockerfile.release \
+            --target=coder-rust \
+            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:rust \
+            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:rust-${{ env.VERSION }} \
+            --build-arg=TARGET_ARCH=${{ matrix.target }} \
+            --build-arg=VERSION=${{ env.VERSION }} \
+            --label="org.opencontainers.image.version=${{ env.VERSION }}" \
+            --label="org.opencontainers.image.revision=${{ github.sha }}" \
+            --label="org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" \
+            --label="org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}" \
+            --label="org.opencontainers.image.documentation=${{ github.server_url }}/${{ github.repository }}/blob/main/README.md" \
+            --label="org.opencontainers.image.title=Coder" \
+            --label="org.opencontainers.image.description=The AI-Powered Coder with Rust development tools" \
+            --label="org.opencontainers.image.licenses=MIT" \
+            --label="org.opencontainers.image.vendor=${{ github.repository_owner }}" \
+            --cache=true \
+            --cache-repo=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}/cache-${{ matrix.target }} \
+            --cache-ttl=336h \
+            --compressed-caching=true \
+            --skip-unused-stages \
+
+      - name: Build and push coder-python image
+        env:
+          REPOSITORY_NAME: coder
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+          CONTAINER_REGISTRY: ghcr.io
+          VERSION: ${{ needs.github_release.outputs.new_release_version }}
+        run: |
+          /kaniko/executor \
+            --context="${{ github.repositoryUrl }}#${{ github.ref }}" \
+            --dockerfile=Dockerfile.release \
+            --target=coder-python \
+            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:python \
+            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:python-${{ env.VERSION }} \
+            --build-arg=TARGET_ARCH=${{ matrix.target }} \
+            --build-arg=VERSION=${{ env.VERSION }} \
+            --label="org.opencontainers.image.version=${{ env.VERSION }}" \
+            --label="org.opencontainers.image.revision=${{ github.sha }}" \
+            --label="org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" \
+            --label="org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}" \
+            --label="org.opencontainers.image.documentation=${{ github.server_url }}/${{ github.repository }}/blob/main/README.md" \
+            --label="org.opencontainers.image.title=Coder" \
+            --label="org.opencontainers.image.description=The AI-Powered Coder with Python development tools" \
             --label="org.opencontainers.image.licenses=MIT" \
             --label="org.opencontainers.image.vendor=${{ github.repository_owner }}" \
             --cache=true \
@@ -314,17 +404,31 @@ jobs:
           docker pull ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:minimal-${VERSION}
           docker pull ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:latest
           docker pull ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:minimal
+          docker pull ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:coder-${VERSION}
+          docker pull ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:coder
+          docker pull ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:rust-${VERSION}
+          docker pull ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:rust
+          docker pull ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:python-${VERSION}
+          docker pull ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:python
 
           # Get digests for the images
           VERSION_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:minimal-${VERSION})
           LATEST_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:latest)
           MINIMAL_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:minimal)
+          CODER_VERSION_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:coder-${VERSION})
+          CODER_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:coder)
+          RUST_VERSION_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:rust-${VERSION})
+          RUST_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:rust)
+          PYTHON_VERSION_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:python-${VERSION})
+          PYTHON_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:python)
 
-          echo "Signing image digest: $VERSION_DIGEST"
-          echo "Signing image digest: $LATEST_DIGEST"
-          echo "Signing image digest: $MINIMAL_DIGEST"
-
-          # Sign using digests instead of tags
+          # Sign using digests
           cosign sign --yes $VERSION_DIGEST
           cosign sign --yes $LATEST_DIGEST
           cosign sign --yes $MINIMAL_DIGEST
+          cosign sign --yes $CODER_VERSION_DIGEST
+          cosign sign --yes $CODER_DIGEST
+          cosign sign --yes $RUST_VERSION_DIGEST
+          cosign sign --yes $RUST_DIGEST
+          cosign sign --yes $PYTHON_VERSION_DIGEST
+          cosign sign --yes $PYTHON_DIGEST
