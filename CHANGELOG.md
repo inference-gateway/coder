@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.41](https://github.com/inference-gateway/coder/compare/0.1.4-rc.40...0.1.4-rc.41) (2025-02-27)
+
+### 📦 Miscellaneous
+
+* Adjust cache key format in release workflow for improved consistency ([2b8be73](https://github.com/inference-gateway/coder/commit/2b8be7302ab7c5a5682e55db8d2a1c4e6f0cd331))
+
 ## [0.1.4-rc.40](https://github.com/inference-gateway/coder/compare/0.1.4-rc.39...0.1.4-rc.40) (2025-02-27)
 
 ### 📦 Miscellaneous
