@@ -295,6 +295,7 @@ jobs:
             --dockerfile=Dockerfile.release \
             --target=${{ matrix.image_target }} \
             --destination=${{ env.CONTAINER_REGISTRY }}/${{ github.repository_owner }}/${{ env.REPOSITORY_NAME }}:${{ matrix.tag_alias }}-${{ env.VERSION }} \
+            --destination=${{ env.CONTAINER_REGISTRY }}/${{ github.repository_owner }}/${{ env.REPOSITORY_NAME }}:${{ matrix.tag_alias }} \
             --build-arg=TARGET_ARCH=${{ matrix.target }} \
             --build-arg=VERSION=${{ env.VERSION }} \
             --label="org.opencontainers.image.version=${{ env.VERSION }}" \
