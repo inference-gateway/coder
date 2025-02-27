@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.38](https://github.com/inference-gateway/coder/compare/0.1.4-rc.37...0.1.4-rc.38) (2025-02-27)
+
+### 📦 Miscellaneous
+
+* Enhance GitHub Actions workflow for container signing and caching ([0aa9428](https://github.com/inference-gateway/coder/commit/0aa9428edbf477024e042919abe2fee4ceb7d130))
+* Iterate faster on the release workflow - temporarily ([7615d06](https://github.com/inference-gateway/coder/commit/7615d061283f1f1e50e8788ccb9371a0d9af68ce))
+
 ## [0.1.4-rc.37](https://github.com/inference-gateway/coder/compare/0.1.4-rc.36...0.1.4-rc.37) (2025-02-26)
 
 ### 📦 Miscellaneous
