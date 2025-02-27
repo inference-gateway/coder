@@ -23,7 +23,7 @@ USER coder
 WORKDIR /home/coder
 ENTRYPOINT ["coder"]
 
-FROM coder AS rust
+FROM coder AS coder-rust
 ENV PATH="/home/coder/.cargo/bin:${PATH}" \
     RUSTUP_HOME="/home/coder/.rustup" \
     CARGO_HOME="/home/coder/.cargo"
@@ -38,6 +38,28 @@ RUN apk add --no-cache \
     chown -R coder:coder \
         /home/coder/.cargo \
         /home/coder/.rustup
+USER coder
+WORKDIR /home/coder
+ENTRYPOINT [ "coder" ]
+
+FROM coder AS coder-python
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+RUN apk add --no-cache \
+        python3 \
+        py3-pip \
+        py3-flake8 \
+        py3-pytest \
+        py3-mypy \
+        py3-isort \
+        py3-pylint \
+        py3-setuptools \
+        py3-wheel && \
+    pip install --no-cache-dir --break-system-packages \
+        black && \
+    rm -rf \
+        /tmp/* \
+        /var/tmp/*
 USER coder
 WORKDIR /home/coder
 ENTRYPOINT [ "coder" ]
