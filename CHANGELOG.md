@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.46](https://github.com/inference-gateway/coder/compare/0.1.4-rc.45...0.1.4-rc.46) (2025-02-27)
+
+### 📦 Miscellaneous
+
+* Comment out build and sign container jobs in release workflow - temporarily ([9d5b246](https://github.com/inference-gateway/coder/commit/9d5b24613646ef678dccdd9279a4739a520e5109))
+* Go back to cross-compilation option ([2061666](https://github.com/inference-gateway/coder/commit/2061666ad40a9393fd92f1070c651ae764c1dfab))
+
 ## [0.1.4-rc.45](https://github.com/inference-gateway/coder/compare/0.1.4-rc.44...0.1.4-rc.45) (2025-02-27)
 
 ### 📦 Miscellaneous
