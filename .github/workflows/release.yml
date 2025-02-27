@@ -317,6 +317,11 @@ jobs:
 
       - name: Sign container images with GitHub OIDC
         run: |
+          # Pull the images to sign
+          docker pull ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:minimal-${VERSION}
+          docker pull ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:latest
+          docker pull ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:minimal
+
           # Get digests for the images
           VERSION_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:minimal-${VERSION})
           LATEST_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:latest)
