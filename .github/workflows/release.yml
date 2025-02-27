@@ -233,7 +233,7 @@ jobs:
             target: aarch64-unknown-linux-musl
     container:
       image: gcr.io/kaniko-project/executor:v1.23.2-debug
-      options: --entrypoint="" --cpu-shares=4096 --memory=6g --cpus=4
+      options: --entrypoint=""
     runs-on: ${{ matrix.os }}
     steps:
       - name: Login to GitHub Container Registry
