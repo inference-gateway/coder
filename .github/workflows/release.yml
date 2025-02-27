@@ -154,9 +154,9 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-release-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ matrix.target }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-cargo-release-${{ matrix.target }}-
+            ${{ runner.os }}-${{ matrix.target }}-cargo-release-
 
       - name: Add target ${{ matrix.target }}
         run: rustup target add ${{ matrix.target }}
