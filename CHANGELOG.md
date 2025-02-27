@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.40](https://github.com/inference-gateway/coder/compare/0.1.4-rc.39...0.1.4-rc.40) (2025-02-27)
+
+### 📦 Miscellaneous
+
+* Comment out self-hosted runners for now - I want to make sure it works on the regular github ones first ([ddb31d6](https://github.com/inference-gateway/coder/commit/ddb31d6fa88f1329cf90bb9b44fb319a86fd7305))
+* This is default for the sake of consistency with release workflow add it explicitly ([c226efd](https://github.com/inference-gateway/coder/commit/c226efd0f85e3a6d7045778496a32a37f7f6899a))
+* Uncomment and enable static binary build steps in CI workflow ([b53889f](https://github.com/inference-gateway/coder/commit/b53889fa8267fd3a79da4690969553715c8618fa))
+* Update Rust toolchain setup action to version 1.11.0 ([79d3237](https://github.com/inference-gateway/coder/commit/79d3237c78dc82abb07196b9c6cdf5fd2b5acdaa))
+
 ## [0.1.4-rc.39](https://github.com/inference-gateway/coder/compare/0.1.4-rc.38...0.1.4-rc.39) (2025-02-27)
 
 ### 📦 Miscellaneous
