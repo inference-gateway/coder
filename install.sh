@@ -20,11 +20,11 @@ if ! command -v $DEP >/dev/null 2>&1; then
     exit 1
 fi
 
-if [ -z "$CODER_VERSION" ]; then
+if [ -z "$CODER_VERSION" ] || [ "$CODER_VERSION" = "latest" ]; then
     VERSION=$(curl -sSL "https://api.github.com/repos/inference-gateway/coder/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
     echo "Downloading latest version: $VERSION"
 else
-    VERSION=$CODER_VERSION
+    VERSION="$CODER_VERSION"
     echo "Downloading specified version: $VERSION"
 fi
 OS=$(uname -s)
