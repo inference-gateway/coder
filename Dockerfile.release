@@ -24,6 +24,7 @@ WORKDIR /home/coder
 ENTRYPOINT ["coder"]
 
 FROM coder AS coder-rust
+USER root
 ENV PATH="/home/coder/.cargo/bin:${PATH}" \
     RUSTUP_HOME="/home/coder/.rustup" \
     CARGO_HOME="/home/coder/.cargo"
@@ -43,6 +44,7 @@ WORKDIR /home/coder
 ENTRYPOINT [ "coder" ]
 
 FROM coder AS coder-python
+USER root
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 RUN apk add --no-cache \
