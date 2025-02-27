@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.47](https://github.com/inference-gateway/coder/compare/0.1.4-rc.46...0.1.4-rc.47) (2025-02-27)
+
+### 📦 Miscellaneous
+
+* Add custom linkers for cross-compilation targets ([16035ec](https://github.com/inference-gateway/coder/commit/16035ec4495a02593c43466f5c6b4eaa83aaeab7))
+
 ## [0.1.4-rc.46](https://github.com/inference-gateway/coder/compare/0.1.4-rc.45...0.1.4-rc.46) (2025-02-27)
 
 ### 📦 Miscellaneous
