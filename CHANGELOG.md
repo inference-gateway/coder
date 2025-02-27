@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.45](https://github.com/inference-gateway/coder/compare/0.1.4-rc.44...0.1.4-rc.45) (2025-02-27)
+
+### 📦 Miscellaneous
+
+* Bring back dependencies ([e921954](https://github.com/inference-gateway/coder/commit/e92195461950e5bef6376e8e969c611a2489bc0b))
+* Rename job from 'B&P Containers' to 'Build Containers' for clarity ([822c8b2](https://github.com/inference-gateway/coder/commit/822c8b2b1584ea3edc43ecdfb49498dddd11ee95))
+
 ## [0.1.4-rc.44](https://github.com/inference-gateway/coder/compare/0.1.4-rc.43...0.1.4-rc.44) (2025-02-27)
 
 ### 📦 Miscellaneous
