@@ -230,10 +230,10 @@ jobs:
         include:
           - os: ubuntu-24.04
             target: x86_64-unknown-linux-musl
-          - os:
-              - self-hosted
-              - k8s
-            target: aarch64-unknown-linux-musl
+          # - os:
+          #     - self-hosted
+          #     - k8s
+          #   target: aarch64-unknown-linux-musl
     container:
       image: gcr.io/kaniko-project/executor:v1.23.2-debug
       options: --entrypoint="" --cpu-shares=4096 --memory=6g --cpus=4
