@@ -194,6 +194,8 @@ jobs:
           RUSTFLAGS: "-C target-feature=+crt-static"
           CC_x86_64_unknown_linux_musl: /opt/x86_64-linux-musl-cross/bin/x86_64-linux-musl-gcc
           CC_aarch64_unknown_linux_musl: /opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc
+          CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER: /opt/x86_64-linux-musl-cross/bin/x86_64-linux-musl-gcc
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER: /opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc
           OPENSSL_STATIC: 1
         run: |
           cargo build --release --no-default-features --target ${{ matrix.target }}
