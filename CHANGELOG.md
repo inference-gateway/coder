@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.52](https://github.com/inference-gateway/coder/compare/0.1.4-rc.51...0.1.4-rc.52) (2025-02-27)
+
+### 📦 Miscellaneous
+
+* Add platform specification for multi-architecture OCI images in release workflow ([28a3a50](https://github.com/inference-gateway/coder/commit/28a3a500f31b453c36b4932e803b81ba176d19f0))
+* Try to reuse the same cache entry ([eab1f71](https://github.com/inference-gateway/coder/commit/eab1f71f6b47d4eb489c0d3b72e011d8f459e496))
+
 ## [0.1.4-rc.51](https://github.com/inference-gateway/coder/compare/0.1.4-rc.50...0.1.4-rc.51) (2025-02-27)
 
 ### 📦 Miscellaneous
