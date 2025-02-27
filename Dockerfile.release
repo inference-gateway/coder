@@ -1,0 +1,34 @@
+# Creates a container using pre-built binaries from GitHub releases
+# Can be built with:
+# docker build -f Dockerfile.release --build-arg VERSION=0.1.4-rc.45 --build-arg TARGET_ARCH=x86_64-unknown-linux-musl -t coder:release .
+
+# ARG VERSION=latest
+# ARG TARGET_ARCH=x86_64-unknown-linux-musl
+
+# First stage: Download binary
+FROM alpine:3.21 AS downloader
+ARG VERSION
+ARG TARGET_ARCH
+RUN apk add --no-cache curl
+WORKDIR /tmp
+RUN curl -sSL https://github.com/inference-gateway/coder/releases/download/${VERSION}/coder_${TARGET_ARCH} -o coder && \
+    chmod +x coder
+
+# Minimal image with just the binary
+FROM gcr.io/distroless/static:nonroot AS minimal
+COPY --from=downloader /tmp/coder /coder
+USER nonroot:nonroot
+ENTRYPOINT ["/coder"]
+
+# Alpine-based image with minimal tools
+FROM alpine:3.21.3 AS standard
+RUN apk add --no-cache \
+        ca-certificates \
+        git \
+        curl && \
+    addgroup -S -g 1001 coder && \
+    adduser -S -G coder -u 1001 -h /home/coder -s /bin/sh -g "Coder user" coder
+COPY --from=downloader --chown=coder:coder /tmp/coder /usr/local/bin/coder
+USER coder
+WORKDIR /home/coder
+ENTRYPOINT ["coder"]

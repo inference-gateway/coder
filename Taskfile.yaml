@@ -31,17 +31,18 @@ tasks:
     cmds:
       - cargo install --path .
 
-  build-container:
-    desc: Run the release container command locally
+  test-container-release:
+    desc: Build a container from release binaries
     vars:
       GITHUB_USER: edenreich
       GITHUB_TOKEN: ${GITHUB_TOKEN}
       REPOSITORY_OWNER: inference-gateway
       REPOSITORY_NAME: coder
       ORG_NAME: inference-gateway
-      TARGET: aarch64-unknown-linux-musl
-      VERSION: local
+      TARGET_ARCH: aarch64-unknown-linux-musl
+      VERSION: latest
       CONTAINER_REGISTRY: ghcr.io
+      TARGET: minimal
     cmds:
       - mkdir -p $(pwd)/kaniko/cache
       - mkdir -p $(pwd)/kaniko/.docker
@@ -69,28 +70,22 @@ tasks:
           gcr.io/kaniko-project/executor:v1.23.2-debug \
           /kaniko/executor \
             --context=. \
-            --dockerfile=Dockerfile \
-            --target=minimal \
-            --destination={{.CONTAINER_REGISTRY}}/{{.REPOSITORY_OWNER}}/{{.REPOSITORY_NAME}}:latest \
-            --destination={{.CONTAINER_REGISTRY}}/{{.REPOSITORY_OWNER}}/{{.REPOSITORY_NAME}}:minimal \
-            --destination={{.CONTAINER_REGISTRY}}/{{.REPOSITORY_OWNER}}/{{.REPOSITORY_NAME}}:minimal-{{.VERSION}} \
-            --build-arg=TARGET_ARCH={{.TARGET}} \
+            --dockerfile=Dockerfile.release \
+            --target={{.TARGET}} \
+            --destination={{.CONTAINER_REGISTRY}}/{{.REPOSITORY_OWNER}}/{{.REPOSITORY_NAME}}:local-{{.VERSION}} \
+            --build-arg=VERSION={{.VERSION}} \
+            --build-arg=TARGET_ARCH={{.TARGET_ARCH}} \
             --label="org.opencontainers.image.version={{.VERSION}}" \
-            --label="org.opencontainers.image.revision=" \
-            --label="org.opencontainers.image.source=" \
-            --label="org.opencontainers.image.url=" \
-            --label="org.opencontainers.image.documentation=" \
             --label="org.opencontainers.image.title=Coder" \
-            --label="org.opencontainers.image.description=The AI-Powered Coder without tools" \
+            --label="org.opencontainers.image.description=The AI-Powered Coder" \
             --label="org.opencontainers.image.licenses=MIT" \
-            --label="org.opencontainers.image.vendor=" \
             --no-push \
-            --tar-path=/workspace/artifacts/my-image.tar \
+            --tar-path=/workspace/artifacts/release-image.tar \
             --cache=true \
             --cache-repo={{.CONTAINER_REGISTRY}}/{{.REPOSITORY_OWNER}}/{{.REPOSITORY_NAME}}/cache-{{.TARGET}}-local \
             --cache-ttl=336h \
             --compressed-caching=true \
-            --snapshot-mode=redo \
-            --use-new-run \
             --ignore-path=".git" \
             --skip-unused-stages \
+      - |
+        docker load -i $(pwd)/kaniko/artifacts/release-image.tar

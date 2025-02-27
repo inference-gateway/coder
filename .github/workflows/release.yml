@@ -219,122 +219,119 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # build_containers:
-  #   name: Build Containers
-  #   needs:
-  #     - github_release
-  #   if: needs.github_release.outputs.new_release_published == 'true'
-  #   timeout-minutes: 65
-  #   permissions:
-  #     packages: write
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       include:
-  #         - os: ubuntu-24.04
-  #           target: x86_64-unknown-linux-musl
-  #         # - os:
-  #         #     - self-hosted
-  #         #     - k8s
-  #         #   target: aarch64-unknown-linux-musl
-  #   container:
-  #     image: gcr.io/kaniko-project/executor:v1.23.2-debug
-  #     options: --entrypoint="" --cpu-shares=4096 --memory=6g --cpus=4
-  #   runs-on: ${{ matrix.os }}
-  #   steps:
-  #     - name: Login to GitHub Container Registry
-  #       run: |
-  #         mkdir -p /kaniko/.docker
-  #         cat << EOF > /kaniko/.docker/config.json
-  #         {
-  #           "auths": {
-  #             "ghcr.io": {
-  #               "auth": "$(echo -n ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} | base64)"
-  #             }
-  #           }
-  #         }
-  #         EOF
+  build_containers:
+    name: Build Containers
+    needs:
+      - github_release
+    if: needs.github_release.outputs.new_release_published == 'true'
+    timeout-minutes: 65
+    permissions:
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            target: x86_64-unknown-linux-musl
+          - os: ubuntu-24.04
+            target: aarch64-unknown-linux-musl
+    container:
+      image: gcr.io/kaniko-project/executor:v1.23.2-debug
+      options: --entrypoint="" --cpu-shares=4096 --memory=6g --cpus=4
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Login to GitHub Container Registry
+        run: |
+          mkdir -p /kaniko/.docker
+          cat << EOF > /kaniko/.docker/config.json
+          {
+            "auths": {
+              "ghcr.io": {
+                "auth": "$(echo -n ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} | base64)"
+              }
+            }
+          }
+          EOF
 
-  #     - name: Build and push
-  #       env:
-  #         REPOSITORY_NAME: coder
-  #         REPOSITORY_OWNER: ${{ github.repository_owner }}
-  #         CONTAINER_REGISTRY: ghcr.io
-  #         VERSION: ${{ needs.github_release.outputs.new_release_version }}
-  #       run: |
-  #         echo "Available cores: $(nproc)"
-  #         /kaniko/executor \
-  #           --context="${{ github.repositoryUrl }}#${{ github.ref }}" \
-  #           --dockerfile=Dockerfile \
-  #           --target=minimal \
-  #           --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:latest \
-  #           --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:minimal \
-  #           --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:minimal-${{ env.VERSION }} \
-  #           --build-arg=TARGET_ARCH=${{ matrix.target }} \
-  #           --label="org.opencontainers.image.version=${{ env.VERSION }}" \
-  #           --label="org.opencontainers.image.revision=${{ github.sha }}" \
-  #           --label="org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" \
-  #           --label="org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}" \
-  #           --label="org.opencontainers.image.documentation=${{ github.server_url }}/${{ github.repository }}/blob/main/README.md" \
-  #           --label="org.opencontainers.image.title=Coder" \
-  #           --label="org.opencontainers.image.description=The AI-Powered Coder without tools" \
-  #           --label="org.opencontainers.image.licenses=MIT" \
-  #           --label="org.opencontainers.image.vendor=${{ github.repository_owner }}" \
-  #           --cache=true \
-  #           --cache-repo=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}/cache-${{ matrix.target }} \
-  #           --cache-ttl=336h \
-  #           --compressed-caching=true \
-  #           --snapshot-mode=redo \
-  #           --use-new-run \
-  #           --ignore-path=".git" \
-  #           --skip-unused-stages \
+      - name: Build and push
+        env:
+          REPOSITORY_NAME: coder
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+          CONTAINER_REGISTRY: ghcr.io
+          VERSION: ${{ needs.github_release.outputs.new_release_version }}
+        run: |
+          /kaniko/executor \
+            --context="${{ github.repositoryUrl }}#${{ github.ref }}" \
+            --dockerfile=Dockerfile.release \
+            --target=minimal \
+            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:latest \
+            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:minimal \
+            --destination=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}:minimal-${{ env.VERSION }} \
+            --build-arg=TARGET_ARCH=${{ matrix.target }} \
+            --label="org.opencontainers.image.version=${{ env.VERSION }}" \
+            --label="org.opencontainers.image.revision=${{ github.sha }}" \
+            --label="org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" \
+            --label="org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}" \
+            --label="org.opencontainers.image.documentation=${{ github.server_url }}/${{ github.repository }}/blob/main/README.md" \
+            --label="org.opencontainers.image.title=Coder" \
+            --label="org.opencontainers.image.description=The AI-Powered Coder without tools" \
+            --label="org.opencontainers.image.licenses=MIT" \
+            --label="org.opencontainers.image.vendor=${{ github.repository_owner }}" \
+            --cache=true \
+            --cache-repo=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}/cache-${{ matrix.target }} \
+            --cache-ttl=336h \
+            --compressed-caching=true \
+            --snapshot-mode=redo \
+            --use-new-run \
+            --ignore-path=".git" \
+            --skip-unused-stages \
 
-  # sign_containers:
-  #   name: Sign Container Images
-  #   needs:
-  #     - github_release
-  #     - build_containers
-  #   if: needs.github_release.outputs.new_release_published == 'true'
-  #   runs-on: ubuntu-24.04
-  #   permissions:
-  #     packages: write
-  #     id-token: write # needed for signing the images with GitHub OIDC Token
-  #     contents: read
-  #   env:
-  #     REPOSITORY_NAME: coder
-  #     REPOSITORY_OWNER: ${{ github.repository_owner }}
-  #     CONTAINER_REGISTRY: ghcr.io
-  #     VERSION: ${{ needs.github_release.outputs.new_release_version }}
-  #   steps:
-  #     - name: Install cosign
-  #       uses: sigstore/cosign-installer@v3.8.1
-  #       with:
-  #         cosign-release: "v2.4.3"
+  sign_containers:
+    name: Sign Container Images
+    needs:
+      - github_release
+      - build_containers
+    if: needs.github_release.outputs.new_release_published == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      packages: write
+      id-token: write # needed for signing the images with GitHub OIDC Token
+      contents: read
+    env:
+      REPOSITORY_NAME: coder
+      REPOSITORY_OWNER: ${{ github.repository_owner }}
+      CONTAINER_REGISTRY: ghcr.io
+      VERSION: ${{ needs.github_release.outputs.new_release_version }}
+    steps:
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.8.1
+        with:
+          cosign-release: "v2.4.3"
 
-  #     - name: Login to GitHub Container Registry
-  #       uses: docker/login-action@v3
-  #       with:
-  #         registry: ghcr.io
-  #         username: ${{ github.actor }}
-  #         password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-  #     - name: Sign container images with GitHub OIDC
-  #       run: |
-  #         # Pull the images to sign
-  #         docker pull ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:minimal-${VERSION}
-  #         docker pull ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:latest
-  #         docker pull ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:minimal
+      - name: Sign container images with GitHub OIDC
+        run: |
+          # Pull the images to sign
+          docker pull ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:minimal-${VERSION}
+          docker pull ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:latest
+          docker pull ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:minimal
 
-  #         # Get digests for the images
-  #         VERSION_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:minimal-${VERSION})
-  #         LATEST_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:latest)
-  #         MINIMAL_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:minimal)
+          # Get digests for the images
+          VERSION_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:minimal-${VERSION})
+          LATEST_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:latest)
+          MINIMAL_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${CONTAINER_REGISTRY}/${REPOSITORY_OWNER}/${REPOSITORY_NAME}:minimal)
 
-  #         echo "Signing image digest: $VERSION_DIGEST"
-  #         echo "Signing image digest: $LATEST_DIGEST"
-  #         echo "Signing image digest: $MINIMAL_DIGEST"
+          echo "Signing image digest: $VERSION_DIGEST"
+          echo "Signing image digest: $LATEST_DIGEST"
+          echo "Signing image digest: $MINIMAL_DIGEST"
 
-  #         # Sign using digests instead of tags
-  #         cosign sign --yes $VERSION_DIGEST
-  #         cosign sign --yes $LATEST_DIGEST
-  #         cosign sign --yes $MINIMAL_DIGEST
+          # Sign using digests instead of tags
+          cosign sign --yes $VERSION_DIGEST
+          cosign sign --yes $LATEST_DIGEST
+          cosign sign --yes $MINIMAL_DIGEST
