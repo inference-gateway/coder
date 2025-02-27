@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.50](https://github.com/inference-gateway/coder/compare/0.1.4-rc.49...0.1.4-rc.50) (2025-02-27)
+
+### 📦 Miscellaneous
+
+* Add additional destination tag for container image in release workflow ([32fa45b](https://github.com/inference-gateway/coder/commit/32fa45b33c6bc46e554a6cf1c202a3d13572d6f2))
+* Refactor release workflow to support multiple image targets and streamline image building process ([62e0931](https://github.com/inference-gateway/coder/commit/62e09315b8a343820e1477244125ef029f72f82d))
+* Remove 'is_latest' flag for now, I'll build it later ([fa694d3](https://github.com/inference-gateway/coder/commit/fa694d3b0754a3306fd5cbcbf6c74fe8ffcecc73))
+* Simplify container options in release workflow by removing unnecessary resource limits ([afd72be](https://github.com/inference-gateway/coder/commit/afd72be568ac73929b91236b8999250589ff45e2))
+
 ## [0.1.4-rc.49](https://github.com/inference-gateway/coder/compare/0.1.4-rc.48...0.1.4-rc.49) (2025-02-27)
 
 ### 📦 Miscellaneous
