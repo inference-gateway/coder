@@ -310,7 +310,7 @@ jobs:
             
             # Also tag as latest if this is the minimal variant
             if [[ "${{ matrix.tag_alias }}" == "minimal" ]]; then
-              DESTINATIONS+=" --destination=${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:latest"
+              DESTINATIONS="${DESTINATIONS} --destination=${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:latest"
             fi
           fi
           /kaniko/executor \
