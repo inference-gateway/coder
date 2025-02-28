@@ -318,7 +318,7 @@ jobs:
             --dockerfile=Dockerfile.release \
             --target=${{ matrix.image_target }} \
             --custom-platform=${{ matrix.platform }} \
-            $DESTINATIONS \
+            ${DESTINATIONS} \
             --build-arg=TARGET_ARCH=${{ matrix.target }} \
             --build-arg=VERSION=${{ env.VERSION }} \
             --label="org.opencontainers.image.version=${{ env.VERSION }}" \
