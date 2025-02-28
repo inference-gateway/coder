@@ -126,3 +126,5 @@ export PKG_CONFIG_ALLOW_CROSS=1
 
 # For task auto-completion
 eval "$(task --completion zsh)" 
+
+source <(trivy completion zsh)
