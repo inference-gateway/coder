@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.54](https://github.com/inference-gateway/coder/compare/0.1.4-rc.53...0.1.4-rc.54) (2025-02-28)
+
+### 📦 Miscellaneous
+
+* Add container image vulnerability scanning to release workflow ([f5b0679](https://github.com/inference-gateway/coder/commit/f5b0679b5aed31404274b8140821822e6cda9cc0))
+* Restore entrypoint in docker-compose.yml for service configuration ([334949a](https://github.com/inference-gateway/coder/commit/334949a2e528f936a8c8f3a3b4a54f7127bf032d))
+* Update coder image and configure git user settings in docker-compose ([d0373d9](https://github.com/inference-gateway/coder/commit/d0373d990668d732197f381284641b75380bf04c))
+
 ## [0.1.4-rc.53](https://github.com/inference-gateway/coder/compare/0.1.4-rc.52...0.1.4-rc.53) (2025-02-27)
 
 ### 📦 Miscellaneous
