@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.56](https://github.com/inference-gateway/coder/compare/0.1.4-rc.55...0.1.4-rc.56) (2025-02-28)
+
+### 📦 Miscellaneous
+
+* Add Trivy installation and Zsh completion support in devcontainer ([a6f614f](https://github.com/inference-gateway/coder/commit/a6f614f82287324886f3e3be75b008105c928081))
+* Change vulnerability scan output format from template to SARIF - this is the recommended way, the other was is deprecated ([4dd728f](https://github.com/inference-gateway/coder/commit/4dd728f677a5f1983d43cd3eac0cdbbff5d76a80))
+* Fix variable expansion for DESTINATIONS in release workflow ([93ed655](https://github.com/inference-gateway/coder/commit/93ed655cad9465fbbee8ecf027901a63847bd141))
+* Remove upload step for vulnerability scan results in release workflow ([874aed3](https://github.com/inference-gateway/coder/commit/874aed3a27eb6741dcb8f2a75b97fcbc38f03647))
+* Update permissions in release workflow to include contents and actions ([442a52e](https://github.com/inference-gateway/coder/commit/442a52ed2adf1261dd90c5bd0c343115f1ed9b65))
+* Update release workflow to handle version tagging for release candidates and stable versions ([63ec837](https://github.com/inference-gateway/coder/commit/63ec837017392c52dd6fe100ac11ee4aead43d0f))
+* Update vulnerability scan output format to use template ([ce7ef35](https://github.com/inference-gateway/coder/commit/ce7ef3563ff28d9860dc3a508b8f25f2cf3a91f0))
+
 ## [0.1.4-rc.55](https://github.com/inference-gateway/coder/compare/0.1.4-rc.54...0.1.4-rc.55) (2025-02-28)
 
 ### 📦 Miscellaneous
