@@ -354,7 +354,7 @@ jobs:
       - name: Run Vulnerability Scanning
         uses: aquasecurity/trivy-action@0.29.0
         with:
-          image-ref: "ghcr.io/${{ github.repository }}:${{ needs.github_release.outputs.new_release_version }}"
+          image-ref: "ghcr.io/${{ github.repository }}:${{ matrix.image }}-${{ needs.github_release.outputs.new_release_version }}"
           exit-code: "0"
           format: "sarif"
           output: "trivy-results.sarif"
