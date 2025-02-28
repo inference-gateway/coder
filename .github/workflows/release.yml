@@ -335,6 +335,8 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       packages: read
+      contents: read
+      actions: read
       security-events: write
     strategy:
       matrix:
