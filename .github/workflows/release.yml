@@ -297,18 +297,28 @@ jobs:
 
       - name: Build and push image
         env:
-          REPOSITORY_NAME: coder
-          REPOSITORY_OWNER: ${{ github.repository_owner }}
           CONTAINER_REGISTRY: ghcr.io
           VERSION: ${{ needs.github_release.outputs.new_release_version }}
         run: |
+          # Determine if this is a release candidate
+          if [[ "${{ env.VERSION }}" == *"-rc."* ]]; then
+            # For RC versions, only push the versioned tag
+            DESTINATIONS="--destination=${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:${{ matrix.tag_alias }}-${{ env.VERSION }}"
+          else
+            # For stable versions, push both versioned and latest tags
+            DESTINATIONS="--destination=${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:${{ matrix.tag_alias }}-${{ env.VERSION }} --destination=${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:${{ matrix.tag_alias }}"
+            
+            # Also tag as latest if this is the minimal variant
+            if [[ "${{ matrix.tag_alias }}" == "minimal" ]]; then
+              DESTINATIONS+=" --destination=${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:latest"
+            fi
+          fi
           /kaniko/executor \
             --context="${{ github.repositoryUrl }}#${{ github.ref }}" \
             --dockerfile=Dockerfile.release \
             --target=${{ matrix.image_target }} \
             --custom-platform=${{ matrix.platform }} \
-            --destination=${{ env.CONTAINER_REGISTRY }}/${{ github.repository_owner }}/${{ env.REPOSITORY_NAME }}:${{ matrix.tag_alias }}-${{ env.VERSION }} \
-            --destination=${{ env.CONTAINER_REGISTRY }}/${{ github.repository_owner }}/${{ env.REPOSITORY_NAME }}:${{ matrix.tag_alias }} \
+            $DESTINATIONS \
             --build-arg=TARGET_ARCH=${{ matrix.target }} \
             --build-arg=VERSION=${{ env.VERSION }} \
             --label="org.opencontainers.image.version=${{ env.VERSION }}" \
@@ -321,7 +331,7 @@ jobs:
             --label="org.opencontainers.image.licenses=MIT" \
             --label="org.opencontainers.image.vendor=${{ github.repository_owner }}" \
             --cache=true \
-            --cache-repo=${{ env.CONTAINER_REGISTRY }}/${{ env.REPOSITORY_OWNER }}/${{ env.REPOSITORY_NAME }}/cache-${{ matrix.target }} \
+            --cache-repo=${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}/cache-${{ matrix.target }} \
             --cache-ttl=336h \
             --compressed-caching=true \
             --skip-unused-stages
