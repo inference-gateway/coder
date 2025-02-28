@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.55](https://github.com/inference-gateway/coder/compare/0.1.4-rc.54...0.1.4-rc.55) (2025-02-28)
+
+### 📦 Miscellaneous
+
+* Small fix - Update image reference format in vulnerability scanning workflow ([69f78b1](https://github.com/inference-gateway/coder/commit/69f78b17d2f905252b5a1c38145d899d26cd8f8a))
+
 ## [0.1.4-rc.54](https://github.com/inference-gateway/coder/compare/0.1.4-rc.53...0.1.4-rc.54) (2025-02-28)
 
 ### 📦 Miscellaneous
