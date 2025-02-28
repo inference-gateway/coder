@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.5](https://github.com/inference-gateway/coder/compare/0.1.4...0.1.5) (2025-02-28)
+
+### 🐛 Bug Fixes
+
+* **release:** Correct string concatenation for destination tagging in release workflow ([5e0c4fd](https://github.com/inference-gateway/coder/commit/5e0c4fdd1817351d6e43c6053cf0abb56ae22c1e))
+
 ## [0.1.4](https://github.com/inference-gateway/coder/compare/0.1.3...0.1.4) (2025-02-28)
 
 ### 🐛 Bug Fixes
