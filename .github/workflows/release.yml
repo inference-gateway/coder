@@ -356,7 +356,8 @@ jobs:
         with:
           image-ref: "ghcr.io/${{ github.repository }}:${{ matrix.image }}-${{ needs.github_release.outputs.new_release_version }}"
           exit-code: "0"
-          format: "sarif"
+          format: "template"
+          template: "@/contrib/sarif.tpl"
           output: "trivy-results.sarif"
           vuln-type: "os,library"
           severity: "CRITICAL,HIGH"
