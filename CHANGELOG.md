@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4-rc.57](https://github.com/inference-gateway/coder/compare/0.1.4-rc.56...0.1.4-rc.57) (2025-02-28)
+
+### 📦 Miscellaneous
+
+* Add checkout step to release workflow for improved repository access ([a0841e4](https://github.com/inference-gateway/coder/commit/a0841e49b22621daaec46a0848e960f906091319))
+
 ## [0.1.4-rc.56](https://github.com/inference-gateway/coder/compare/0.1.4-rc.55...0.1.4-rc.56) (2025-02-28)
 
 ### 📦 Miscellaneous
