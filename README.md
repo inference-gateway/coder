@@ -57,7 +57,7 @@ Coder understands project structure rather than just a specific code snippet or 
 Just run:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/inference-gateway/coder/refs/heads/main/install.sh | sh
+curl -sSL https://raw.githubusercontent.com/inference-gateway/coder/refs/heads/main/install.sh | CODER_VERSION=latest sh -
 ```
 
 ### Usage

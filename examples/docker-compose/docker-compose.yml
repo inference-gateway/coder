@@ -1,20 +1,26 @@
 services:
   coder:
-    image: ghcr.io/inference-gateway/coder:0.1.3
-    user: 1000:1000
+    image: ghcr.io/inference-gateway/coder:rust-0.1.4-rc.53
     working_dir: /app
     volumes:
       - repository:/app
     env_file:
       - .env
-    entrypoint: ""
-    command: |
-      apk add cargo
-      cargo install rustfmt
-      cargo install clippy
-      coder init &&
-      coder index &&
-      coder fix --issue=${CODER_ISSUE}
+    environment:
+      GITHUB_TOKEN: ${CODER_SCM_TOKEN}
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        set -e
+
+        git config --global user.name 'GitHub Actions Bot'
+        git config --global credential.helper store
+        echo "https://x-access-token:${CODER_SCM_TOKEN}@github.com" > ~/.git-credentials
+        chmod 600 ~/.git-credentials
+        coder init
+        coder index
+        coder fix --issue="${CODER_ISSUE}"
     depends_on:
       repository-cloner:
         condition: service_completed_successfully
@@ -58,7 +64,7 @@ services:
       - -c
       - |
         git clone https://github.com/${CODER_SCM_USERNAME}/${CODER_SCM_REPOSITORY}.git .
-        chown -R 1000:1000 /app
+        chown -R 1001:1001 /app
       # - |
       #   git clone -n https://gitlab.com/${CODER_SCM_USERNAME}/${CODER_SCM_REPOSITORY}.git .
       #   chown -R 1000:1000 /app

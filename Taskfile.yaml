@@ -30,3 +30,62 @@ tasks:
     desc: Install the project
     cmds:
       - cargo install --path .
+
+  test-container-release:
+    desc: Build a container from release binaries
+    vars:
+      GITHUB_USER: edenreich
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+      REPOSITORY_OWNER: inference-gateway
+      REPOSITORY_NAME: coder
+      ORG_NAME: inference-gateway
+      TARGET_ARCH: aarch64-unknown-linux-musl
+      VERSION: latest
+      CONTAINER_REGISTRY: ghcr.io
+      TARGET: minimal
+    cmds:
+      - mkdir -p $(pwd)/kaniko/cache
+      - mkdir -p $(pwd)/kaniko/.docker
+      - |
+        cat << EOF > $(pwd)/kaniko/.docker/config.json
+        {
+          "auths": {
+            "ghcr.io": {
+              "auth": "$(echo -n {{.GITHUB_USER}}:{{.GITHUB_TOKEN}} | base64 -w0)"
+            }
+          }
+        }
+        EOF
+      - |
+        docker run --rm \
+          --cpu-shares=4096 \
+          --memory=6g \
+          --cpus=4 \
+          -v $(pwd):/workspace \
+          -v $(pwd)/kaniko/artifacts:/workspace/artifacts \
+          -v $(pwd)/kaniko/cache:/cache \
+          -v $(pwd)/kaniko/.docker:/kaniko/.docker \
+          -w /workspace \
+          --entrypoint="" \
+          gcr.io/kaniko-project/executor:v1.23.2-debug \
+          /kaniko/executor \
+            --context=. \
+            --dockerfile=Dockerfile.release \
+            --target={{.TARGET}} \
+            --destination={{.CONTAINER_REGISTRY}}/{{.REPOSITORY_OWNER}}/{{.REPOSITORY_NAME}}:local-{{.VERSION}} \
+            --build-arg=VERSION={{.VERSION}} \
+            --build-arg=TARGET_ARCH={{.TARGET_ARCH}} \
+            --label="org.opencontainers.image.version={{.VERSION}}" \
+            --label="org.opencontainers.image.title=Coder" \
+            --label="org.opencontainers.image.description=The AI-Powered Coder" \
+            --label="org.opencontainers.image.licenses=MIT" \
+            --no-push \
+            --tar-path=/workspace/artifacts/release-image.tar \
+            --cache=true \
+            --cache-repo={{.CONTAINER_REGISTRY}}/{{.REPOSITORY_OWNER}}/{{.REPOSITORY_NAME}}/cache-{{.TARGET}}-local \
+            --cache-ttl=336h \
+            --compressed-caching=true \
+            --ignore-path=".git" \
+            --skip-unused-stages \
+      - |
+        docker load -i $(pwd)/kaniko/artifacts/release-image.tar

@@ -1,0 +1,67 @@
+FROM alpine:3.21 AS downloader
+ARG VERSION
+ARG TARGET_ARCH
+RUN apk add --no-cache curl
+WORKDIR /tmp
+RUN curl -sSL https://github.com/inference-gateway/coder/releases/download/${VERSION}/coder_${TARGET_ARCH} -o coder && \
+    chmod +x coder
+
+FROM gcr.io/distroless/static:nonroot AS minimal
+COPY --from=downloader /tmp/coder /coder
+USER nonroot:nonroot
+ENTRYPOINT ["/coder"]
+
+FROM alpine:3.21.3 AS coder
+RUN apk add --no-cache \
+        ca-certificates \
+        git \
+        curl && \
+    addgroup -S -g 1001 coder && \
+    adduser -S -G coder -u 1001 -h /home/coder -s /bin/sh -g "Coder user" coder
+COPY --from=downloader --chown=coder:coder /tmp/coder /usr/local/bin/coder
+USER coder
+WORKDIR /home/coder
+ENTRYPOINT ["coder"]
+
+FROM coder AS coder-rust
+USER root
+ENV PATH="/home/coder/.cargo/bin:${PATH}" \
+    RUSTUP_HOME="/home/coder/.rustup" \
+    CARGO_HOME="/home/coder/.cargo"
+RUN apk add --no-cache \
+        rustup && \
+    rustup-init -y \
+        --no-modify-path \
+        --profile minimal \
+        --default-toolchain stable \
+        --target ${TARGET_ARCH} \
+        --component rustfmt clippy && \
+    chown -R coder:coder \
+        /home/coder/.cargo \
+        /home/coder/.rustup
+USER coder
+WORKDIR /home/coder
+ENTRYPOINT [ "coder" ]
+
+FROM coder AS coder-python
+USER root
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+RUN apk add --no-cache \
+        python3 \
+        py3-pip \
+        py3-flake8 \
+        py3-pytest \
+        py3-mypy \
+        py3-isort \
+        py3-pylint \
+        py3-setuptools \
+        py3-wheel && \
+    pip install --no-cache-dir --break-system-packages \
+        black && \
+    rm -rf \
+        /tmp/* \
+        /var/tmp/*
+USER coder
+WORKDIR /home/coder
+ENTRYPOINT [ "coder" ]

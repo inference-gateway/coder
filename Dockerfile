@@ -1,63 +1,103 @@
 
 # Possible args:
-ARG TARGET_ARCH=aarch64-unknown-linux-musl
+# ARG TARGET_ARCH=aarch64-unknown-linux-musl
 # ARG TARGET_ARCH=x86_64-unknown-linux-musl
 
-FROM ubuntu:24.04 AS build
-
-RUN apt-get update && apt-get install --no-install-recommends -y \
-    curl \
-    ca-certificates \
-    build-essential \
-    pkg-config \
-    wget \
-    git \
-    musl-tools \
-    libssl-dev \
-    && rm -rf /var/lib/apt/lists/* \
-    && cd /tmp \
-    && wget https://musl.cc/x86_64-linux-musl-cross.tgz \
-    && wget https://musl.cc/aarch64-linux-musl-cross.tgz \
-    && tar -xzf x86_64-linux-musl-cross.tgz \
-    && tar -xzf aarch64-linux-musl-cross.tgz \
-    && mv x86_64-linux-musl-cross aarch64-linux-musl-cross /opt/ \
-    && rm -rf *.tgz
-
+FROM rust:alpine3.21 AS chef
 ARG TARGET_ARCH
-ENV TARGET_ARCH=${TARGET_ARCH} \
-    CC_x86_64_unknown_linux_musl=x86_64-linux-musl-gcc \
-    AR_x86_64_unknown_linux_musl=x86_64-linux-musl-ar \
-    CC_aarch64_unknown_linux_musl=aarch64-linux-musl-gcc \
-    AR_aarch64_unknown_linux_musl=aarch64-linux-musl-ar \
-    RUSTFLAGS="-C target-feature=+crt-static" \
-    PKG_CONFIG_ALLOW_CROSS=1 \
-    OPENSSL_STATIC=1 \
-    OPENSSL_DIR=/usr \
-    OPENSSL_INCLUDE_DIR=/usr/include \
-    OPENSSL_LIB_DIR=/usr/lib
-
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-ENV PATH="/root/.cargo/bin:/opt/x86_64-linux-musl-cross/bin:/opt/aarch64-linux-musl-cross/bin:${PATH}"
-
+RUN apk add \
+        make \
+        perl \
+        file \
+        musl-dev \
+        clang \
+        llvm \
+        openssl-dev \
+        pkgconfig
+RUN cargo install cargo-chef --locked && \
+    rustup target add ${TARGET_ARCH}
+RUN mkdir /app
 WORKDIR /app
 
-COPY Cargo.toml Cargo.lock ./
-COPY . .
+FROM chef AS planner
+COPY Cargo.* ./
+COPY src ./src
+RUN cargo chef prepare --recipe-path recipe.json
 
-RUN rustup target add ${TARGET_ARCH} \
-    && cargo build --release --no-default-features --target ${TARGET_ARCH}
-
-FROM alpine:3.21.3
+FROM chef AS cacher
 ARG TARGET_ARCH
+ENV CC=clang \
+    AR=llvm-ar \
+    RUSTFLAGS="-C target-feature=+crt-static -C linker=clang -C target-cpu=native" \
+    CARGO_HOME=/root/.cargo \
+    PATH="/root/.cargo/bin:${PATH}"
 
-COPY --from=build /app/target/${TARGET_ARCH}/release/coder /usr/local/bin/coder
+COPY --from=planner /app/recipe.json recipe.json
+RUN cargo chef cook --release --target ${TARGET_ARCH} --recipe-path recipe.json
 
+FROM cacher AS builder
+ARG TARGET_ARCH
+COPY src ./src
+COPY --from=cacher /app/target /app/target
+RUN cargo build --release --jobs $(nproc) --target ${TARGET_ARCH}
+
+FROM gcr.io/distroless/static:nonroot AS minimal
+ARG TARGET_ARCH
+COPY --from=builder /app/target/${TARGET_ARCH}/release/coder /coder
+USER nonroot:nonroot
+ENTRYPOINT [ "/coder" ]
+
+FROM alpine:3.21.3 AS coder
+ARG TARGET_ARCH
 RUN apk add --no-cache \
-    ca-certificates \
-    git \
-    curl \
-    && addgroup -S -g 1001 coder \
-    && adduser -S -G coder -u 1001 -h /home/coder -s /sbin/nologin -g "Coder user" coder
+        ca-certificates \
+        git \
+        curl \
+        libgcc && \
+    addgroup -S -g 1001 coder && \
+    adduser -S -G coder -u 1001 -h /home/coder -s /bin/sh -g "Coder user" coder && \
+    rm -rf \
+        /tmp/* \
+        /var/tmp/*
+COPY --from=builder --chown=coder:coder /app/target/${TARGET_ARCH}/release/coder /usr/local/bin/coder
 
+FROM coder AS rust
+ENV PATH="/home/coder/.cargo/bin:${PATH}" \
+    RUSTUP_HOME="/home/coder/.rustup" \
+    CARGO_HOME="/home/coder/.cargo"
+RUN apk add --no-cache \
+        rustup && \
+    rustup-init -y \
+        --no-modify-path \
+        --profile minimal \
+        --default-toolchain stable \
+        --target ${TARGET_ARCH} \
+        --component rustfmt clippy && \
+    chown -R coder:coder \
+        /home/coder/.cargo \
+        /home/coder/.rustup
 USER coder
-ENTRYPOINT ["coder"]
+WORKDIR /home/coder
+ENTRYPOINT [ "coder" ]
+
+FROM coder AS python
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+RUN apk add --no-cache \
+        python3 \
+        py3-pip \
+        py3-flake8 \
+        py3-pytest \
+        py3-mypy \
+        py3-isort \
+        py3-pylint \
+        py3-setuptools \
+        py3-wheel && \
+    pip install --no-cache-dir --break-system-packages \
+        black && \
+    rm -rf \
+        /tmp/* \
+        /var/tmp/*
+USER coder
+WORKDIR /home/coder
+ENTRYPOINT [ "coder" ]

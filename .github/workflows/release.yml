@@ -99,31 +99,26 @@ jobs:
             exit 1
           fi
 
-  build_artifacts:
-    name: Build and Upload Artifacts
-    needs: github_release
+  build_binaries:
+    name: Build static binaries
+    needs:
+      - github_release
     if: needs.github_release.outputs.new_release_published == 'true'
+    timeout-minutes: 15
     permissions:
       contents: write
-      packages: write
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             target: x86_64-unknown-linux-musl
-            arch_platform: linux/amd64
-            timeout: 10
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             target: aarch64-unknown-linux-musl
-            arch_platform: linux/arm64
-            timeout: 40 # Cross-compilation takes longer
           - os: macos-latest
             target: x86_64-apple-darwin
-            timeout: 10
           - os: macos-latest
             target: aarch64-apple-darwin
-            timeout: 10
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -142,13 +137,15 @@ jobs:
           fi
 
       - name: Install Rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
+        uses: actions-rust-lang/setup-rust-toolchain@v1.11.0
         with:
           toolchain: stable
           override: true
+          cache: true
+          cache-key: ${{ runner.os }}-${{ matrix.target }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Cache Rust dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v4.2.1
         with:
           path: |
             ~/.cargo/bin/
@@ -156,23 +153,24 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ matrix.target }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.target }}-cargo
+            ${{ runner.os }}-${{ matrix.target }}-cargo-release-
 
       - name: Add target ${{ matrix.target }}
         run: rustup target add ${{ matrix.target }}
 
       - name: Add build tools for musl target instead of glibc
-        if: startsWith(matrix.os, 'ubuntu')
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
         run: |
           sudo apt-get update && sudo apt-get install --no-install-recommends -y \
             curl \
             ca-certificates \
             build-essential \
+            clang \
+            llvm \
             pkg-config \
             wget \
-            git \
             musl-tools \
             libssl-dev \
             && sudo rm -rf /var/lib/apt/lists/* \
@@ -185,21 +183,24 @@ jobs:
             && rm -rf *.tgz
 
       - name: Build binary for ${{ matrix.target }}
-        timeout-minutes: ${{ matrix.timeout }}
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
         env:
           PKG_CONFIG_ALLOW_CROSS: 1
           RUSTFLAGS: "-C target-feature=+crt-static"
-          OPENSSL_DIR: /usr
-          OPENSSL_LIB_DIR: /usr/lib
-          OPENSSL_INCLUDE_DIR: /usr/include
+          CC_x86_64_unknown_linux_musl: /opt/x86_64-linux-musl-cross/bin/x86_64-linux-musl-gcc
+          CC_aarch64_unknown_linux_musl: /opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc
+          CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER: /opt/x86_64-linux-musl-cross/bin/x86_64-linux-musl-gcc
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER: /opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc
           OPENSSL_STATIC: 1
-          CC_aarch64_unknown_linux_musl: aarch64-linux-musl-gcc
-          AR_aarch64_unknown_linux_musl: aarch64-linux-musl-ar
-          CC_x86_64_unknown_linux_musl: x86_64-linux-musl-gcc
-          AR_x86_64_unknown_linux_musl: x86_64-linux-musl-ar
         run: |
-          export PATH="/root/.cargo/bin:/opt/x86_64-linux-musl-cross/bin:/opt/aarch64-linux-musl-cross/bin:${PATH}"
-          cargo build --release --target ${{ matrix.target }}
+          cargo build --release --no-default-features --target ${{ matrix.target }}
+
+      - name: Build binary for ${{ matrix.target }}
+        if: ${{ startsWith(matrix.os, 'macos') }}
+        env:
+          RUSTFLAGS: "-C target-feature=+crt-static"
+        run: |
+          cargo build --release --no-default-features --target ${{ matrix.target }}
 
       - name: Rename binary to the published name
         run: |
@@ -213,37 +214,236 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up QEMU
-        if: startsWith(matrix.os, 'ubuntu')
-        uses: docker/setup-qemu-action@v3
+  build_containers:
+    name: Build Containers
+    needs:
+      - github_release
+      - build_binaries
+    if: needs.github_release.outputs.new_release_published == 'true'
+    timeout-minutes: 65
+    permissions:
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # linux/amd64 images
+          - os: ubuntu-24.04
+            target: x86_64-unknown-linux-musl
+            platform: linux/amd64
+            image_target: minimal
+            tag_alias: minimal
+            description: "The AI-Powered Coder without tools (linux/amd64)"
+          - os: ubuntu-24.04
+            target: x86_64-unknown-linux-musl
+            platform: linux/amd64
+            image_target: coder
+            tag_alias: coder
+            description: "The AI-Powered Coder with basic tools (linux/amd64)"
+          - os: ubuntu-24.04
+            target: x86_64-unknown-linux-musl
+            platform: linux/amd64
+            image_target: coder-rust
+            tag_alias: rust
+            description: "The AI-Powered Coder with Rust development tools (linux/amd64)"
+          - os: ubuntu-24.04
+            target: x86_64-unknown-linux-musl
+            platform: linux/amd64
+            image_target: coder-python
+            tag_alias: python
+            description: "The AI-Powered Coder with Python development tools (linux/amd64)"
+          # linux/arm64 images
+          - os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-musl
+            platform: linux/arm64
+            image_target: minimal
+            tag_alias: minimal
+            description: "The AI-Powered Coder without tools (linux/arm64)"
+          - os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-musl
+            platform: linux/arm64
+            image_target: coder
+            tag_alias: coder
+            description: "The AI-Powered Coder with basic tools (linux/arm64)"
+          - os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-musl
+            platform: linux/arm64
+            image_target: coder-rust
+            tag_alias: rust
+            description: "The AI-Powered Coder with Rust development tools (linux/arm64)"
+          - os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-musl
+            platform: linux/arm64
+            image_target: coder-python
+            tag_alias: python
+            description: "The AI-Powered Coder with Python development tools (linux/arm64)"
+    container:
+      image: gcr.io/kaniko-project/executor:v1.23.2-debug
+      options: --entrypoint=""
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Login to GitHub Container Registry
+        run: |
+          mkdir -p /kaniko/.docker
+          cat << EOF > /kaniko/.docker/config.json
+          {
+            "auths": {
+              "ghcr.io": {
+                "auth": "$(echo -n ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} | base64)"
+              }
+            }
+          }
+          EOF
 
-      - name: Set up Docker Buildx
-        if: startsWith(matrix.os, 'ubuntu')
-        uses: docker/setup-buildx-action@v3
+      - name: Build and push image
+        env:
+          CONTAINER_REGISTRY: ghcr.io
+          VERSION: ${{ needs.github_release.outputs.new_release_version }}
+        run: |
+          # Determine if this is a release candidate
+          if [[ "${{ env.VERSION }}" == *"-rc."* ]]; then
+            # For RC versions, only push the versioned tag
+            DESTINATIONS="--destination=${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:${{ matrix.tag_alias }}-${{ env.VERSION }}"
+          else
+            # For stable versions, push both versioned and latest tags
+            DESTINATIONS="--destination=${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:${{ matrix.tag_alias }}-${{ env.VERSION }} --destination=${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:${{ matrix.tag_alias }}"
+            
+            # Also tag as latest if this is the minimal variant
+            if [[ "${{ matrix.tag_alias }}" == "minimal" ]]; then
+              DESTINATIONS+=" --destination=${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:latest"
+            fi
+          fi
+          /kaniko/executor \
+            --context="${{ github.repositoryUrl }}#${{ github.ref }}" \
+            --dockerfile=Dockerfile.release \
+            --target=${{ matrix.image_target }} \
+            --custom-platform=${{ matrix.platform }} \
+            ${DESTINATIONS} \
+            --build-arg=TARGET_ARCH=${{ matrix.target }} \
+            --build-arg=VERSION=${{ env.VERSION }} \
+            --label="org.opencontainers.image.version=${{ env.VERSION }}" \
+            --label="org.opencontainers.image.revision=${{ github.sha }}" \
+            --label="org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" \
+            --label="org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}" \
+            --label="org.opencontainers.image.documentation=${{ github.server_url }}/${{ github.repository }}/blob/main/README.md" \
+            --label="org.opencontainers.image.title=Coder" \
+            --label="org.opencontainers.image.description=${{ matrix.description }}" \
+            --label="org.opencontainers.image.licenses=MIT" \
+            --label="org.opencontainers.image.vendor=${{ github.repository_owner }}" \
+            --cache=true \
+            --cache-repo=${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}/cache-${{ matrix.target }} \
+            --cache-ttl=336h \
+            --compressed-caching=true \
+            --skip-unused-stages
+
+  scan_containers:
+    name: Scan Container Images
+    needs:
+      - github_release
+      - build_containers
+    if: needs.github_release.outputs.new_release_published == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      packages: read
+      contents: read
+      actions: read
+      security-events: write
+    strategy:
+      matrix:
+        image:
+          - minimal
+          - coder
+          - rust
+          - python
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          persist-credentials: false
 
       - name: Login to GitHub Container Registry
-        if: startsWith(matrix.os, 'ubuntu')
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.repository_owner }}
+          username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push container
-        if: startsWith(matrix.os, 'ubuntu')
-        uses: docker/build-push-action@v6
+      - name: Run Vulnerability Scanning
+        uses: aquasecurity/trivy-action@0.29.0
         with:
-          context: .
-          platforms: ${{ matrix.arch_platform }}
-          push: true
-          cache-from: type=gha,scope=${{ github.workflow }}-${{ matrix.target }}
-          cache-to: type=gha,mode=max,scope=${{ github.workflow }}-${{ matrix.target }}
-          tags: |
-            ghcr.io/${{ github.repository_owner }}/coder:latest
-            ghcr.io/${{ github.repository_owner }}/coder:${{ needs.github_release.outputs.new_release_version }}
-          build-args: |
-            TARGET_ARCH=${{ matrix.target }}
-          labels: |
-            org.opencontainers.image.source=https://github.com/inference-gateway/coder
-            org.opencontainers.image.description=The AI-Powered Coder
-            org.opencontainers.image.licenses=MIT
+          image-ref: "ghcr.io/${{ github.repository }}:${{ matrix.image }}-${{ needs.github_release.outputs.new_release_version }}"
+          exit-code: "0"
+          format: "sarif"
+          output: "trivy-results.sarif"
+          vuln-type: "os,library"
+          severity: "CRITICAL,HIGH"
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
+          category: trivy
+
+  sign_containers:
+    name: Sign Container Images
+    needs:
+      - github_release
+      - build_containers
+      - scan_containers
+    if: needs.github_release.outputs.new_release_published == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      packages: write
+      id-token: write # needed for signing the images with GitHub OIDC Token
+      contents: read
+    env:
+      CONTAINER_REGISTRY: ghcr.io
+      VERSION: ${{ needs.github_release.outputs.new_release_version }}
+    steps:
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.8.1
+        with:
+          cosign-release: "v2.4.3"
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sign container images with GitHub OIDC
+        run: |
+          # Pull the images to sign
+          docker pull ${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:minimal-${VERSION}
+          docker pull ${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:latest
+          docker pull ${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:minimal
+          docker pull ${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:coder-${VERSION}
+          docker pull ${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:coder
+          docker pull ${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:rust-${VERSION}
+          docker pull ${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:rust
+          docker pull ${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:python-${VERSION}
+          docker pull ${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:python
+
+          # Get digests for the images
+          VERSION_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:minimal-${VERSION})
+          LATEST_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:latest)
+          MINIMAL_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:minimal)
+          CODER_VERSION_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:coder-${VERSION})
+          CODER_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:coder)
+          RUST_VERSION_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:rust-${VERSION})
+          RUST_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:rust)
+          PYTHON_VERSION_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:python-${VERSION})
+          PYTHON_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ env.CONTAINER_REGISTRY }}/${{ github.repository }}:python)
+
+          # Sign using digests
+          cosign sign --yes $VERSION_DIGEST
+          cosign sign --yes $LATEST_DIGEST
+          cosign sign --yes $MINIMAL_DIGEST
+          cosign sign --yes $CODER_VERSION_DIGEST
+          cosign sign --yes $CODER_DIGEST
+          cosign sign --yes $RUST_VERSION_DIGEST
+          cosign sign --yes $RUST_DIGEST
+          cosign sign --yes $PYTHON_VERSION_DIGEST
+          cosign sign --yes $PYTHON_DIGEST

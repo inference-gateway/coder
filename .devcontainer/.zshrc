@@ -10,6 +10,8 @@ export ZSH=$HOME/.oh-my-zsh
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
 ZSH_THEME="powerlevel10k/powerlevel10k"
 
+POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(status command_execution_time time)
+
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME="powerlevel10k/powerlevel10k"
 # a theme from this variable instead of looking in $ZSH/themes/
@@ -124,3 +126,5 @@ export PKG_CONFIG_ALLOW_CROSS=1
 
 # For task auto-completion
 eval "$(task --completion zsh)" 
+
+source <(trivy completion zsh)
