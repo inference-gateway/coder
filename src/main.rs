@@ -191,8 +191,7 @@ async fn main() -> Result<(), CoderError> {
                 .with_max_tokens(Some(900))
                 .with_tools(Some(tools));
 
-            let mut convo =
-                Conversation::new(model.to_string(), provider.clone(), config.agent.max_tokens);
+            let mut convo = Conversation::new(model.to_string(), provider, config.agent.max_tokens);
 
             setup_panic_handler(convo.clone());
 
@@ -262,13 +261,18 @@ Focus on producing working solutions with minimal discussion. Do not ask questio
                     break;
                 }
 
-                let resp: inference_gateway_sdk::GenerateResponse = client
-                    .generate_content(provider.clone(), model, convo.clone().try_into()?)
+                let resp: inference_gateway_sdk::CreateChatCompletionResponse = client
+                    .generate_content(provider, model, convo.clone().try_into()?)
                     .await?;
 
-                let response = resp.response;
+                let choice = resp.choices.first();
+                if choice.is_none() {
+                    warn!("No response from the assistant. Exiting...");
+                    break;
+                }
+                let choice = choice.unwrap();
 
-                let assistant_message = utils::strip_thinking(&response.content);
+                let assistant_message = utils::strip_thinking(&choice.message.content);
                 if assistant_message.is_none() {
                     warn!("Assistant message is empty. Exiting...");
                     break;
@@ -285,17 +289,19 @@ Focus on producing working solutions with minimal discussion. Do not ask questio
                 info!("Assistant: {}", assistant_message);
                 info!("Current tokens usage: {}", convo.get_current_tokens()?);
 
-                if response.tool_calls.is_some() {
-                    for tool_call in response.tool_calls.unwrap() {
+                if let Some(tool_calls) = &choice.message.tool_calls {
+                    for tool_call in tool_calls {
                         let tool = tools::Tools::from_str(tool_call.function.name.as_str())?;
-                        let args = tool_call.function.arguments.as_str();
-                        let tool_result = tools::handle_tool_calls(&tool, args, &config).await;
+                        let args: serde_json::Value = tool_call.function.parse_arguments()?;
+                        let tool_result =
+                            tools::handle_tool_calls(&tool, Some(args), &config).await;
                         if tool_result.is_err() {
                             warn!("Tool failed to execute. Exiting...");
                             let tool_message = Message {
                                 role: MessageRole::Tool,
                                 content: tool_result.unwrap_err().to_string(),
-                                tool_call_id: Some(tool_call.id),
+                                tool_call_id: Some(tool_call.id.clone()),
+                                ..Default::default()
                             };
                             let user_message = Message {
                                 role: MessageRole::User,
@@ -318,7 +324,8 @@ Focus on producing working solutions with minimal discussion. Do not ask questio
                         let tool_message = Message {
                             role: MessageRole::Tool,
                             content: result.to_string(),
-                            tool_call_id: Some(tool_call.id),
+                            tool_call_id: Some(tool_call.id.clone()),
+                            ..Default::default()
                         };
 
                         let tool_result_struct: tools::StatusResponse =
@@ -367,7 +374,7 @@ Focus on producing working solutions with minimal discussion. Do not ask questio
 
             let mut convo = Conversation::new(
                 config.agent.model.to_string(),
-                provider.clone(),
+                provider,
                 config.agent.max_tokens,
             );
 
@@ -414,17 +421,22 @@ WORKFLOW:
                     break;
                 }
 
-                let resp: inference_gateway_sdk::GenerateResponse = client
+                let resp: inference_gateway_sdk::CreateChatCompletionResponse = client
                     .generate_content(
-                        provider.clone(),
+                        provider,
                         config.agent.model.as_str(),
                         convo.clone().try_into()?,
                     )
                     .await?;
 
-                let response = resp.response;
+                let choice = resp.choices.first();
+                if choice.is_none() {
+                    warn!("No response from the assistant. Exiting...");
+                    break;
+                }
+                let choice = choice.unwrap();
 
-                let assistant_message = utils::strip_thinking(&response.content);
+                let assistant_message = utils::strip_thinking(&choice.message.content);
                 if assistant_message.is_none() {
                     warn!("Assistant message is empty. Exiting...");
                     break;
@@ -440,16 +452,18 @@ WORKFLOW:
 
                 info!("Assistant: {}", assistant_message);
 
-                if response.tool_calls.is_some() {
-                    for tool_call in response.tool_calls.unwrap() {
+                if let Some(ref tool_calls) = &choice.message.tool_calls {
+                    for tool_call in tool_calls {
                         let tool = tools::Tools::from_str(tool_call.function.name.as_str())?;
-                        let args = tool_call.function.arguments.as_str();
-                        let tool_result = tools::handle_tool_calls(&tool, args, &config).await?;
+                        let args = tool_call.function.parse_arguments()?;
+                        let tool_result =
+                            tools::handle_tool_calls(&tool, Some(args), &config).await?;
 
                         convo.add_message(Message {
                             role: MessageRole::Tool,
                             content: tool_result.to_string(),
-                            tool_call_id: Some(tool_call.id),
+                            tool_call_id: Some(tool_call.id.clone()),
+                            ..Default::default()
                         });
                     }
                 }

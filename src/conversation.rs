@@ -124,6 +124,7 @@ mod tests {
             role: MessageRole::Tool,
             content: "Test content".to_string(),
             tool_call_id: Some("call_123".to_string()),
+            ..Default::default()
         };
 
         let serialized = serde_json::to_string(&message).unwrap();
@@ -139,6 +140,7 @@ mod tests {
             role: MessageRole::Tool,
             content: "Test content".to_string(),
             tool_call_id: None,
+            ..Default::default()
         };
 
         let serialized = serde_json::to_string(&message_without_id).unwrap();

@@ -1,8 +1,8 @@
-use inference_gateway_sdk::{Tool, ToolFunction, ToolType};
+use inference_gateway_sdk::{FunctionObject, Tool, ToolType};
 use log::{info, warn};
 use octocrab::Octocrab;
 use serde::{de::Error, Deserialize, Deserializer, Serialize};
-use serde_json::json;
+use serde_json::{json, Value};
 use std::{
     fmt::{self, Display},
     path::Path,
@@ -366,15 +366,15 @@ pub async fn docs_reference(term: &str) -> Result<(), CoderError> {
     Ok(())
 }
 
-/// Update project status
-///
-/// # Arguments
-///
-/// * `owner` - Owner of the repository
-/// * `repo` - Name of the repository
-/// * `issue_number` - Issue number
-/// * `status` - Status to update to
-///
+// /// Update project status
+// ///
+// /// # Arguments
+// ///
+// /// * `owner` - Owner of the repository
+// /// * `repo` - Name of the repository
+// /// * `issue_number` - Issue number
+// /// * `status` - Status to update to
+// ///
 // pub async fn update_project_status(
 //     owner: &str,
 //     repo: &str,
@@ -408,7 +408,7 @@ pub fn get_tools() -> Vec<Tool> {
     vec![
         Tool {
             r#type: ToolType::Function,
-            function: ToolFunction {
+            function: FunctionObject {
                 name: Tools::IssueValidate.to_string(),
                 description: "Validate the issue".to_string(),
                 parameters: json!({
@@ -429,7 +429,7 @@ pub fn get_tools() -> Vec<Tool> {
         },
         Tool {
             r#type: ToolType::Function,
-            function: ToolFunction {
+            function: FunctionObject {
                 name: Tools::IssuePull.to_string(),
                 description: "Pull the issue from SCM".to_string(),
                 parameters: json!({
@@ -450,7 +450,7 @@ pub fn get_tools() -> Vec<Tool> {
         },
         Tool {
             r#type: ToolType::Function,
-            function: ToolFunction {
+            function: FunctionObject {
                 name: Tools::CodeLint.to_string(),
                 description: "Lint the code".to_string(),
                 parameters: json!({
@@ -462,7 +462,7 @@ pub fn get_tools() -> Vec<Tool> {
         },
         Tool {
             r#type: ToolType::Function,
-            function: ToolFunction {
+            function: FunctionObject {
                 name: Tools::CodeAnalyse.to_string(),
                 description: "Analyse the code".to_string(),
                 parameters: json!({
@@ -474,7 +474,7 @@ pub fn get_tools() -> Vec<Tool> {
         },
         Tool {
             r#type: ToolType::Function,
-            function: ToolFunction {
+            function: FunctionObject {
                 name: Tools::CodeTest.to_string(),
                 description: "Test the code".to_string(),
                 parameters: json!({
@@ -486,7 +486,7 @@ pub fn get_tools() -> Vec<Tool> {
         },
         Tool {
             r#type: ToolType::Function,
-            function: ToolFunction {
+            function: FunctionObject {
                 name: Tools::DocsReference.to_string(),
                 description: "Reference the docs".to_string(),
                 parameters: json!({
@@ -503,7 +503,7 @@ pub fn get_tools() -> Vec<Tool> {
         },
         Tool {
             r#type: ToolType::Function,
-            function: ToolFunction {
+            function: FunctionObject {
                 name: Tools::CodeRead.to_string(),
                 description: "Read a code content".to_string(),
                 parameters: json!({
@@ -520,7 +520,7 @@ pub fn get_tools() -> Vec<Tool> {
         },
         Tool {
             r#type: ToolType::Function,
-            function: ToolFunction {
+            function: FunctionObject {
                 name: Tools::CodeWrite.to_string(),
                 description: "Write code to a file".to_string(),
                 parameters: json!({
@@ -541,7 +541,7 @@ pub fn get_tools() -> Vec<Tool> {
         },
         Tool {
             r#type: ToolType::Function,
-            function: ToolFunction {
+            function: FunctionObject {
                 name: Tools::PullRequest.to_string(),
                 description: "Create a Pull Request".to_string(),
                 parameters: json!({
@@ -571,7 +571,7 @@ pub fn get_tools() -> Vec<Tool> {
         },
         Tool {
             r#type: ToolType::Function,
-            function: ToolFunction {
+            function: FunctionObject {
                 name: Tools::Done.to_string(),
                 description: "Done the task".to_string(),
                 parameters: json!({
@@ -657,20 +657,16 @@ impl Display for CommandType {
 
 pub async fn handle_tool_calls(
     tool: &Tools,
-    args: Option<&str>,
+    args: Option<Value>,
     config: &config::Config,
 ) -> Result<serde_json::Value, CoderError> {
-    info!(
-        "Handling tool call: {} with args: {}",
-        tool,
-        args.unwrap_or_default()
-    );
+    info!("Handling tool call: {} with args: {:?}", tool, args);
     match tool {
         Tools::CodeRead => {
             let args = args.ok_or_else(|| {
                 CoderError::MissingArguments("CodeRead requires arguments".to_string())
             })?;
-            let args: CodeReadArgs = serde_json::from_str(args)?;
+            let args: CodeReadArgs = serde_json::from_value(args)?;
             let content = code_read(&args.path)?;
             let response = StatusResponse {
                 status: "ok".to_string(),
@@ -684,7 +680,7 @@ pub async fn handle_tool_calls(
             let args = args.ok_or_else(|| {
                 CoderError::MissingArguments("CodeWrite requires arguments".to_string())
             })?;
-            let args: CodeWriteArgs = serde_json::from_str(args)?;
+            let args: CodeWriteArgs = serde_json::from_value(args)?;
             code_write(&args.path, &args.content)?;
             let mut retry = false;
             let output = Command::new("git")
@@ -707,7 +703,7 @@ pub async fn handle_tool_calls(
             let args = args.ok_or_else(|| {
                 CoderError::MissingArguments("IssueValidate requires arguments".to_string())
             })?;
-            let args: IssuePullArgs = serde_json::from_str(args)?;
+            let args: IssuePullArgs = serde_json::from_value(args)?;
             let issue = issue_pull(
                 &config.scm.name,
                 args.issue,
@@ -739,7 +735,7 @@ pub async fn handle_tool_calls(
             let args = args.ok_or_else(|| {
                 CoderError::MissingArguments("IssuePull requires arguments".to_string())
             })?;
-            let args: IssuePullArgs = serde_json::from_str(args)?;
+            let args: IssuePullArgs = serde_json::from_value(args)?;
             let issue = issue_pull(
                 &config.scm.name,
                 args.issue,
@@ -770,7 +766,7 @@ pub async fn handle_tool_calls(
             let args = args.ok_or_else(|| {
                 CoderError::MissingArguments("PullRequest requires arguments".to_string())
             })?;
-            let args: PullRequestArgs = serde_json::from_str(args)?;
+            let args: PullRequestArgs = serde_json::from_value(args)?;
             let pr = pull_request(
                 &config.scm.name,
                 &config.scm.owner,
@@ -819,7 +815,7 @@ pub async fn handle_tool_calls(
             let args = args.ok_or_else(|| {
                 CoderError::MissingArguments("DocsReference requires arguments".to_string())
             })?;
-            let args: DocsReferenceArgs = serde_json::from_str(args)?;
+            let args: DocsReferenceArgs = serde_json::from_value(args)?;
             docs_reference(&args.term).await?;
             Ok(serde_json::to_value(())?)
         }
