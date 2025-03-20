@@ -375,22 +375,22 @@ pub async fn docs_reference(term: &str) -> Result<(), CoderError> {
 /// * `issue_number` - Issue number
 /// * `status` - Status to update to
 ///
-pub async fn update_project_status(
-    owner: &str,
-    repo: &str,
-    issue_number: u64,
-    status: &str,
-) -> Result<(), CoderError> {
-    // GitHub has a GraphQL API for project boards
-    // This requires implementing GraphQL queries
-    // For now we'll sketch the concept
-    info!("Moving issue #{} to status: {}", issue_number, status);
+// pub async fn update_project_status(
+//     owner: &str,
+//     repo: &str,
+//     issue_number: u64,
+//     status: &str,
+// ) -> Result<(), CoderError> {
+//     // GitHub has a GraphQL API for project boards
+//     // This requires implementing GraphQL queries
+//     // For now we'll sketch the concept
+//     info!("Moving issue #{} to status: {}", issue_number, status);
 
-    // The actual implementation would use GitHub's GraphQL API
-    // to update project items
+//     // The actual implementation would use GitHub's GraphQL API
+//     // to update project items
 
-    Ok(())
-}
+//     Ok(())
+// }
 
 /// Done with the task
 ///
