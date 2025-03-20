@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.6-rc.1](https://github.com/inference-gateway/coder/compare/0.1.5...0.1.6-rc.1) (2025-03-20)
+
+### ♻️ Improvements
+
+* **cli:** Update dependecies ([37c59d8](https://github.com/inference-gateway/coder/commit/37c59d85bfaca434c2424c8a0818d7f463131ecc))
+* **tools:** Comment out update_project_status function for future implementation ([424923d](https://github.com/inference-gateway/coder/commit/424923d92b5a015e24e4c6c48e4d6f7825c08881))
+
+### 🐛 Bug Fixes
+
+* Update inference-gateway-sdk to version 0.9.1-rc.1 and adjust response handling in main logic ([20051e0](https://github.com/inference-gateway/coder/commit/20051e038ac92e9359a943ab396ee0261dfc63a0))
+
+### 🔧 Miscellaneous
+
+* **docker:** Update Docker images to use latest tags for coder and inference-gateway services ([132afe3](https://github.com/inference-gateway/coder/commit/132afe3782cbe0c587be4116ee12a3df02e8206d))
+* **env:** Update example environment variables for API URLs and add client settings ([f08b242](https://github.com/inference-gateway/coder/commit/f08b242d6022260a7f56c3636b7b2ce4b032a934))
+
+### 📦 Miscellaneous
+
+* **deps:** bump ring from 0.17.11 to 0.17.14 ([#26](https://github.com/inference-gateway/coder/issues/26)) ([d76b65d](https://github.com/inference-gateway/coder/commit/d76b65d180076c2cf8b66d88ae2a41e47e2ca804))
+
 ## [0.1.5](https://github.com/inference-gateway/coder/compare/0.1.4...0.1.5) (2025-02-28)
 
 ### 🐛 Bug Fixes
