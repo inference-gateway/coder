@@ -113,6 +113,73 @@ async fn main() -> Result<(), CoderError> {
             fs::write(coder_dir.join("index.yaml"), index_content)?;
             info!("Created index at .coder/index.yaml");
         }
+        Commands::Auto {} => {
+            info!("Starting autonomous mode...");
+
+            // let issue_fetcher = IssueFetcher::new(config.clone())?;
+            // let client = InferenceGatewayClient::new(&config.api.endpoint)
+            //     .with_max_tokens(Some(900))
+            //     .with_tools(Some(tools));
+
+            // let mut processed_count = 0;
+
+            // loop {
+            //     info!("Checking for assigned issues...");
+
+            //     // Parse label string into vector if provided
+            //     let label_vec = labels.as_ref().map(|l| {
+            //         l.split(',')
+            //             .map(|s| s.trim().to_string())
+            //             .collect::<Vec<String>>()
+            //     });
+
+            //     // Fetch assigned issues
+            //     let mut issues = issue_fetcher.fetch_assigned_issues(label_vec).await?;
+
+            //     if issues.is_empty() {
+            //         info!("No issues assigned. Waiting for next check...");
+            //     } else {
+            //         info!("Found {} assigned issues", issues.len());
+
+            //         // Process issues one by one
+            //         while let Some(issue_number) = issues.pop_front() {
+            //             info!("Processing issue #{}", issue_number);
+
+            //             // Update project status to "In Progress"
+            //             tools::update_project_status(
+            //                 &config.scm.owner,
+            //                 &config.scm.repository,
+            //                 issue_number,
+            //                 "In Progress",
+            //             )
+            //             .await?;
+
+            //             // Process the issue (reusing fix command logic)
+            //             let convo = process_issue(&client, &config, issue_number).await?;
+
+            //             // Update project status to "Done"
+            //             update_project_status(
+            //                 &config.scm.owner,
+            //                 &config.scm.repository,
+            //                 issue_number,
+            //                 "Done",
+            //             )
+            //             .await?;
+
+            //             processed_count += 1;
+
+            //             // Check if we've hit the limit
+            //             if limit > 0 && processed_count >= limit {
+            //                 info!("Reached processing limit of {} issues", limit);
+            //                 return Ok(());
+            //             }
+            //         }
+            //     }
+
+            //     info!("Waiting {} seconds before next check...", interval);
+            //     tokio::time::sleep(tokio::time::Duration::from_secs(interval)).await;
+            // }
+        }
         Commands::Fix {
             issue,
             further_instruction,

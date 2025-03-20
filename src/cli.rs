@@ -40,6 +40,13 @@ pub enum Commands {
         further_instruction: Option<String>,
     },
 
+    /// Auto work on the project
+    /// and interact with the user for further actions.
+    /// Pulls the issues from Github or Gitlab that assigned to the Bot.
+    /// Runs the AI coder agent to generate a potential fix or development.
+    /// Progress the issue to the next stage as it is being fixed or developed
+    Auto {},
+
     /// Refactor look on potential improvement to the project
     /// and interact with the user for further actions.
     ///
