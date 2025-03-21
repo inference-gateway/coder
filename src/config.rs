@@ -72,7 +72,7 @@ impl Default for Config {
                 max_tokens: Some(4000),
             },
             api: ApiConfig {
-                endpoint: "http://localhost:8080".to_string(),
+                endpoint: "http://localhost:8080/v1".to_string(),
             },
         }
     }
