@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.6-rc.2](https://github.com/inference-gateway/coder/compare/0.1.6-rc.1...0.1.6-rc.2) (2025-03-21)
+
+### 🐛 Bug Fixes
+
+* Update API endpoint in configuration test to include versioning ([16a780f](https://github.com/inference-gateway/coder/commit/16a780f31a20274fc3ed5d20a52071d33e41e0b6))
+* Update inference gateway URL to include versioning in environment and configuration files ([644bfe1](https://github.com/inference-gateway/coder/commit/644bfe1f6c3672deca3d2325f04906b18a41f576))
+
+### 🔧 Miscellaneous
+
+* Bump the version of inference-gateway rust-sdk ([ce87f2a](https://github.com/inference-gateway/coder/commit/ce87f2a24e57315e3b9488ed09c509419c223ec1))
+
 ## [0.1.6-rc.1](https://github.com/inference-gateway/coder/compare/0.1.5...0.1.6-rc.1) (2025-03-20)
 
 ### ♻️ Improvements
