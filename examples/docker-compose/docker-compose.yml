@@ -1,6 +1,6 @@
 services:
   coder:
-    image: ghcr.io/inference-gateway/coder:rust-0.1.4-rc.53
+    image: ghcr.io/inference-gateway/coder:rust
     working_dir: /app
     volumes:
       - repository:/app
@@ -28,7 +28,7 @@ services:
         condition: service_healthy
 
   inference-gateway:
-    image: ghcr.io/inference-gateway/inference-gateway:v0.1.15
+    image: ghcr.io/inference-gateway/inference-gateway:latest
     env_file:
       - .env
 

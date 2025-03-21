@@ -72,7 +72,7 @@ impl Default for Config {
                 max_tokens: Some(4000),
             },
             api: ApiConfig {
-                endpoint: "http://localhost:8080".to_string(),
+                endpoint: "http://localhost:8080/v1".to_string(),
             },
         }
     }
@@ -150,7 +150,7 @@ mod tests {
         assert_eq!(config.agent.model, "deepseek-r1-distill-llama-70b");
         assert_eq!(config.agent.max_tokens, Some(4000));
 
-        assert_eq!(config.api.endpoint, "http://localhost:8080");
+        assert_eq!(config.api.endpoint, "http://localhost:8080/v1");
     }
 
     #[test]
@@ -172,7 +172,7 @@ agent:
   provider: "default-provider"
   max_tokens: 1000
 api:
-  endpoint: "http://localhost:8080"
+  endpoint: "http://localhost:8080/v1"
 "#;
         let config_file = create_test_config_file(config_content);
 
@@ -222,7 +222,7 @@ api:
       provider: "default-provider"
       max_tokens: 1000
     api:
-      endpoint: "http://localhost:8080"
+      endpoint: "http://localhost:8080/v1"
     "#;
         let config_file = create_test_config_file(config_content);
 
