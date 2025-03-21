@@ -150,7 +150,7 @@ agent:
   provider: groq # The provider of the LLM
   max_tokens: 4000 # The maximum tokens the agent can use per request
 api:
-  endpoint: http://localhost:8080 # The endpoint of the deployed Inferece-Gateway API
+  endpoint: http://localhost:8080 # The endpoint of the deployed Inference-Gateway API
 ```
 
 ### Development
