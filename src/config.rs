@@ -150,7 +150,7 @@ mod tests {
         assert_eq!(config.agent.model, "deepseek-r1-distill-llama-70b");
         assert_eq!(config.agent.max_tokens, Some(4000));
 
-        assert_eq!(config.api.endpoint, "http://localhost:8080");
+        assert_eq!(config.api.endpoint, "http://localhost:8080/v1");
     }
 
     #[test]
