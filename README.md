@@ -100,7 +100,7 @@ docker run -v $(pwd):/app -w /app --env-file .env ghcr.io/inference-gateway/code
 Via Environment Variables:
 
 ```
-CODER_INFERENCE_GATEWAY_URL=http://localhost:8080
+CODER_INFERENCE_GATEWAY_URL=http://localhost:8080/v1
 CODER_SCM_NAME=github # The SCM you are using (e.g. github, gitlab)
 CODER_SCM_TOKEN= # The token you use to authenticate with the SCM
 CODER_SCM_USERNAME= # The username you use to authenticate with the SCM
@@ -150,7 +150,7 @@ agent:
   provider: groq # The provider of the LLM
   max_tokens: 4000 # The maximum tokens the agent can use per request
 api:
-  endpoint: http://localhost:8080 # The endpoint of the deployed Inferece-Gateway API
+  endpoint: http://localhost:8080/v1 # The endpoint of the deployed Inferece-Gateway API
 ```
 
 ### Development

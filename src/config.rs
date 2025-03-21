@@ -172,7 +172,7 @@ agent:
   provider: "default-provider"
   max_tokens: 1000
 api:
-  endpoint: "http://localhost:8080"
+  endpoint: "http://localhost:8080/v1"
 "#;
         let config_file = create_test_config_file(config_content);
 
@@ -222,7 +222,7 @@ api:
       provider: "default-provider"
       max_tokens: 1000
     api:
-      endpoint: "http://localhost:8080"
+      endpoint: "http://localhost:8080/v1"
     "#;
         let config_file = create_test_config_file(config_content);
 
